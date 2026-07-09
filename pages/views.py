@@ -739,9 +739,16 @@ def punto_venta(request):
     })
 
 
+MESES = [
+    (1, 'Enero'), (2, 'Febrero'), (3, 'Marzo'), (4, 'Abril'),
+    (5, 'Mayo'), (6, 'Junio'), (7, 'Julio'), (8, 'Agosto'),
+    (9, 'Septiembre'), (10, 'Octubre'), (11, 'Noviembre'), (12, 'Diciembre'),
+]
+
+
 @login_required
 def compras_ventas(request):
-    from django.db.models import Sum, Q
+    from django.db.models import Sum
     empresa = _get_empresa(request)
     facturas = (
         Factura.objects
@@ -750,6 +757,26 @@ def compras_ventas(request):
         .prefetch_related('lineas__articulo')
         .order_by('-fecha')
     )
+
+    # Años con facturas (para el selector, antes de filtrar)
+    anios = [d.year for d in Factura.objects.filter(empresa=empresa).dates('fecha', 'year')]
+
+    # Filtros de fecha: mes, año y rango desde/hasta (combinables)
+    mes   = request.GET.get('mes', '')
+    anio  = request.GET.get('anio', '')
+    desde = parse_date(request.GET.get('desde') or '')
+    hasta = parse_date(request.GET.get('hasta') or '')
+
+    if anio.isdigit():
+        facturas = facturas.filter(fecha__year=int(anio))
+    if mes.isdigit() and 1 <= int(mes) <= 12:
+        facturas = facturas.filter(fecha__month=int(mes))
+    if desde:
+        facturas = facturas.filter(fecha__date__gte=desde)
+    if hasta:
+        facturas = facturas.filter(fecha__date__lte=hasta)
+
+    # Los totales reflejan el período filtrado
     total_ventas  = facturas.filter(tipo='VENTA').aggregate(t=Sum('total'))['t'] or 0
     total_compras = facturas.filter(tipo='COMPRA').aggregate(t=Sum('total'))['t'] or 0
     return render(request, 'pages/compras_ventas/compras_ventas.html', {
@@ -758,6 +785,13 @@ def compras_ventas(request):
         'total_ventas': total_ventas,
         'total_compras': total_compras,
         'balance': total_ventas - total_compras,
+        'anios': anios,
+        'meses': MESES,
+        'filtro_mes': mes,
+        'filtro_anio': anio,
+        'filtro_desde': request.GET.get('desde', ''),
+        'filtro_hasta': request.GET.get('hasta', ''),
+        'filtrando': bool(mes or anio or desde or hasta),
     })
 
 
