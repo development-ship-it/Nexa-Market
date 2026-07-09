@@ -1,0 +1,101 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Inventario — NexaMarket{% endblock %}
+{% block page_title %}Inventario actual{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Buscar artículo..." class="search-input" id="searchInput" />
+  </div>
+  <div class="filter-chips" id="filterChips">
+    <span class="chip active" data-filter="all">Todos</span>
+    <span class="chip" data-filter="ok">En stock</span>
+    <span class="chip warning" data-filter="low">Stock bajo</span>
+    <span class="chip danger" data-filter="zero">Sin stock</span>
+  </div>
+</div>
+
+{% if articulos %}
+<div class="inventory-grid" id="inventoryGrid">
+  {% for art in articulos %}
+  {% with s=art.stock_actual %}
+  <div class="inv-card"
+       data-nombre="{{ art.nombre_articulo|lower }}"
+       data-estado="{% if s <= 0 %}zero{% elif s < 5 %}low{% else %}ok{% endif %}">
+
+    <div class="inv-thumb">
+      {% if art.foto %}
+        <img src="{{ art.foto.url }}" alt="{{ art.nombre_articulo }}" />
+      {% elif art.foto_url %}
+        <img src="{{ art.foto_url }}" alt="{{ art.nombre_articulo }}" />
+      {% else %}
+        <span style="font-size:2rem;opacity:.4;">🏷️</span>
+      {% endif %}
+
+      <!-- Badge de stock -->
+      <div class="inv-badge {% if s <= 0 %}zero{% elif s < 5 %}low{% else %}ok{% endif %}">
+        {{ s }}
+      </div>
+    </div>
+
+    <div class="inv-info">
+      <div class="inv-name">{{ art.nombre_articulo }}</div>
+      {% if art.categoria %}
+        <div class="inv-category">{{ art.categoria.categoria }}</div>
+      {% endif %}
+      <div class="inv-price-row">
+        <span class="inv-price">${{ art.precio_venta|floatformat:0 }}</span>
+        <span class="inv-cost">C: ${{ art.precio_compra|floatformat:0 }}</span>
+      </div>
+      <!-- Detalle entradas/salidas -->
+      <div style="display:flex;gap:8px;margin-top:6px;font-size:.7rem;">
+        <span style="color:var(--green);">↑ {{ art.entradas }}u</span>
+        <span style="color:var(--red);">↓ {{ art.salidas }}u</span>
+      </div>
+    </div>
+
+  </div>
+  {% endwith %}
+  {% endfor %}
+</div>
+
+<p style="font-size:.8rem;color:var(--gray);text-align:right;margin-top:8px;">
+  {{ articulos.count }} artículo{{ articulos.count|pluralize }}
+</p>
+
+{% else %}
+<div class="empty-state" style="margin-top:60px;">
+  <span class="empty-icon">📦</span>
+  <p>No hay artículos activos</p>
+  <a href="{% url 'producto_crear' %}" class="btn-primary" style="margin-top:16px;">+ Agregar producto</a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Búsqueda
+document.getElementById('searchInput').addEventListener('input', function() {
+  const term = this.value.toLowerCase();
+  document.querySelectorAll('.inv-card').forEach(c => {
+    c.style.display = c.dataset.nombre.includes(term) ? '' : 'none';
+  });
+});
+
+// Filtro por estado de stock
+document.querySelectorAll('#filterChips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#filterChips .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    const f = chip.dataset.filter;
+    document.querySelectorAll('.inv-card').forEach(c => {
+      c.style.display = (f === 'all' || c.dataset.estado === f) ? '' : 'none';
+    });
+  });
+});
+</script>
+{% endblock %}

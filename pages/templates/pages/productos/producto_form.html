@@ -1,0 +1,298 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}{{ accion }} — NexaMarket{% endblock %}
+{% block page_title %}{{ accion }}{% endblock %}
+
+{% block content %}
+<div class="form-page">
+
+  <div class="form-header">
+    <a href="{% url 'productos' %}" class="btn-back">← Volver a Productos</a>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="product-form" id="productForm">
+    {% csrf_token %}
+
+    <div class="form-layout">
+
+      <!-- COLUMNA IZQUIERDA: foto + códigos -->
+      <div class="form-col-left">
+
+        <!-- FOTO -->
+        <div class="form-card">
+          <h3 class="form-card-title">📷 Foto del producto</h3>
+          <div class="foto-upload-area" id="fotoArea">
+            <div class="foto-preview" id="fotoPreview">
+              {% if articulo and articulo.foto %}
+                <img src="{{ articulo.foto.url }}" id="previewImg" alt="Preview" />
+              {% else %}
+                <div class="foto-placeholder" id="fotoPlaceholder">
+                  <span>🏷️</span>
+                  <p>Haz clic o arrastra una imagen</p>
+                  <span class="foto-hint">JPG, PNG, WEBP · Máx 5 MB</span>
+                </div>
+                <img id="previewImg" style="display:none;" alt="Preview" />
+              {% endif %}
+            </div>
+            <input type="file" name="foto" id="fotoInput" accept="image/*" class="foto-input" />
+            <button type="button" class="btn-upload" id="fotoBtn">
+              {% if articulo and articulo.foto %}Cambiar foto{% else %}Subir foto{% endif %}
+            </button>
+          </div>
+        </div>
+
+        <!-- CÓDIGOS -->
+        <div class="form-card">
+          <h3 class="form-card-title">🔖 Códigos</h3>
+          <div class="form-field">
+            <label class="field-label">{{ form.codigo_barra.label }}</label>
+            {{ form.codigo_barra }}
+            <span class="field-hint">Escanea con el lector o escribe manualmente</span>
+          </div>
+          <div class="form-field">
+            <label class="field-label">{{ form.codigo_qr.label }}</label>
+            {{ form.codigo_qr }}
+          </div>
+        </div>
+
+        <!-- PROVEEDOR Y UNIDAD -->
+        <div class="form-card">
+          <h3 class="form-card-title">⚙️ Configuración</h3>
+          <div class="form-field">
+            <label class="field-label">{{ form.unidad_medida.label }}</label>
+            {{ form.unidad_medida }}
+          </div>
+          <div class="form-field">
+            <label class="field-label">{{ form.proveedor.label }}</label>
+            {{ form.proveedor }}
+          </div>
+          <div class="form-field form-field-toggle">
+            <label class="field-label">{{ form.activo.label }}</label>
+            {{ form.activo }}
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLUMNA DERECHA: info + precios -->
+      <div class="form-col-right">
+
+        <!-- INFO BÁSICA -->
+        <div class="form-card">
+          <h3 class="form-card-title">📝 Información básica</h3>
+          <div class="form-field required">
+            <label class="field-label">{{ form.nombre_articulo.label }}</label>
+            {{ form.nombre_articulo }}
+            {% if form.nombre_articulo.errors %}
+              <span class="field-error">{{ form.nombre_articulo.errors.0 }}</span>
+            {% endif %}
+          </div>
+          <div class="form-field">
+            <label class="field-label">{{ form.descripcion.label }}</label>
+            {{ form.descripcion }}
+          </div>
+          <div class="form-field">
+            <label class="field-label">{{ form.categoria.label }}</label>
+            {{ form.categoria }}
+          </div>
+        </div>
+
+        <!-- PRECIOS -->
+        <div class="form-card">
+          <h3 class="form-card-title">💰 Precios</h3>
+
+          <!-- Precio de compra -->
+          <div class="form-field required">
+            <label class="field-label">{{ form.precio_compra.label }}</label>
+            <div class="input-prefix">
+              <span class="prefix">$</span>
+              {{ form.precio_compra }}
+            </div>
+            {% if form.precio_compra.errors %}
+              <span class="field-error">{{ form.precio_compra.errors.0 }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Margen ↔ Venta -->
+          <div class="prices-link-row">
+            <div class="form-field">
+              <label class="field-label" style="display:flex;align-items:center;gap:6px;">
+                {{ form.margen_ganancia.label }}
+                <span class="margen-hint">define el precio de venta</span>
+              </label>
+              <div class="input-suffix">
+                {{ form.margen_ganancia }}
+                <span class="suffix">%</span>
+              </div>
+            </div>
+
+            <div class="prices-link-icon">↔</div>
+
+            <div class="form-field required">
+              <label class="field-label" style="display:flex;align-items:center;gap:6px;">
+                {{ form.precio_venta.label }}
+                <span class="margen-hint">o escríbelo directo</span>
+              </label>
+              <div class="input-prefix">
+                <span class="prefix">$</span>
+                {{ form.precio_venta }}
+              </div>
+              {% if form.precio_venta.errors %}
+                <span class="field-error">{{ form.precio_venta.errors.0 }}</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Ganancia en pesos (informativo) -->
+          <div class="ganancia-display" id="gananciaDisplay" style="display:none;">
+            <span class="ganancia-label">Ganancia por unidad</span>
+            <span class="ganancia-value" id="gananciaValue">$0</span>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- BOTONES -->
+    <div class="form-submit-row">
+      <a href="{% url 'productos' %}" class="btn-secondary">Cancelar</a>
+      <button type="submit" class="btn-primary">
+        {% if accion == 'Crear producto' %}✓ Guardar producto{% else %}✓ Guardar cambios{% endif %}
+      </button>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Foto preview
+const fotoInput = document.getElementById('fotoInput');
+const fotoBtn = document.getElementById('fotoBtn');
+const previewImg = document.getElementById('previewImg');
+const fotoPlaceholder = document.getElementById('fotoPlaceholder');
+
+fotoBtn.addEventListener('click', () => fotoInput.click());
+
+fotoInput.addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    previewImg.src = e.target.result;
+    previewImg.style.display = 'block';
+    if (fotoPlaceholder) fotoPlaceholder.style.display = 'none';
+    fotoBtn.textContent = 'Cambiar foto';
+  };
+  reader.readAsDataURL(file);
+});
+
+// Drag & drop
+const fotoArea = document.getElementById('fotoArea');
+fotoArea.addEventListener('dragover', e => { e.preventDefault(); fotoArea.classList.add('drag-over'); });
+fotoArea.addEventListener('dragleave', () => fotoArea.classList.remove('drag-over'));
+fotoArea.addEventListener('drop', e => {
+  e.preventDefault();
+  fotoArea.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    fotoInput.files = e.dataTransfer.files;
+    fotoInput.dispatchEvent(new Event('change'));
+  }
+});
+
+// Precios bidireccionales: margen ↔ venta
+const precioCompra  = document.getElementById('id_precio_compra');
+const precioVenta   = document.getElementById('id_precio_venta');
+const margenInput   = document.getElementById('id_margen_ganancia');
+const gananciaDisp  = document.getElementById('gananciaDisplay');
+const gananciaVal   = document.getElementById('gananciaValue');
+
+function roundToTen(val) {
+  return Math.round(val / 10) * 10;
+}
+
+// 'margen' = el usuario editó el margen → calcular venta
+// 'venta'  = el usuario editó el precio de venta → calcular margen
+let _lastEdited = 'venta';
+
+function _calcFromMargen() {
+  const pc = parseFloat(precioCompra.value) || 0;
+  const mg = parseFloat(margenInput.value);
+  if (!isNaN(mg) && pc > 0) {
+    precioVenta.value = roundToTen(pc * (1 + mg / 100));
+  }
+  _updateGanancia();
+}
+
+function _calcFromVenta() {
+  const pc = parseFloat(precioCompra.value) || 0;
+  const pv = parseFloat(precioVenta.value) || 0;
+  if (pc > 0) {
+    margenInput.value = ((pv - pc) / pc * 100).toFixed(1);
+  } else {
+    margenInput.value = '0.0';
+  }
+  _updateMargenColor();
+  _updateGanancia();
+}
+
+function _calcFromCompra() {
+  if (_lastEdited === 'margen') {
+    _calcFromMargen();
+  } else {
+    _calcFromVenta();
+  }
+}
+
+function _updateMargenColor() {
+  const mg = parseFloat(margenInput.value) || 0;
+  margenInput.style.color = mg >= 0 ? 'var(--green)' : 'var(--red)';
+}
+
+function _updateGanancia() {
+  const pc = parseFloat(precioCompra.value) || 0;
+  const pv = parseFloat(precioVenta.value) || 0;
+  const ganancia = pv - pc;
+  if (pc > 0) {
+    gananciaDisp.style.display = 'flex';
+    gananciaVal.textContent = '$' + Math.round(ganancia).toLocaleString('es-CL');
+    gananciaVal.style.color = ganancia >= 0 ? 'var(--green)' : 'var(--red)';
+  } else {
+    gananciaDisp.style.display = 'none';
+  }
+  _updateMargenColor();
+}
+
+margenInput.addEventListener('input', () => {
+  _lastEdited = 'margen';
+  _calcFromMargen();
+});
+
+precioVenta.addEventListener('input', () => {
+  _lastEdited = 'venta';
+  _calcFromVenta();
+});
+
+// Redondear al salir del campo
+precioVenta.addEventListener('blur', () => {
+  const v = parseFloat(precioVenta.value);
+  if (!isNaN(v)) { precioVenta.value = roundToTen(v); }
+  _calcFromVenta();
+});
+
+precioCompra.addEventListener('blur', () => {
+  const v = parseFloat(precioCompra.value);
+  if (!isNaN(v)) { precioCompra.value = roundToTen(v); }
+  _calcFromCompra();
+});
+
+precioCompra.addEventListener('input', _calcFromCompra);
+
+// Inicializar
+_calcFromVenta();
+</script>
+{% endblock %}

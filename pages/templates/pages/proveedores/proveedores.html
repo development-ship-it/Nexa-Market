@@ -1,0 +1,61 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Proveedores — NexaMarket{% endblock %}
+{% block page_title %}Proveedores{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Buscar proveedor..." class="search-input" id="searchInput" />
+  </div>
+  <a href="{% url 'proveedor_crear' %}" class="btn-primary">+ Nuevo proveedor</a>
+</div>
+
+{% if proveedores %}
+<div class="config-list" id="listaItems">
+  {% for prov in proveedores %}
+  <div class="config-row" data-nombre="{{ prov.nombre|lower }}">
+    <div class="config-row-icon">🏭</div>
+    <div class="config-row-info">
+      <span class="config-row-name">{{ prov.nombre }}</span>
+      <span class="config-row-meta">
+        {% if prov.rut %}{{ prov.rut }}{% endif %}
+        {% if prov.rut and prov.correo %} · {% endif %}
+        {% if prov.correo %}{{ prov.correo }}{% endif %}
+        {% if prov.numero_contacto %} · {{ prov.numero_contacto }}{% endif %}
+      </span>
+    </div>
+    {% if prov.forma_pago %}
+    <div class="config-row-status">
+      <span class="status-badge neutral">{{ prov.forma_pago }}</span>
+    </div>
+    {% endif %}
+    <div class="config-row-actions">
+      <a href="{% url 'proveedor_editar' prov.id_proveedor %}" class="btn-action edit" title="Editar">✏️</a>
+      <a href="{% url 'proveedor_eliminar' prov.id_proveedor %}" class="btn-action delete" title="Desactivar">🗑️</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<p class="list-count">{{ proveedores.count }} proveedor{{ proveedores.count|pluralize:"es" }}</p>
+{% else %}
+<div class="empty-state" style="margin-top:60px;">
+  <span class="empty-icon">🏭</span>
+  <p>No hay proveedores registrados</p>
+  <a href="{% url 'proveedor_crear' %}" class="btn-primary" style="margin-top:16px;">+ Crear primer proveedor</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('searchInput').addEventListener('input', function() {
+  const term = this.value.toLowerCase();
+  document.querySelectorAll('.config-row').forEach(row => {
+    row.style.display = row.dataset.nombre.includes(term) ? '' : 'none';
+  });
+});
+</script>
+{% endblock %}

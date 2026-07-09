@@ -1,0 +1,26 @@
+:root {
+  --navy:  #0d1b2e;
+  --navy2: #0f2444;
+  --teal:  #00c8c8;
+  --teal2: #00a8b8;
+  --white: #ffffff;
+  --gray:  #a8c0d6;
+  --gray2: #1e3352;
+  --card:  #112038;
+  --green: #4ade80;
+  --blue:  #60a5fa;
+  --red:   #f87171;
+  --yellow: #fbbf24;
+
+  --sidebar-width: 240px;
+  --sidebar-collapsed: 68px;
+  --topbar-height: 60px;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-teal: 0 0 24px rgba(0,200,200,0.2);
+
+  --transition: 0.22s ease;
+}

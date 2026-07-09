@@ -1,0 +1,35 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Desactivar producto — NexaMarket{% endblock %}
+{% block page_title %}Desactivar producto{% endblock %}
+
+{% block content %}
+<div class="confirm-delete-page">
+  <div class="confirm-card">
+    <div class="confirm-icon">⚠️</div>
+    <h2 class="confirm-title">¿Desactivar este producto?</h2>
+    <p class="confirm-desc">
+      El producto <strong>"{{ articulo.nombre_articulo }}"</strong> quedará inactivo
+      y no aparecerá en el inventario ni en el punto de venta.
+      Puedes reactivarlo más adelante desde la base de datos.
+    </p>
+    <div class="confirm-product-preview">
+      {% if articulo.foto %}
+        <img src="{{ articulo.foto.url }}" alt="{{ articulo.nombre_articulo }}" class="confirm-thumb" />
+      {% else %}
+        <div class="confirm-thumb-placeholder">🏷️</div>
+      {% endif %}
+      <div>
+        <strong>{{ articulo.nombre_articulo }}</strong>
+        {% if articulo.categoria %}<br><span style="color:var(--gray);font-size:.82rem;">{{ articulo.categoria }}</span>{% endif %}
+      </div>
+    </div>
+    <form method="post" class="confirm-actions">
+      {% csrf_token %}
+      <a href="{% url 'productos' %}" class="btn-secondary">Cancelar</a>
+      <button type="submit" class="btn-danger">Sí, desactivar</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

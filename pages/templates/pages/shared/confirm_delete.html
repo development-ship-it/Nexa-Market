@@ -1,0 +1,22 @@
+{% extends 'pages/base.html' %}
+
+{% block title %}Eliminar {{ tipo }} — NexaMarket{% endblock %}
+{% block page_title %}Eliminar {{ tipo }}{% endblock %}
+
+{% block content %}
+<div class="confirm-delete-page">
+  <div class="confirm-card">
+    <div class="confirm-icon">⚠️</div>
+    <h2 class="confirm-title">¿Eliminar este {{ tipo|lower }}?</h2>
+    <p class="confirm-desc">
+      Se eliminará <strong>"{{ nombre }}"</strong> de forma permanente.
+      Esta acción no se puede deshacer.
+    </p>
+    <form method="post" class="confirm-actions">
+      {% csrf_token %}
+      <a href="{% url cancelar_url %}" class="btn-secondary">Cancelar</a>
+      <button type="submit" class="btn-danger">Sí, eliminar</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+@media (max-width: 1100px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+  .bottom-row { grid-template-columns: 1fr; }
+  .pos-layout { grid-template-columns: 1fr; height: auto; }
+  .pos-cart { height: 400px; }
+  .cv-summary-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: var(--sidebar-width) !important;
+  }
+  .sidebar.open { transform: translateX(0); }
+  .main-wrapper { margin-left: 0 !important; }
+  .sidebar-toggle { display: none; }
+  .sidebar-toggle-mobile { display: flex; }
+  .content-area { padding: 16px; }
+  .topbar { padding: 0 16px; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .inventory-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+}
+
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .login-card { padding: 28px 20px; }
+}

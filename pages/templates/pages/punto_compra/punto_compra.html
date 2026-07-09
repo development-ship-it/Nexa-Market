@@ -1,0 +1,127 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Punto de Compra — NexaMarket{% endblock %}
+{% block page_title %}Punto de Compra{% endblock %}
+
+{% block content %}
+<div class="pos-layout">
+
+  <!-- ── PANEL IZQUIERDO: productos ── -->
+  <div class="pos-products">
+    <div class="page-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Buscar artículo o escanear código..."
+               class="search-input" id="pcSearch" autocomplete="off" />
+      </div>
+    </div>
+
+    <!-- Filtro por categoría -->
+    <div class="filter-chips" id="catFilter" style="margin-bottom:10px;">
+      <span class="chip active" data-cat="">Todos</span>
+      {% for art in articulos %}
+        {% if art.categoria %}
+          <span class="chip" data-cat="{{ art.categoria.id_categoria }}">{{ art.categoria.categoria }}</span>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Filtro por proveedor -->
+    {% if proveedores_activos %}
+    <div class="filter-chips" id="provFilter" style="margin-bottom:14px;">
+      <span class="chip active" data-prov="">
+        <span style="opacity:.6;font-size:.75rem;">🚚</span> Todos
+      </span>
+      {% for prov in proveedores_activos %}
+      <div class="prov-chip-group">
+        <span class="chip" data-prov="{{ prov.id_proveedor }}">{{ prov.nombre }}</span>
+        <a href="{% url 'productos' %}?proveedor={{ prov.id_proveedor }}"
+           class="prov-edit-btn" title="Ver/editar artículos de {{ prov.nombre }}">✏️</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if articulos %}
+    <div class="pos-grid" id="pcGrid">
+      {% for art in articulos %}
+      <div class="pos-card pc-card"
+           data-id="{{ art.id_articulo }}"
+           data-nombre="{{ art.nombre_articulo }}"
+           data-precio="{{ art.precio_compra }}"
+           data-venta="{{ art.precio_venta }}"
+           data-cat="{{ art.categoria.id_categoria|default:'' }}"
+           data-prov="{{ art.proveedor.id_proveedor|default:'' }}"
+           onclick="pcAddToCart(this)">
+        <div class="pos-thumb">
+          {% if art.foto %}
+            <img src="{{ art.foto.url }}" alt="{{ art.nombre_articulo }}" style="width:100%;height:100%;object-fit:cover;" />
+          {% else %}
+            <span>🏷️</span>
+          {% endif %}
+        </div>
+        <div class="pos-info">
+          <div class="pos-name">{{ art.nombre_articulo }}</div>
+          <div class="pos-price" style="color:var(--blue);">${{ art.precio_compra|floatformat:0 }}</div>
+          <div style="font-size:.66rem;color:var(--gray);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;">
+            {% if art.categoria %}<span>{{ art.categoria.categoria }}</span>{% endif %}
+            {% if art.proveedor %}<span style="color:rgba(255,255,255,.35);">·</span><span>{{ art.proveedor.nombre }}</span>{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">📦</span>
+      <p>No hay productos activos</p>
+      <a href="{% url 'producto_crear' %}" class="btn-primary" style="margin-top:14px;">+ Agregar producto</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── PANEL DERECHO: carrito ── -->
+  <div class="pos-cart">
+    <div class="cart-header">
+      <span class="card-title">📥 Carrito de compra</span>
+      <button class="btn-clear" id="pcClearCart">Limpiar</button>
+    </div>
+
+    <div class="cart-items" id="pcCartItems">
+      <div id="pcEmptyCart" class="empty-state">
+        <span class="empty-icon">📥</span>
+        <p>Carrito vacío</p>
+        <span class="empty-sub">Haz clic en un producto para agregarlo</span>
+      </div>
+    </div>
+
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span>Total compra</span>
+        <span class="total-value" id="pcTotal" style="color:var(--blue);">$0</span>
+      </div>
+      <button class="btn-login" id="pcConfirmarBtn" disabled
+              style="background:linear-gradient(135deg,#2563eb,#1d4ed8);box-shadow:0 0 22px rgba(37,99,235,.3);">
+        ✓ Confirmar compra
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Formulario oculto para POST -->
+<form id="pcForm" method="post" style="display:none;">
+  {% csrf_token %}
+  <input type="hidden" name="cart_data" id="pcCartData" />
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const PC_CSRF     = '{{ csrf_token }}';
+  const PC_API_BASE = '{% url "api_precios_update" "PLACEHOLDER" %}'.replace('PLACEHOLDER/precios/', '');
+</script>
+<script src="{% static 'pages/js/compra.js' %}"></script>
+{% endblock %}

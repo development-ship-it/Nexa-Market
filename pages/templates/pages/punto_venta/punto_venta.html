@@ -1,0 +1,53 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Punto de Venta — NexaMarket{% endblock %}
+{% block page_title %}Punto de Venta{% endblock %}
+
+{% block content %}
+<div class="pos-layout">
+  <!-- PRODUCTS PANEL -->
+  <div class="pos-products">
+    <div class="page-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Buscar producto o escanear..." class="search-input" id="posSearch" />
+      </div>
+    </div>
+    <div class="filter-chips">
+      <span class="chip active">Todos</span>
+    </div>
+    <div class="pos-grid" id="posGrid">
+      <div class="empty-state full-width">
+        <span class="empty-icon">🛒</span>
+        <p>No hay productos disponibles</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CART PANEL -->
+  <div class="pos-cart">
+    <div class="cart-header">
+      <span class="card-title">🛒 Carrito</span>
+      <button class="btn-clear" id="clearCart">Limpiar</button>
+    </div>
+    <div class="cart-items" id="cartItems">
+      <div class="empty-state">
+        <span class="empty-icon">🛒</span>
+        <p>Carrito vacío</p>
+      </div>
+    </div>
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span>Total</span>
+        <span class="total-value" id="cartTotal">$0</span>
+      </div>
+      <button class="btn-login" id="checkoutBtn" disabled>Confirmar venta →</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'pages/js/pos.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Categorías — NexaMarket{% endblock %}
+{% block page_title %}Categorías{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Buscar categoría..." class="search-input" id="searchInput" />
+  </div>
+  <a href="{% url 'categoria_crear' %}" class="btn-primary">+ Nueva categoría</a>
+</div>
+
+{% if categorias %}
+<div class="config-list" id="listaItems">
+  {% for cat in categorias %}
+  <div class="config-row" data-nombre="{{ cat.categoria|lower }}">
+    <div class="config-row-icon">🗂️</div>
+    <div class="config-row-info">
+      <span class="config-row-name">{{ cat.categoria }}</span>
+      <span class="config-row-meta">Categoría de productos</span>
+    </div>
+    <div class="config-row-status">
+      {% if cat.estado %}
+        <span class="status-badge active">Activa</span>
+      {% else %}
+        <span class="status-badge inactive">Inactiva</span>
+      {% endif %}
+    </div>
+    <div class="config-row-actions">
+      <a href="{% url 'categoria_editar' cat.id_categoria %}" class="btn-action edit" title="Editar">✏️</a>
+      <a href="{% url 'categoria_eliminar' cat.id_categoria %}" class="btn-action delete" title="Eliminar">🗑️</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<p class="list-count">{{ categorias.count }} categoría{{ categorias.count|pluralize }}</p>
+{% else %}
+<div class="empty-state" style="margin-top:60px;">
+  <span class="empty-icon">🗂️</span>
+  <p>No hay categorías registradas</p>
+  <a href="{% url 'categoria_crear' %}" class="btn-primary" style="margin-top:16px;">+ Crear primera categoría</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('searchInput').addEventListener('input', function() {
+  const term = this.value.toLowerCase();
+  document.querySelectorAll('.config-row').forEach(row => {
+    row.style.display = row.dataset.nombre.includes(term) ? '' : 'none';
+  });
+});
+</script>
+{% endblock %}

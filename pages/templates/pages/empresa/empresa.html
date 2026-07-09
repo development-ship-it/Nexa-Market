@@ -1,0 +1,48 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Mi Empresa — NexaMarket{% endblock %}
+{% block page_title %}Mi Empresa{% endblock %}
+
+{% block content %}
+<div class="form-page" style="max-width:520px;">
+  <form method="post" class="product-form">
+    {% csrf_token %}
+    <div class="form-card">
+      <h3 class="form-card-title">🏢 Datos de la empresa</h3>
+
+      <div class="form-field required">
+        <label class="field-label">{{ form.nombre.label }}</label>
+        {{ form.nombre }}
+        {% if form.nombre.errors %}<span class="field-error">{{ form.nombre.errors.0 }}</span>{% endif %}
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">{{ form.rut.label }}</label>
+        {{ form.rut }}
+      </div>
+
+      <div class="form-field form-field-toggle">
+        <label class="field-label">{{ form.activo.label }}</label>
+        {{ form.activo }}
+      </div>
+    </div>
+
+    <div class="form-card" style="margin-top:0;">
+      <h3 class="form-card-title">ℹ️ Información del sistema</h3>
+      <div class="info-row">
+        <span class="info-label">ID empresa</span>
+        <span class="info-value">{{ empresa.id_empresa }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Estado sync</span>
+        <span class="status-badge {% if empresa.sync_status == 'synced' %}active{% else %}neutral{% endif %}">{{ empresa.sync_status }}</span>
+      </div>
+    </div>
+
+    <div class="form-submit-row">
+      <button type="submit" class="btn-primary">✓ Guardar cambios</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}{{ accion }} — NexaMarket{% endblock %}
+{% block page_title %}{{ accion }}{% endblock %}
+
+{% block content %}
+<div class="form-page" style="max-width:520px;">
+  <div class="form-header">
+    <a href="{% url 'categorias' %}" class="btn-back">← Volver a Categorías</a>
+  </div>
+  <form method="post" class="product-form">
+    {% csrf_token %}
+    <div class="form-card">
+      <h3 class="form-card-title">🗂️ Datos de la categoría</h3>
+      <div class="form-field required">
+        <label class="field-label">{{ form.categoria.label }}</label>
+        {{ form.categoria }}
+        {% if form.categoria.errors %}<span class="field-error">{{ form.categoria.errors.0 }}</span>{% endif %}
+      </div>
+      <div class="form-field form-field-toggle">
+        <label class="field-label">{{ form.estado.label }}</label>
+        {{ form.estado }}
+      </div>
+    </div>
+    <div class="form-submit-row">
+      <a href="{% url 'categorias' %}" class="btn-secondary">Cancelar</a>
+      <button type="submit" class="btn-primary">✓ Guardar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

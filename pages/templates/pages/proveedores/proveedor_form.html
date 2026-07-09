@@ -1,0 +1,56 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}{{ accion }} — NexaMarket{% endblock %}
+{% block page_title %}{{ accion }}{% endblock %}
+
+{% block content %}
+<div class="form-page" style="max-width:640px;">
+  <div class="form-header">
+    <a href="{% url 'proveedores' %}" class="btn-back">← Volver a Proveedores</a>
+  </div>
+  <form method="post" class="product-form">
+    {% csrf_token %}
+    <div class="form-card">
+      <h3 class="form-card-title">🏭 Datos del proveedor</h3>
+
+      <div class="form-field required">
+        <label class="field-label">{{ form.nombre.label }}</label>
+        {{ form.nombre }}
+        {% if form.nombre.errors %}<span class="field-error">{{ form.nombre.errors.0 }}</span>{% endif %}
+      </div>
+
+      <div class="prices-grid">
+        <div class="form-field">
+          <label class="field-label">{{ form.rut.label }}</label>
+          {{ form.rut }}
+        </div>
+        <div class="form-field">
+          <label class="field-label">{{ form.numero_contacto.label }}</label>
+          {{ form.numero_contacto }}
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">{{ form.correo.label }}</label>
+        {{ form.correo }}
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">{{ form.forma_pago.label }}</label>
+        {{ form.forma_pago }}
+      </div>
+
+      <div class="form-field form-field-toggle">
+        <label class="field-label">{{ form.activo.label }}</label>
+        {{ form.activo }}
+      </div>
+    </div>
+
+    <div class="form-submit-row">
+      <a href="{% url 'proveedores' %}" class="btn-secondary">Cancelar</a>
+      <button type="submit" class="btn-primary">✓ Guardar</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

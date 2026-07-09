@@ -1,0 +1,19 @@
+@import url('variables.css');
+@import url('nav.css');
+@import url('sidebar.css');
+@import url('components.css');
+@import url('login.css');
+@import url('dashboard.css');
+@import url('inventario.css');
+@import url('productos.css');
+@import url('responsive.css');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  overflow-x: hidden;
+  min-height: 100vh;
+}

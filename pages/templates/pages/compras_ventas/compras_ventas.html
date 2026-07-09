@@ -1,0 +1,109 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Compras / Ventas — NexaMarket{% endblock %}
+{% block page_title %}Compras / Ventas{% endblock %}
+
+{% block content %}
+
+<!-- Resumen financiero -->
+<div class="cv-summary-row">
+  <div class="summary-card">
+    <span class="summary-label">Ventas (total)</span>
+    <span class="summary-value" style="color:var(--teal);">${{ total_ventas|floatformat:0 }}</span>
+  </div>
+  <div class="summary-card">
+    <span class="summary-label">Compras (total)</span>
+    <span class="summary-value" style="color:#5b9bd5;">${{ total_compras|floatformat:0 }}</span>
+  </div>
+  <div class="summary-card">
+    <span class="summary-label">Balance</span>
+    <span class="summary-value"
+          style="color:{% if balance >= 0 %}var(--green){% else %}var(--red){% endif %};">
+      ${{ balance|floatformat:0 }}
+    </span>
+  </div>
+</div>
+
+<!-- Filtro tipo -->
+<div class="page-actions" style="margin-top:12px;">
+  <div class="filter-chips" id="cvFilter">
+    <span class="chip active" data-filter="all">Todas</span>
+    <span class="chip" data-filter="VENTA">Ventas</span>
+    <span class="chip" data-filter="COMPRA">Compras</span>
+  </div>
+</div>
+
+{% if facturas %}
+<div class="factura-list" id="facturaList">
+  {% for f in facturas %}
+  <div class="factura-card" data-tipo="{{ f.tipo }}">
+    <div class="factura-header">
+      <div class="factura-num">{{ f.numero_factura }}</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        {% if f.tipo == 'VENTA' %}
+          <span class="badge badge-teal">Venta</span>
+        {% else %}
+          <span class="badge badge-blue">Compra</span>
+        {% endif %}
+        <span class="factura-total">${{ f.total|floatformat:0 }}</span>
+      </div>
+    </div>
+    <div class="factura-meta">
+      <span>{{ f.fecha|date:"d/m/Y H:i" }}</span>
+      {% if f.usuario %}<span>· {{ f.usuario.nombre }}</span>{% endif %}
+      <span>· {{ f.lineas.count }} línea{{ f.lineas.count|pluralize }}</span>
+    </div>
+    <!-- Líneas de la factura -->
+    {% if f.lineas.all %}
+    <table class="factura-lines">
+      <thead>
+        <tr>
+          <th>Artículo</th>
+          <th style="text-align:right">Cant.</th>
+          <th style="text-align:right">Precio u.</th>
+          <th style="text-align:right">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for linea in f.lineas.all %}
+        <tr>
+          <td>{{ linea.articulo.nombre_articulo }}</td>
+          <td style="text-align:right">{{ linea.unidades }}</td>
+          <td style="text-align:right">
+            {% if f.tipo == 'COMPRA' %}${{ linea.precio_unitario_compra|floatformat:0 }}
+            {% else %}${{ linea.precio_unitario_venta|floatformat:0 }}{% endif %}
+          </td>
+          <td style="text-align:right;font-weight:600;">${{ linea.total|floatformat:0 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state" style="margin-top:60px;">
+  <span class="empty-icon">🧾</span>
+  <p>No hay facturas registradas</p>
+  <a href="{% url 'punto_compra' %}" class="btn-primary" style="margin-top:16px;">Registrar compra</a>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll('#cvFilter .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#cvFilter .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    const f = chip.dataset.filter;
+    document.querySelectorAll('#facturaList .factura-card').forEach(card => {
+      card.style.display = (f === 'all' || card.dataset.tipo === f) ? '' : 'none';
+    });
+  });
+});
+</script>
+{% endblock %}
