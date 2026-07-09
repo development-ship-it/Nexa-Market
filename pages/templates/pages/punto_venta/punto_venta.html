@@ -1,51 +1,132 @@
 {% extends 'pages/base.html' %}
-{% load static %}
+{% load static l10n %}
 
-{% block title %}Punto de Venta — NexaMarket{% endblock %}
+{% block title %}Punto de Venta — {{ empresa_actual.nombre|default:'NexaMarket' }}{% endblock %}
 {% block page_title %}Punto de Venta{% endblock %}
 
 {% block content %}
 <div class="pos-layout">
-  <!-- PRODUCTS PANEL -->
+
+  <!-- ── PANEL IZQUIERDO: productos ── -->
   <div class="pos-products">
     <div class="page-actions">
       <div class="search-box">
         <span class="search-icon">🔍</span>
-        <input type="text" placeholder="Buscar producto o escanear..." class="search-input" id="posSearch" />
+        <input type="text" placeholder="Buscar producto o escanear código..."
+               class="search-input" id="pvSearch" autocomplete="off" autofocus />
       </div>
     </div>
-    <div class="filter-chips">
-      <span class="chip active">Todos</span>
+
+    <!-- Filtro por categoría -->
+    {% if categorias %}
+    <div class="filter-chips" id="pvCatFilter" style="margin-bottom:14px;">
+      <span class="chip active" data-cat="">Todos</span>
+      {% for cat in categorias %}
+        <span class="chip" data-cat="{{ cat.id_categoria }}">{{ cat.categoria }}</span>
+      {% endfor %}
     </div>
-    <div class="pos-grid" id="posGrid">
-      <div class="empty-state full-width">
-        <span class="empty-icon">🛒</span>
-        <p>No hay productos disponibles</p>
+    {% endif %}
+
+    {% if articulos %}
+    <div class="pos-grid" id="pvGrid">
+      {% for art in articulos %}
+      <div class="pos-card pv-card"
+           data-id="{{ art.id_articulo }}"
+           data-nombre="{{ art.nombre_articulo }}"
+           data-codigo="{{ art.codigo_barra|default:'' }} {{ art.codigo_qr|default:'' }}"
+           data-precio="{{ art.precio_venta|unlocalize }}"
+           data-precio-mayor="{{ art.precio_venta_mayor|default:''|unlocalize }}"
+           data-cant-mayor="{% if art.es_mayorista %}{{ art.cantidad_minima_mayor|default:''|unlocalize }}{% endif %}"
+           data-stock="{{ art.stock_actual }}"
+           data-cat="{{ art.categoria.id_categoria|default:'' }}"
+           onclick="pvAddToCart(this)">
+        <div class="pos-thumb">
+          {% if art.imagen_url %}
+            <img src="{{ art.imagen_url }}" alt="{{ art.nombre_articulo }}" style="width:100%;height:100%;object-fit:cover;" />
+          {% else %}
+            <span>🏷️</span>
+          {% endif %}
+          <span class="pv-stock {% if art.stock_actual <= 0 %}zero{% elif art.stock_actual < art.stock_minimo|default_if_none:5 %}low{% else %}ok{% endif %}">
+            {{ art.stock_actual }}
+          </span>
+        </div>
+        <div class="pos-info">
+          <div class="pos-name">{{ art.nombre_articulo }}</div>
+          <div class="pos-price">${{ art.precio_venta|floatformat:0 }}</div>
+          <div style="font-size:.66rem;color:var(--gray);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;">
+            {% if art.categoria %}<span>{{ art.categoria.categoria }}</span>{% endif %}
+            {% if art.es_mayorista and art.precio_venta_mayor %}
+              <span class="pv-mayor-hint">Mayor: ${{ art.precio_venta_mayor|floatformat:0 }} · ≥{{ art.cantidad_minima_mayor|floatformat:0 }}u</span>
+            {% endif %}
+          </div>
+        </div>
       </div>
+      {% endfor %}
     </div>
+    {% else %}
+    <div class="empty-state">
+      <span class="empty-icon">🛒</span>
+      <p>No hay productos activos para vender</p>
+      <a href="{% url 'producto_crear' %}" class="btn-primary" style="margin-top:14px;">+ Agregar producto</a>
+    </div>
+    {% endif %}
   </div>
 
-  <!-- CART PANEL -->
+  <!-- ── PANEL DERECHO: carrito ── -->
   <div class="pos-cart">
     <div class="cart-header">
-      <span class="card-title">🛒 Carrito</span>
-      <button class="btn-clear" id="clearCart">Limpiar</button>
+      <span class="card-title">🛒 Carrito de venta</span>
+      <button class="btn-clear" id="pvClearCart">Limpiar</button>
     </div>
-    <div class="cart-items" id="cartItems">
+
+    <div class="cart-items" id="pvCartItems">
       <div class="empty-state">
         <span class="empty-icon">🛒</span>
         <p>Carrito vacío</p>
+        <span class="empty-sub">Haz clic en un producto para agregarlo</span>
       </div>
     </div>
+
     <div class="cart-footer">
       <div class="cart-total">
-        <span>Total</span>
-        <span class="total-value" id="cartTotal">$0</span>
+        <span>Total venta</span>
+        <span class="total-value" id="pvTotal">$0</span>
       </div>
-      <button class="btn-login" id="checkoutBtn" disabled>Confirmar venta →</button>
+      <button class="btn-login" id="pvConfirmarBtn" disabled>✓ Confirmar venta</button>
     </div>
   </div>
+
 </div>
+
+<!-- Formulario oculto para POST -->
+<form id="pvForm" method="post" style="display:none;">
+  {% csrf_token %}
+  <input type="hidden" name="cart_data" id="pvCartData" />
+</form>
+
+<style>
+  .pv-stock {
+    position: absolute;
+    top: 6px; right: 6px;
+    min-width: 24px; height: 20px;
+    padding: 0 6px;
+    border-radius: 20px;
+    font-size: .68rem; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+  }
+  .pv-stock.ok   { background: var(--green); }
+  .pv-stock.low  { background: var(--yellow); color: #4a3a00; }
+  .pv-stock.zero { background: var(--red); }
+  .pos-thumb { position: relative; }
+  .pv-mayor-hint { color: var(--teal); font-weight: 700; }
+  .pv-precio-mayor-badge {
+    font-size: .62rem; font-weight: 800;
+    background: rgba(37,99,235,.1); color: var(--teal);
+    border-radius: 20px; padding: 1px 8px;
+  }
+  .pv-stock-warn { font-size: .68rem; color: var(--red); font-weight: 700; }
+</style>
 {% endblock %}
 
 {% block extra_js %}

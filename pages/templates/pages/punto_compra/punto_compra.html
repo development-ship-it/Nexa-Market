@@ -1,5 +1,5 @@
 {% extends 'pages/base.html' %}
-{% load static %}
+{% load static l10n %}
 
 {% block title %}Punto de Compra — NexaMarket{% endblock %}
 {% block page_title %}Punto de Compra{% endblock %}
@@ -49,8 +49,8 @@
       <div class="pos-card pc-card"
            data-id="{{ art.id_articulo }}"
            data-nombre="{{ art.nombre_articulo }}"
-           data-precio="{{ art.precio_compra }}"
-           data-venta="{{ art.precio_venta }}"
+           data-precio="{{ art.precio_compra|unlocalize }}"
+           data-venta="{{ art.precio_venta|unlocalize }}"
            data-cat="{{ art.categoria.id_categoria|default:'' }}"
            data-prov="{{ art.proveedor.id_proveedor|default:'' }}"
            onclick="pcAddToCart(this)">
