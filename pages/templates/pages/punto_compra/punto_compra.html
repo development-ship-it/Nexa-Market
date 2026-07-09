@@ -55,8 +55,8 @@
            data-prov="{{ art.proveedor.id_proveedor|default:'' }}"
            onclick="pcAddToCart(this)">
         <div class="pos-thumb">
-          {% if art.foto %}
-            <img src="{{ art.foto.url }}" alt="{{ art.nombre_articulo }}" style="width:100%;height:100%;object-fit:cover;" />
+          {% if art.imagen_url %}
+            <img src="{{ art.imagen_url }}" alt="{{ art.nombre_articulo }}" style="width:100%;height:100%;object-fit:cover;" />
           {% else %}
             <span>🏷️</span>
           {% endif %}

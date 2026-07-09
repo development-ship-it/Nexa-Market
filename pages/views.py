@@ -24,7 +24,8 @@ def _round10(val):
     return int(math.floor(val / 10 + 0.5)) * 10
 
 
-def _get_empresa():
+def _get_empresa_demo():
+    """Empresa por defecto para el login web local (admin) sin usuario de la app."""
     empresa, _ = Empresa.objects.get_or_create(
         id_empresa='00000000-0000-0000-0000-000000000001',
         defaults={'nombre': 'Mi Negocio', 'rut': '00.000.000-0', 'activo': True}
@@ -32,8 +33,24 @@ def _get_empresa():
     return empresa
 
 
-def _get_usuario():
-    empresa = _get_empresa()
+def _get_usuario(request):
+    """
+    Usuario de la app (tabla usuario) vinculado al login web por correo.
+    Si el correo no existe en la tabla, se usa el usuario web por defecto
+    asociado a la empresa demo.
+    """
+    email = (getattr(request.user, 'email', '') or request.user.get_username() or '').strip()
+    if email:
+        usuario = (
+            Usuario.objects
+            .filter(correo__iexact=email, activo=True)
+            .select_related('empresa')
+            .first()
+        )
+        if usuario:
+            return usuario
+
+    empresa = _get_empresa_demo()
     usuario, _ = Usuario.objects.get_or_create(
         id_usuario='00000000-0000-0000-0000-000000000002',
         defaults={
@@ -45,6 +62,12 @@ def _get_usuario():
         }
     )
     return usuario
+
+
+def _get_empresa(request):
+    """Empresa del usuario logueado — cada usuario solo ve datos de su empresa."""
+    usuario = _get_usuario(request)
+    return usuario.empresa if usuario.empresa_id else _get_empresa_demo()
 
 
 # ── AUTH ──────────────────────────────────────────────────────────────────────
@@ -161,7 +184,7 @@ def dashboard(request):
 
 @login_required
 def productos(request):
-    empresa = _get_empresa()
+    empresa = _get_empresa(request)
     qs = (
         Articulo.objects
         .filter(empresa=empresa, activo=True)
@@ -186,7 +209,7 @@ def productos(request):
 
 @login_required
 def producto_crear(request):
-    empresa = _get_empresa()
+    empresa = _get_empresa(request)
     if request.method == 'POST':
         form = ArticuloForm(request.POST, request.FILES, empresa=empresa)
         if form.is_valid():
@@ -208,8 +231,8 @@ def producto_crear(request):
 
 @login_required
 def producto_editar(request, pk):
-    empresa = _get_empresa()
-    articulo = get_object_or_404(Articulo, id_articulo=pk)
+    empresa = _get_empresa(request)
+    articulo = get_object_or_404(Articulo, id_articulo=pk, empresa=empresa)
     if request.method == 'POST':
         form = ArticuloForm(request.POST, request.FILES, instance=articulo, empresa=empresa)
         if form.is_valid():
@@ -229,7 +252,8 @@ def producto_editar(request, pk):
 
 @login_required
 def producto_eliminar(request, pk):
-    articulo = get_object_or_404(Articulo, id_articulo=pk)
+    empresa = _get_empresa(request)
+    articulo = get_object_or_404(Articulo, id_articulo=pk, empresa=empresa)
     if request.method == 'POST':
         articulo.activo = False
         articulo.save()
@@ -242,14 +266,14 @@ def producto_eliminar(request, pk):
 
 @login_required
 def categorias(request):
-    empresa = _get_empresa()
+    empresa = _get_empresa(request)
     cats = Categoria.objects.filter(empresa=empresa).order_by('categoria')
     return render(request, 'pages/categorias/categorias.html', {'page': 'categorias', 'categorias': cats})
 
 
 @login_required
 def categoria_crear(request):
-    empresa = _get_empresa()
+    empresa = _get_empresa(request)
     if request.method == 'POST':
         form = CategoriaForm(request.POST)
         if form.is_valid():
@@ -266,7 +290,8 @@ def categoria_crear(request):
 
 @login_required
 def categoria_editar(request, pk):
-    cat = get_object_or_404(Categoria, id_categoria=pk)
+    empresa = _get_empresa(request)
+    cat = get_object_or_404(Categoria, id_categoria=pk, empresa=empresa)
     if request.method == 'POST':
         form = CategoriaForm(request.POST, instance=cat)
         if form.is_valid():
@@ -280,7 +305,8 @@ def categoria_editar(request, pk):
 
 @login_required
 def categoria_eliminar(request, pk):
-    cat = get_object_or_404(Categoria, id_categoria=pk)
+    empresa = _get_empresa(request)
+    cat = get_object_or_404(Categoria, id_categoria=pk, empresa=empresa)
     if request.method == 'POST':
         cat.delete()
         messages.success(request, 'Categoría eliminada.')
@@ -295,14 +321,14 @@ def categoria_eliminar(request, pk):
 
 @login_required
 def proveedores(request):
-    empresa = _get_empresa()
+    empresa = _get_empresa(request)
     provs = Proveedor.objects.filter(empresa=empresa, activo=True).order_by('nombre')
     return render(request, 'pages/proveedores/proveedores.html', {'page': 'proveedores', 'proveedores': provs})
 
 
 @login_required
 def proveedor_crear(request):
-    empresa = _get_empresa()
+    empresa = _get_empresa(request)
     if request.method == 'POST':
         form = ProveedorForm(request.POST)
         if form.is_valid():
@@ -319,7 +345,8 @@ def proveedor_crear(request):
 
 @login_required
 def proveedor_editar(request, pk):
-    prov = get_object_or_404(Proveedor, id_proveedor=pk)
+    empresa = _get_empresa(request)
+    prov = get_object_or_404(Proveedor, id_proveedor=pk, empresa=empresa)
     if request.method == 'POST':
         form = ProveedorForm(request.POST, instance=prov)
         if form.is_valid():
@@ -333,7 +360,8 @@ def proveedor_editar(request, pk):
 
 @login_required
 def proveedor_eliminar(request, pk):
-    prov = get_object_or_404(Proveedor, id_proveedor=pk)
+    empresa = _get_empresa(request)
+    prov = get_object_or_404(Proveedor, id_proveedor=pk, empresa=empresa)
     if request.method == 'POST':
         prov.activo = False
         prov.save()
@@ -349,7 +377,7 @@ def proveedor_eliminar(request, pk):
 
 @login_required
 def empresa(request):
-    emp = _get_empresa()
+    emp = _get_empresa(request)
     if request.method == 'POST':
         form = EmpresaForm(request.POST, instance=emp)
         if form.is_valid():
@@ -365,7 +393,7 @@ def empresa(request):
 
 @login_required
 def punto_compra(request):
-    empresa = _get_empresa()
+    empresa = _get_empresa(request)
 
     if request.method == 'POST':
         cart_json = request.POST.get('cart_data', '[]')
@@ -378,7 +406,7 @@ def punto_compra(request):
             messages.error(request, 'El carrito está vacío.')
             return redirect('punto_compra')
 
-        usuario = _get_usuario()
+        usuario = _get_usuario(request)
         total_compra = sum(float(i['precio']) * int(i['cantidad']) for i in cart)
 
         conteo = Factura.objects.filter(empresa=empresa, tipo='COMPRA').count()
@@ -395,7 +423,7 @@ def punto_compra(request):
         )
 
         for item in cart:
-            articulo = get_object_or_404(Articulo, id_articulo=item['id'])
+            articulo = get_object_or_404(Articulo, id_articulo=item['id'], empresa=empresa)
             cantidad = int(item['cantidad'])
             precio_u = float(item['precio'])
             precio_venta = float(item.get('precio_venta') or articulo.precio_venta)
@@ -458,7 +486,7 @@ def api_precios_update(request, pk):
         return JsonResponse({'ok': False}, status=405)
     try:
         data = json.loads(request.body)
-        articulo = get_object_or_404(Articulo, id_articulo=pk)
+        articulo = get_object_or_404(Articulo, id_articulo=pk, empresa=_get_empresa(request))
         pc = _round10(float(data.get('precio_compra', articulo.precio_compra)))
         pv = _round10(float(data.get('precio_venta', articulo.precio_venta)))
         articulo.precio_compra = pc
@@ -477,7 +505,7 @@ def inventario(request):
     from django.db.models import Sum, Q, Value, IntegerField
     from django.db.models.functions import Coalesce
 
-    empresa = _get_empresa()
+    empresa = _get_empresa(request)
     articulos = (
         Articulo.objects
         .filter(empresa=empresa, activo=True)
@@ -511,7 +539,7 @@ def punto_venta(request):
 @login_required
 def compras_ventas(request):
     from django.db.models import Sum, Q
-    empresa = _get_empresa()
+    empresa = _get_empresa(request)
     facturas = (
         Factura.objects
         .filter(empresa=empresa)
@@ -532,7 +560,7 @@ def compras_ventas(request):
 
 @login_required
 def movimientos(request):
-    empresa = _get_empresa()
+    empresa = _get_empresa(request)
     tipo_filtro = request.GET.get('tipo', '')
     qs = (
         Stock.objects

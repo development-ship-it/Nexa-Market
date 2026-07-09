@@ -33,6 +33,13 @@ class Articulo(models.Model):
     updated_at      = models.DateTimeField(null=True, blank=True)
     sync_status     = models.CharField(max_length=20, default='pending')
 
+    # Venta al por mayor (gestionada desde la app móvil)
+    es_mayorista          = models.BooleanField(default=False, null=True, blank=True)
+    precio_venta_mayor    = models.FloatField(null=True, blank=True)
+    cantidad_minima_mayor = models.FloatField(null=True, blank=True)
+    precio_compra_mayor   = models.FloatField(null=True, blank=True)
+    margen_ganancia_mayor = models.FloatField(null=True, blank=True)
+
     class Meta:
         db_table = 'articulo'
         verbose_name = 'Artículo'
@@ -40,3 +47,13 @@ class Articulo(models.Model):
 
     def __str__(self):
         return self.nombre_articulo
+
+    @property
+    def imagen_url(self):
+        """URL de la imagen del producto. Prioriza foto_url (Supabase Storage,
+        donde la app móvil guarda todas las fotos); cae a la foto local si existe."""
+        if self.foto_url:
+            return self.foto_url
+        if self.foto:
+            return self.foto.url
+        return ''

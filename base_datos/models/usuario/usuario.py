@@ -4,12 +4,12 @@ from django.db import models
 class Usuario(models.Model):
     """Usuario de la app móvil. tipo_usuario: 'administrador' | 'trabajador'."""
     id_usuario    = models.CharField(max_length=36, primary_key=True)
-    empresa       = models.ForeignKey('Empresa', on_delete=models.CASCADE)
+    empresa       = models.ForeignKey('Empresa', null=True, blank=True, on_delete=models.CASCADE)
     nombre        = models.CharField(max_length=255)
     correo        = models.EmailField()
     tipo_usuario  = models.CharField(max_length=20)
-    id_categorias = models.JSONField(default=list)   # categorías que puede ver el trabajador
-    vistas        = models.JSONField(default=list)    # pantallas habilitadas
+    id_categorias = models.JSONField(default=list, null=True, blank=True)   # categorías que puede ver el trabajador
+    vistas        = models.JSONField(default=list, null=True, blank=True)   # pantallas habilitadas
     seccion       = models.CharField(max_length=100, null=True, blank=True)
     foto_url      = models.URLField(null=True, blank=True)
     activo        = models.BooleanField(default=True)
@@ -17,6 +17,7 @@ class Usuario(models.Model):
     sync_status   = models.CharField(max_length=20, default='synced')
     device_id     = models.CharField(max_length=255, null=True, blank=True)
     es_super_admin = models.BooleanField(default=False)
+    auth_id       = models.UUIDField(null=True, blank=True)  # id del usuario en Supabase Auth (auth.users)
 
     class Meta:
         db_table = 'usuario'

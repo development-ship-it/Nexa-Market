@@ -28,10 +28,8 @@
   <div class="producto-card" data-nombre="{{ art.nombre_articulo|lower }}">
 
     <div class="producto-thumb">
-      {% if art.foto %}
-        <img src="{{ art.foto.url }}" alt="{{ art.nombre_articulo }}" />
-      {% elif art.foto_url %}
-        <img src="{{ art.foto_url }}" alt="{{ art.nombre_articulo }}" />
+      {% if art.imagen_url %}
+        <img src="{{ art.imagen_url }}" alt="{{ art.nombre_articulo }}" />
       {% else %}
         <span class="thumb-placeholder">🏷️</span>
       {% endif %}

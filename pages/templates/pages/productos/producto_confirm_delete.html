@@ -15,8 +15,8 @@
       Puedes reactivarlo más adelante desde la base de datos.
     </p>
     <div class="confirm-product-preview">
-      {% if articulo.foto %}
-        <img src="{{ articulo.foto.url }}" alt="{{ articulo.nombre_articulo }}" class="confirm-thumb" />
+      {% if articulo.imagen_url %}
+        <img src="{{ articulo.imagen_url }}" alt="{{ articulo.nombre_articulo }}" class="confirm-thumb" />
       {% else %}
         <div class="confirm-thumb-placeholder">🏷️</div>
       {% endif %}
