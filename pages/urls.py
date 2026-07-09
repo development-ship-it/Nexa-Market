@@ -7,10 +7,9 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
 
-    # Login con Google (Supabase Auth)
+    # Login con Google (OAuth 2.0)
     path('auth/google/', views.google_login, name='google_login'),
     path('auth/callback/', views.google_callback, name='google_callback'),
-    path('auth/supabase/', views.supabase_session, name='supabase_session'),
 
     path('dashboard/', views.dashboard, name='dashboard'),
 

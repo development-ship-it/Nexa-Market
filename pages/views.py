@@ -1,7 +1,8 @@
 import uuid
 import json
 import math
-from urllib.parse import quote
+import secrets
+from urllib.parse import urlencode
 
 import requests
 from django.conf import settings
@@ -69,71 +70,84 @@ def login_view(request):
     return render(request, 'pages/auth/login.html')
 
 
-# ── AUTH CON GOOGLE (Supabase Auth) ──────────────────────────────────────────
+# ── AUTH CON GOOGLE (OAuth 2.0 directo) ──────────────────────────────────────
 
 def google_login(request):
-    """Redirige al flujo OAuth de Google gestionado por Supabase Auth."""
-    if not settings.SUPABASE_URL or not settings.SUPABASE_ANON_KEY:
-        messages.error(request, 'El login con Google no está configurado (faltan SUPABASE_URL / SUPABASE_ANON_KEY en .env).')
+    """Paso 1: redirige a Google para autorizar (flujo de código OAuth 2.0)."""
+    if not settings.GOOGLE_CLIENT_ID or not settings.GOOGLE_CLIENT_SECRET:
+        messages.error(request, 'El login con Google no está configurado (faltan GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET en .env).')
         return redirect('login')
-    callback = request.build_absolute_uri('/auth/callback/')
-    return redirect(
-        f"{settings.SUPABASE_URL}/auth/v1/authorize"
-        f"?provider=google&redirect_to={quote(callback, safe='')}"
-    )
+
+    state = secrets.token_urlsafe(32)
+    request.session['google_oauth_state'] = state
+    params = urlencode({
+        'client_id': settings.GOOGLE_CLIENT_ID,
+        'redirect_uri': request.build_absolute_uri('/auth/callback/'),
+        'response_type': 'code',
+        'scope': 'openid email profile',
+        'state': state,
+        'prompt': 'select_account',
+    })
+    return redirect(f'https://accounts.google.com/o/oauth2/v2/auth?{params}')
 
 
 def google_callback(request):
-    """
-    Supabase redirige aquí con los tokens en el fragmento de la URL
-    (#access_token=...). El fragmento no llega al servidor, así que esta
-    página lo lee con JS y lo envía a supabase_session para abrir la sesión.
-    """
-    return render(request, 'pages/auth/google_callback.html')
+    """Paso 2: Google devuelve ?code=... — se canjea por el perfil y se abre la sesión."""
+    if request.GET.get('error'):
+        messages.error(request, f"Google canceló el inicio de sesión ({request.GET['error']}).")
+        return redirect('login')
 
-
-def supabase_session(request):
-    """Valida el access_token contra Supabase y abre la sesión Django."""
-    if request.method != 'POST':
-        return JsonResponse({'ok': False}, status=405)
-    try:
-        token = json.loads(request.body).get('access_token', '')
-    except json.JSONDecodeError:
-        token = ''
-    if not token:
-        return JsonResponse({'ok': False, 'error': 'Falta el access_token.'}, status=400)
+    code = request.GET.get('code', '')
+    state = request.GET.get('state', '')
+    if not code or not state or state != request.session.pop('google_oauth_state', None):
+        messages.error(request, 'Respuesta de Google inválida. Intenta iniciar sesión de nuevo.')
+        return redirect('login')
 
     try:
-        resp = requests.get(
-            f"{settings.SUPABASE_URL}/auth/v1/user",
-            headers={
-                'apikey': settings.SUPABASE_ANON_KEY,
-                'Authorization': f'Bearer {token}',
+        token_resp = requests.post(
+            'https://oauth2.googleapis.com/token',
+            data={
+                'code': code,
+                'client_id': settings.GOOGLE_CLIENT_ID,
+                'client_secret': settings.GOOGLE_CLIENT_SECRET,
+                'redirect_uri': request.build_absolute_uri('/auth/callback/'),
+                'grant_type': 'authorization_code',
             },
             timeout=10,
         )
+        if token_resp.status_code != 200:
+            messages.error(request, 'Google rechazó el código de autorización. Intenta de nuevo.')
+            return redirect('login')
+
+        user_resp = requests.get(
+            'https://openidconnect.googleapis.com/v1/userinfo',
+            headers={'Authorization': f"Bearer {token_resp.json().get('access_token', '')}"},
+            timeout=10,
+        )
     except requests.RequestException:
-        return JsonResponse({'ok': False, 'error': 'No se pudo contactar a Supabase.'}, status=502)
+        messages.error(request, 'No se pudo contactar a Google. Revisa tu conexión.')
+        return redirect('login')
 
-    if resp.status_code != 200:
-        return JsonResponse({'ok': False, 'error': 'Token inválido o expirado.'}, status=401)
+    if user_resp.status_code != 200:
+        messages.error(request, 'No se pudo obtener tu perfil de Google.')
+        return redirect('login')
 
-    info = resp.json()
+    info = user_resp.json()
     email = info.get('email')
     if not email:
-        return JsonResponse({'ok': False, 'error': 'La cuenta de Google no entregó un email.'}, status=400)
+        messages.error(request, 'La cuenta de Google no entregó un email.')
+        return redirect('login')
 
-    meta = info.get('user_metadata') or {}
     user, created = User.objects.get_or_create(
         username=email,
-        defaults={'email': email, 'first_name': (meta.get('full_name') or '')[:150]},
+        defaults={'email': email, 'first_name': (info.get('name') or '')[:150]},
     )
     if created:
         user.set_unusable_password()
         user.save()
 
     login(request, user)
-    return JsonResponse({'ok': True, 'next': settings.LOGIN_REDIRECT_URL})
+    return redirect('dashboard')
 
 
 # ── DASHBOARD ─────────────────────────────────────────────────────────────────
