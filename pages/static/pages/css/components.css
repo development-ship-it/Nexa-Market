@@ -1,7 +1,7 @@
 /* CARDS */
 .card {
   background: var(--card);
-  border: 1px solid rgba(255,255,255,.07);
+  border: 1px solid var(--gray2);
   border-radius: var(--radius);
   padding: 22px;
 }
@@ -23,11 +23,11 @@
 /* TABLE CARD */
 .table-card {
   background: var(--card);
-  border: 1px solid rgba(255,255,255,.07);
+  border: 1px solid var(--gray2);
   border-radius: var(--radius);
   overflow: hidden;
 }
-.table-card .card-header { padding: 18px 22px; margin: 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+.table-card .card-header { padding: 18px 22px; margin: 0; border-bottom: 1px solid var(--gray2); }
 .table-card.full-width { width: 100%; }
 
 /* EMPTY STATE */
@@ -63,21 +63,21 @@
   font-weight: 700; font-size: .92rem;
   padding: 11px 24px; border-radius: 50px;
   border: none; cursor: pointer;
-  box-shadow: 0 0 22px rgba(0,200,200,.3);
+  box-shadow: 0 0 22px rgba(37,99,235,.3);
   transition: transform var(--transition), box-shadow var(--transition);
   text-decoration: none; display: inline-block;
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(0,200,200,.45); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(37,99,235,.45); }
 .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
 .btn-secondary {
   background: transparent; color: var(--white);
   font-weight: 600; font-size: .88rem;
   padding: 10px 22px; border-radius: 50px;
-  border: 1.5px solid rgba(255,255,255,.2);
+  border: 1.5px solid var(--gray2);
   cursor: pointer; transition: var(--transition);
 }
-.btn-secondary:hover { border-color: var(--teal); background: rgba(0,200,200,.06); }
+.btn-secondary:hover { border-color: var(--teal); background: rgba(37,99,235,.06); }
 
 .btn-clear {
   background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.2);
@@ -89,7 +89,7 @@
 /* DATA TABLE */
 .table-wrapper {
   background: var(--card);
-  border: 1px solid rgba(255,255,255,.07);
+  border: 1px solid var(--gray2);
   border-radius: var(--radius);
   overflow-x: auto;
 }
@@ -106,12 +106,12 @@
   color: var(--gray);
   text-transform: uppercase;
   letter-spacing: .04em;
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid var(--gray2);
   white-space: nowrap;
 }
-.data-table tbody tr { border-bottom: 1px solid rgba(255,255,255,.04); transition: background var(--transition); }
+.data-table tbody tr { border-bottom: 1px solid var(--gray2); transition: background var(--transition); }
 .data-table tbody tr:last-child { border-bottom: none; }
-.data-table tbody tr:hover { background: rgba(255,255,255,.03); }
+.data-table tbody tr:hover { background: var(--navy); }
 .data-table tbody td { padding: 12px 16px; }
 
 /* BADGES */
@@ -123,7 +123,7 @@
 }
 .badge-green { background: rgba(74,222,128,.1);  border: 1px solid rgba(74,222,128,.25); color: var(--green); }
 .badge-red   { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3); color: var(--red); }
-.badge-teal  { background: rgba(0,200,200,.1);   border: 1px solid rgba(0,200,200,.25);  color: var(--teal); }
+.badge-teal  { background: rgba(37,99,235,.1);   border: 1px solid rgba(37,99,235,.25);  color: var(--teal); }
 .badge-blue  { background: rgba(96,165,250,.08); border: 1px solid rgba(96,165,250,.2);  color: var(--blue); }
 
 /* FACTURA CARDS */
@@ -131,14 +131,14 @@
 
 .factura-card {
   background: var(--card);
-  border: 1px solid rgba(255,255,255,.07);
+  border: 1px solid var(--gray2);
   border-radius: var(--radius);
   overflow: hidden;
 }
 .factura-header {
   display: flex; justify-content: space-between; align-items: center;
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(255,255,255,.05);
+  border-bottom: 1px solid var(--gray2);
 }
 .factura-num { font-weight: 800; font-size: .95rem; color: var(--white); }
 .factura-total { font-size: 1.05rem; font-weight: 800; color: var(--teal); }
@@ -146,7 +146,7 @@
   display: flex; gap: 8px; align-items: center;
   padding: 8px 18px;
   font-size: .76rem; color: var(--gray);
-  border-bottom: 1px solid rgba(255,255,255,.04);
+  border-bottom: 1px solid var(--gray2);
 }
 
 .factura-lines {
@@ -158,10 +158,10 @@
   text-align: left;
   font-size: .7rem; font-weight: 700;
   color: var(--gray);
-  background: rgba(255,255,255,.02);
+  background: var(--navy);
 }
 .factura-lines tbody td { padding: 8px 18px; }
-.factura-lines tbody tr { border-top: 1px solid rgba(255,255,255,.03); }
+.factura-lines tbody tr { border-top: 1px solid var(--gray2); }
 
 /* CHIP as anchor */
 a.chip { text-decoration: none; }

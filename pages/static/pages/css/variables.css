@@ -1,16 +1,22 @@
 :root {
-  --navy:  #0d1b2e;
-  --navy2: #0f2444;
-  --teal:  #00c8c8;
-  --teal2: #00a8b8;
-  --white: #ffffff;
-  --gray:  #a8c0d6;
-  --gray2: #1e3352;
-  --card:  #112038;
-  --green: #4ade80;
-  --blue:  #60a5fa;
-  --red:   #f87171;
-  --yellow: #fbbf24;
+  /* ── Tema claro (por defecto) ─────────────────────────────
+     Los nombres son heredados del tema oscuro original:
+       --navy  = fondo general      --navy2 = sidebar/topbar/superficies
+       --teal  = color primario     --white = texto principal
+     Se pueden sobreescribir por empresa desde Personalización
+     (ConfiguracionWeb), inyectados en base.html. */
+  --navy:  #f4f7fb;
+  --navy2: #ffffff;
+  --teal:  #2563eb;
+  --teal2: #1d4ed8;
+  --white: #0f1f33;
+  --gray:  #5c6b80;
+  --gray2: #e3eaf3;
+  --card:  #ffffff;
+  --green: #16a34a;
+  --blue:  #2563eb;
+  --red:   #dc2626;
+  --yellow: #f5c211;
 
   --sidebar-width: 240px;
   --sidebar-collapsed: 68px;
@@ -19,8 +25,8 @@
   --radius-sm: 8px;
   --radius-lg: 20px;
 
-  --shadow: 0 4px 24px rgba(0,0,0,0.4);
-  --shadow-teal: 0 0 24px rgba(0,200,200,0.2);
+  --shadow: 0 6px 24px rgba(15, 31, 51, 0.08);
+  --shadow-teal: 0 4px 18px rgba(37, 99, 235, 0.18);
 
   --transition: 0.22s ease;
 }

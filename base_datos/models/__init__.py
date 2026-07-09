@@ -20,15 +20,16 @@ Para añadir un sub-modelo: crear el archivo dentro de la carpeta de la
 entidad, exportarlo en el __init__.py de esa carpeta y añadirlo aquí.
 """
 
-from .plan          import Plan
-from .empresa       import Empresa
-from .usuario       import Usuario
-from .categoria     import Categoria
-from .proveedor     import Proveedor
-from .articulo      import Articulo
-from .factura       import Factura
-from .stock         import Stock
-from .configuracion import Configuracion
+from .plan              import Plan
+from .empresa           import Empresa
+from .usuario           import Usuario
+from .categoria         import Categoria
+from .proveedor         import Proveedor
+from .articulo          import Articulo
+from .factura           import Factura
+from .stock             import Stock
+from .configuracion     import Configuracion
+from .configuracion_web import ConfiguracionWeb
 
 __all__ = [
     'Plan',
@@ -40,4 +41,5 @@ __all__ = [
     'Factura',
     'Stock',
     'Configuracion',
+    'ConfiguracionWeb',
 ]

@@ -2,6 +2,7 @@ import uuid
 import json
 import math
 import secrets
+from datetime import timedelta
 from urllib.parse import urlencode
 
 import requests
@@ -14,8 +15,8 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from base_datos.models import Empresa, Articulo, Categoria, Proveedor, Usuario, Factura, Stock
-from .forms import ArticuloForm, CategoriaForm, ProveedorForm, EmpresaForm
+from base_datos.models import Empresa, Articulo, Categoria, Proveedor, Usuario, Factura, Stock, ConfiguracionWeb
+from .forms import ArticuloForm, CategoriaForm, ProveedorForm, EmpresaForm, ConfiguracionWebForm
 
 
 def _round10(val):
@@ -177,7 +178,81 @@ def google_callback(request):
 
 @login_required
 def dashboard(request):
-    return render(request, 'pages/dashboard/dashboard.html', {'page': 'dashboard'})
+    from django.db.models import Sum, Q, Value, IntegerField
+    from django.db.models.functions import Coalesce, ExtractHour
+
+    empresa = _get_empresa(request)
+    hoy = timezone.localdate()
+
+    facturas = Factura.objects.filter(empresa=empresa)
+    ventas_hoy = facturas.filter(tipo='VENTA', fecha__date=hoy).aggregate(t=Sum('total'))['t'] or 0
+    ventas_ayer = facturas.filter(tipo='VENTA', fecha__date=hoy - timedelta(days=1)).aggregate(t=Sum('total'))['t'] or 0
+    variacion = round((ventas_hoy - ventas_ayer) / ventas_ayer * 100) if ventas_ayer else None
+    facturas_hoy = facturas.filter(fecha__date=hoy).count()
+
+    total_ventas = facturas.filter(tipo='VENTA').aggregate(t=Sum('total'))['t'] or 0
+    total_compras = facturas.filter(tipo='COMPRA').aggregate(t=Sum('total'))['t'] or 0
+
+    # Stock actual por artículo (entradas - salidas del libro de movimientos)
+    articulos = (
+        Articulo.objects
+        .filter(empresa=empresa, activo=True)
+        .annotate(
+            entradas=Coalesce(
+                Sum('movimientos__unidades', filter=Q(movimientos__tipo='ENTRADA')),
+                Value(0), output_field=IntegerField()
+            ),
+            salidas=Coalesce(
+                Sum('movimientos__unidades', filter=Q(movimientos__tipo='SALIDA')),
+                Value(0), output_field=IntegerField()
+            ),
+        )
+    )
+    stock_total = 0
+    stock_bajo = []
+    for art in articulos:
+        art.stock_actual = art.entradas - art.salidas
+        stock_total += max(art.stock_actual, 0)
+        if art.stock_actual < 5:
+            stock_bajo.append(art)
+    stock_bajo.sort(key=lambda a: a.stock_actual)
+    stock_bajo_count = len(stock_bajo)
+    stock_bajo = stock_bajo[:5]
+
+    # Ventas por hora (hoy), 8h a 20h
+    por_hora = {
+        r['h']: r['t'] or 0
+        for r in (
+            facturas.filter(tipo='VENTA', fecha__date=hoy)
+            .annotate(h=ExtractHour('fecha'))
+            .values('h')
+            .annotate(t=Sum('total'))
+        )
+    }
+    max_hora = max(por_hora.values(), default=0)
+    ventas_por_hora = [
+        {
+            'label': f'{h}h',
+            'total': por_hora.get(h, 0),
+            'pct': round(por_hora.get(h, 0) / max_hora * 100) if max_hora else 0,
+        }
+        for h in range(8, 21)
+    ]
+
+    return render(request, 'pages/dashboard/dashboard.html', {
+        'page': 'dashboard',
+        'ventas_hoy': ventas_hoy,
+        'variacion': variacion,
+        'stock_total': stock_total,
+        'facturas_hoy': facturas_hoy,
+        'stock_bajo': stock_bajo,
+        'stock_bajo_count': stock_bajo_count,
+        'ventas_por_hora': ventas_por_hora,
+        'total_ventas': total_ventas,
+        'total_compras': total_compras,
+        'balance': total_ventas - total_compras,
+        'ultimas_facturas': facturas.order_by('-fecha')[:4],
+    })
 
 
 # ── PRODUCTOS ─────────────────────────────────────────────────────────────────
@@ -387,6 +462,30 @@ def empresa(request):
     else:
         form = EmpresaForm(instance=emp)
     return render(request, 'pages/empresa/empresa.html', {'form': form, 'page': 'empresa', 'empresa': emp})
+
+
+# ── PERSONALIZACIÓN ───────────────────────────────────────────────────────────
+
+@login_required
+def personalizacion(request):
+    empresa = _get_empresa(request)
+    config, _ = ConfiguracionWeb.objects.get_or_create(empresa=empresa)
+    if request.method == 'POST':
+        if 'restaurar' in request.POST:
+            config.delete()
+            ConfiguracionWeb.objects.create(empresa=empresa)
+            messages.success(request, 'Colores restaurados a los valores por defecto.')
+            return redirect('personalizacion')
+        form = ConfiguracionWebForm(request.POST, instance=config)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Personalización guardada.')
+            return redirect('personalizacion')
+    else:
+        form = ConfiguracionWebForm(instance=config)
+    return render(request, 'pages/personalizacion/personalizacion.html', {
+        'form': form, 'page': 'personalizacion',
+    })
 
 
 # ── PUNTO DE COMPRA ───────────────────────────────────────────────────────────

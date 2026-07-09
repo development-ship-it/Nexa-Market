@@ -1,5 +1,31 @@
 from django import forms
-from base_datos.models import Articulo, Proveedor, Categoria, Empresa
+from base_datos.models import Articulo, Proveedor, Categoria, Empresa, ConfiguracionWeb
+
+
+class ConfiguracionWebForm(forms.ModelForm):
+    class Meta:
+        model = ConfiguracionWeb
+        fields = ['color_primario', 'color_acento', 'color_fondo', 'color_sidebar', 'color_texto', 'logo_url']
+        widgets = {
+            'color_primario': forms.TextInput(attrs={'type': 'color'}),
+            'color_acento':   forms.TextInput(attrs={'type': 'color'}),
+            'color_fondo':    forms.TextInput(attrs={'type': 'color'}),
+            'color_sidebar':  forms.TextInput(attrs={'type': 'color'}),
+            'color_texto':    forms.TextInput(attrs={'type': 'color'}),
+            'logo_url':       forms.URLInput(attrs={'placeholder': 'https://... (opcional)'}),
+        }
+        labels = {
+            'color_primario': 'Color primario',
+            'color_acento':   'Color de acento',
+            'color_fondo':    'Color de fondo',
+            'color_sidebar':  'Color del menú y tarjetas',
+            'color_texto':    'Color del texto',
+            'logo_url':       'URL del logo',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['logo_url'].required = False
 
 
 class ArticuloForm(forms.ModelForm):

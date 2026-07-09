@@ -1,7 +1,7 @@
 {% extends 'pages/base.html' %}
 {% load static %}
 
-{% block title %}Dashboard — NexaMarket{% endblock %}
+{% block title %}Dashboard — {{ empresa_actual.nombre|default:'NexaMarket' }}{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
@@ -10,36 +10,40 @@
   <!-- STATS ROW -->
   <div class="stats-row">
     <div class="stat-card">
-      <div class="stat-icon">💰</div>
+      <div class="stat-icon"><span class="svg-icon icon-punto-venta"></span></div>
       <div class="stat-body">
         <span class="stat-label">Ventas hoy</span>
-        <span class="stat-value">$0</span>
+        <span class="stat-value">${{ ventas_hoy|floatformat:0 }}</span>
       </div>
-      <span class="stat-badge positive">+0%</span>
+      {% if variacion is not None %}
+        <span class="stat-badge {% if variacion >= 0 %}positive{% else %}negative{% endif %}">{% if variacion >= 0 %}+{% endif %}{{ variacion }}%</span>
+      {% else %}
+        <span class="stat-badge neutral">Hoy</span>
+      {% endif %}
     </div>
     <div class="stat-card">
-      <div class="stat-icon">📦</div>
+      <div class="stat-icon"><span class="svg-icon icon-articulos"></span></div>
       <div class="stat-body">
         <span class="stat-label">Artículos en stock</span>
-        <span class="stat-value">0</span>
+        <span class="stat-value">{{ stock_total }}</span>
       </div>
       <span class="stat-badge neutral">Total</span>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">🧾</div>
+      <div class="stat-icon"><span class="svg-icon icon-compras-ventas"></span></div>
       <div class="stat-body">
         <span class="stat-label">Facturas hoy</span>
-        <span class="stat-value">0</span>
+        <span class="stat-value">{{ facturas_hoy }}</span>
       </div>
       <span class="stat-badge neutral">Hoy</span>
     </div>
     <div class="stat-card">
-      <div class="stat-icon">⚠️</div>
+      <div class="stat-icon"><span class="svg-icon icon-inventario"></span></div>
       <div class="stat-body">
-        <span class="stat-label">Sin stock</span>
-        <span class="stat-value">0</span>
+        <span class="stat-label">Stock bajo</span>
+        <span class="stat-value">{{ stock_bajo_count }}</span>
       </div>
-      <span class="stat-badge negative">Urgente</span>
+      <span class="stat-badge {% if stock_bajo_count %}negative{% else %}positive{% endif %}">{% if stock_bajo_count %}Urgente{% else %}OK{% endif %}</span>
     </div>
   </div>
 
@@ -47,46 +51,37 @@
   <div class="charts-row">
     <div class="chart-card wide">
       <div class="card-header">
-        <span class="card-title">📈 Ventas por hora</span>
+        <span class="card-title">Ventas por hora</span>
         <div class="tab-group">
           <button class="tab active" data-period="hoy">Hoy</button>
-          <button class="tab" data-period="semana">Semana</button>
-          <button class="tab" data-period="mes">Mes</button>
         </div>
       </div>
       <div class="chart-area" id="salesChart">
         <div class="chart-bars">
-          <div class="chart-bar-col" style="--h:45%"><span class="bar-label">8h</span></div>
-          <div class="chart-bar-col" style="--h:70%"><span class="bar-label">9h</span></div>
-          <div class="chart-bar-col" style="--h:55%"><span class="bar-label">10h</span></div>
-          <div class="chart-bar-col" style="--h:90%"><span class="bar-label">11h</span></div>
-          <div class="chart-bar-col" style="--h:65%"><span class="bar-label">12h</span></div>
-          <div class="chart-bar-col" style="--h:100%"><span class="bar-label">13h</span></div>
-          <div class="chart-bar-col" style="--h:80%"><span class="bar-label">14h</span></div>
-          <div class="chart-bar-col" style="--h:60%"><span class="bar-label">15h</span></div>
-          <div class="chart-bar-col" style="--h:75%"><span class="bar-label">16h</span></div>
-          <div class="chart-bar-col" style="--h:50%"><span class="bar-label">17h</span></div>
+          {% for v in ventas_por_hora %}
+          <div class="chart-bar-col" style="--h:{{ v.pct }}%" title="${{ v.total|floatformat:0 }}"><span class="bar-label">{{ v.label }}</span></div>
+          {% endfor %}
         </div>
       </div>
     </div>
 
     <div class="chart-card">
       <div class="card-header">
-        <span class="card-title">⚖️ Ingresos vs Egresos</span>
+        <span class="card-title">Ingresos vs Egresos</span>
       </div>
       <div class="balance-box">
         <div class="balance-item income">
           <span class="balance-label">Ingresos (Ventas)</span>
-          <span class="balance-value teal">$0</span>
+          <span class="balance-value green">${{ total_ventas|floatformat:0 }}</span>
         </div>
         <div class="balance-divider"></div>
         <div class="balance-item expense">
           <span class="balance-label">Egresos (Compras)</span>
-          <span class="balance-value blue">$0</span>
+          <span class="balance-value red">${{ total_compras|floatformat:0 }}</span>
         </div>
         <div class="balance-total">
           <span>Balance</span>
-          <span class="balance-value green">$0</span>
+          <span class="balance-value teal">${{ balance|floatformat:0 }}</span>
         </div>
       </div>
     </div>
@@ -96,24 +91,54 @@
   <div class="bottom-row">
     <div class="table-card">
       <div class="card-header">
-        <span class="card-title">🕒 Últimas facturas</span>
+        <span class="card-title">Últimas facturas</span>
         <a href="{% url 'compras_ventas' %}" class="card-link">Ver todas →</a>
       </div>
-      <div class="empty-state">
-        <span class="empty-icon">🧾</span>
-        <p>No hay facturas aún</p>
-      </div>
+      {% if ultimas_facturas %}
+        <div class="mini-list">
+          {% for f in ultimas_facturas %}
+          <div class="mini-item">
+            <div class="mini-icon blue"><span class="svg-icon icon-compras-ventas"></span></div>
+            <div class="mini-body">
+              <span class="mini-title">{{ f.numero_factura }}</span>
+              <span class="mini-sub">{{ f.fecha|date:"d M, H:i" }} · {{ f.get_tipo_display }}</span>
+            </div>
+            <span class="mini-value">${{ f.total|floatformat:0 }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <span class="empty-icon">🧾</span>
+          <p>No hay facturas aún</p>
+        </div>
+      {% endif %}
     </div>
 
     <div class="table-card">
       <div class="card-header">
-        <span class="card-title">⚠️ Productos sin stock</span>
+        <span class="card-title">Productos con stock bajo</span>
         <a href="{% url 'inventario' %}" class="card-link">Ver inventario →</a>
       </div>
-      <div class="empty-state">
-        <span class="empty-icon">📦</span>
-        <p>Todo el stock está OK</p>
-      </div>
+      {% if stock_bajo %}
+        <div class="mini-list">
+          {% for art in stock_bajo %}
+          <div class="mini-item">
+            <div class="mini-icon red">!</div>
+            <div class="mini-body">
+              <span class="mini-title">{{ art.nombre_articulo }}</span>
+              <span class="mini-sub">{{ art.categoria|default:'Sin categoría' }}</span>
+            </div>
+            <span class="mini-badge">{{ art.stock_actual }} uds</span>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <span class="empty-icon">📦</span>
+          <p>Todo el stock está OK</p>
+        </div>
+      {% endif %}
     </div>
   </div>
 

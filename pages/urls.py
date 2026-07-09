@@ -34,6 +34,9 @@ urlpatterns = [
     # Empresa
     path('empresa/', views.empresa, name='empresa'),
 
+    # Personalización web
+    path('personalizacion/', views.personalizacion, name='personalizacion'),
+
     # API interna
     path('api/articulo/<str:pk>/precios/', views.api_precios_update, name='api_precios_update'),
 
