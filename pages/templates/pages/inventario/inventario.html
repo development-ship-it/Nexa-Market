@@ -24,7 +24,7 @@
   {% with s=art.stock_actual %}
   <div class="inv-card"
        data-nombre="{{ art.nombre_articulo|lower }}"
-       data-estado="{% if s <= 0 %}zero{% elif s < 5 %}low{% else %}ok{% endif %}">
+       data-estado="{% if s <= 0 %}zero{% elif s < art.stock_minimo|default_if_none:5 %}low{% else %}ok{% endif %}">
 
     <div class="inv-thumb">
       {% if art.imagen_url %}
@@ -34,7 +34,7 @@
       {% endif %}
 
       <!-- Badge de stock -->
-      <div class="inv-badge {% if s <= 0 %}zero{% elif s < 5 %}low{% else %}ok{% endif %}">
+      <div class="inv-badge {% if s <= 0 %}zero{% elif s < art.stock_minimo|default_if_none:5 %}low{% else %}ok{% endif %}">
         {{ s }}
       </div>
     </div>

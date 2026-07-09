@@ -29,6 +29,9 @@ class ConfiguracionWebForm(forms.ModelForm):
 
 
 class ArticuloForm(forms.ModelForm):
+    # Declarado aparte: BooleanField null=True generaría un select Sí/No/Desconocido
+    es_mayorista = forms.BooleanField(required=False, label='Vende al por mayor')
+
     class Meta:
         model = Articulo
         fields = [
@@ -36,7 +39,9 @@ class ArticuloForm(forms.ModelForm):
             'categoria', 'proveedor',
             'codigo_qr', 'codigo_barra',
             'precio_compra', 'precio_venta', 'margen_ganancia',
-            'unidad_medida', 'foto', 'activo',
+            'unidad_medida', 'foto', 'activo', 'stock_minimo',
+            'es_mayorista', 'cantidad_minima_mayor',
+            'precio_compra_mayor', 'precio_venta_mayor', 'margen_ganancia_mayor',
         ]
         widgets = {
             'nombre_articulo': forms.TextInput(attrs={'placeholder': 'Nombre del producto'}),
@@ -46,6 +51,11 @@ class ArticuloForm(forms.ModelForm):
             'precio_compra': forms.NumberInput(attrs={'placeholder': '0', 'step': '1', 'min': '0'}),
             'precio_venta': forms.NumberInput(attrs={'placeholder': '0', 'step': '1', 'min': '0'}),
             'margen_ganancia': forms.NumberInput(attrs={'placeholder': '0.0', 'step': '0.1', 'min': '-100'}),
+            'stock_minimo': forms.NumberInput(attrs={'placeholder': '5', 'step': '1', 'min': '0'}),
+            'cantidad_minima_mayor': forms.NumberInput(attrs={'placeholder': 'Ej: 10', 'step': '1', 'min': '0'}),
+            'precio_compra_mayor': forms.NumberInput(attrs={'placeholder': '0', 'step': '1', 'min': '0'}),
+            'precio_venta_mayor': forms.NumberInput(attrs={'placeholder': '0', 'step': '1', 'min': '0'}),
+            'margen_ganancia_mayor': forms.NumberInput(attrs={'placeholder': '0.0', 'step': '0.1', 'min': '-100'}),
         }
         labels = {
             'nombre_articulo': 'Nombre',
@@ -60,6 +70,11 @@ class ArticuloForm(forms.ModelForm):
             'unidad_medida': 'Unidad de medida',
             'foto': 'Foto del producto',
             'activo': 'Producto activo',
+            'stock_minimo': 'Stock mínimo',
+            'cantidad_minima_mayor': 'Cantidad mínima mayorista',
+            'precio_compra_mayor': 'Precio de compra mayorista ($)',
+            'precio_venta_mayor': 'Precio de venta mayorista ($)',
+            'margen_ganancia_mayor': 'Margen mayorista (%)',
         }
 
     def __init__(self, *args, **kwargs):

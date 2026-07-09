@@ -213,7 +213,8 @@ def dashboard(request):
     for art in articulos:
         art.stock_actual = art.entradas - art.salidas
         stock_total += max(art.stock_actual, 0)
-        if art.stock_actual < 5:
+        umbral = art.stock_minimo if art.stock_minimo is not None else 5
+        if art.stock_actual < umbral:
             stock_bajo.append(art)
     stock_bajo.sort(key=lambda a: a.stock_actual)
     stock_bajo_count = len(stock_bajo)
@@ -253,6 +254,16 @@ def dashboard(request):
         'balance': total_ventas - total_compras,
         'ultimas_facturas': facturas.order_by('-fecha')[:4],
     })
+
+
+def _aplicar_precios_mayor(articulo):
+    """Redondea los precios mayoristas y recalcula su margen (igual que el normal)."""
+    pcm = _round10(articulo.precio_compra_mayor) if articulo.precio_compra_mayor else None
+    pvm = _round10(articulo.precio_venta_mayor) if articulo.precio_venta_mayor else None
+    articulo.precio_compra_mayor = pcm
+    articulo.precio_venta_mayor = pvm
+    if pcm and pvm:
+        articulo.margen_ganancia_mayor = round((pvm - pcm) / pcm * 100, 2)
 
 
 # ── PRODUCTOS ─────────────────────────────────────────────────────────────────
@@ -296,6 +307,7 @@ def producto_crear(request):
             articulo.precio_compra = pc
             articulo.precio_venta = pv
             articulo.margen_ganancia = round(((pv - pc) / pc * 100) if pc > 0 else 0, 2)
+            _aplicar_precios_mayor(articulo)
             articulo.save()
             messages.success(request, f'Producto "{articulo.nombre_articulo}" creado correctamente.')
             return redirect('productos')
@@ -317,6 +329,7 @@ def producto_editar(request, pk):
             obj.precio_compra = pc
             obj.precio_venta = pv
             obj.margen_ganancia = round(((pv - pc) / pc * 100) if pc > 0 else 0, 2)
+            _aplicar_precios_mayor(obj)
             obj.save()
             messages.success(request, f'Producto "{obj.nombre_articulo}" actualizado.')
             return redirect('productos')

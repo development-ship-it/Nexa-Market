@@ -33,12 +33,15 @@ class Articulo(models.Model):
     updated_at      = models.DateTimeField(null=True, blank=True)
     sync_status     = models.CharField(max_length=20, default='pending')
 
-    # Venta al por mayor (gestionada desde la app móvil)
+    # Venta al por mayor
     es_mayorista          = models.BooleanField(default=False, null=True, blank=True)
     precio_venta_mayor    = models.FloatField(null=True, blank=True)
     cantidad_minima_mayor = models.FloatField(null=True, blank=True)
     precio_compra_mayor   = models.FloatField(null=True, blank=True)
     margen_ganancia_mayor = models.FloatField(null=True, blank=True)
+
+    # Umbral para avisos de stock bajo (None = usa el valor por defecto, 5)
+    stock_minimo          = models.FloatField(null=True, blank=True)
 
     class Meta:
         db_table = 'articulo'

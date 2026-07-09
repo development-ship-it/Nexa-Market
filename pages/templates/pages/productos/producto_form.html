@@ -24,8 +24,8 @@
           <h3 class="form-card-title">📷 Foto del producto</h3>
           <div class="foto-upload-area" id="fotoArea">
             <div class="foto-preview" id="fotoPreview">
-              {% if articulo and articulo.foto %}
-                <img src="{{ articulo.foto.url }}" id="previewImg" alt="Preview" />
+              {% if articulo and articulo.imagen_url %}
+                <img src="{{ articulo.imagen_url }}" id="previewImg" alt="Preview" />
               {% else %}
                 <div class="foto-placeholder" id="fotoPlaceholder">
                   <span>🏷️</span>
@@ -37,7 +37,7 @@
             </div>
             <input type="file" name="foto" id="fotoInput" accept="image/*" class="foto-input" />
             <button type="button" class="btn-upload" id="fotoBtn">
-              {% if articulo and articulo.foto %}Cambiar foto{% else %}Subir foto{% endif %}
+              {% if articulo and articulo.imagen_url %}Cambiar foto{% else %}Subir foto{% endif %}
             </button>
           </div>
         </div>
@@ -66,6 +66,11 @@
           <div class="form-field">
             <label class="field-label">{{ form.proveedor.label }}</label>
             {{ form.proveedor }}
+          </div>
+          <div class="form-field">
+            <label class="field-label">{{ form.stock_minimo.label }}</label>
+            {{ form.stock_minimo }}
+            <span class="field-hint">Bajo esta cantidad se avisa "stock bajo" (vacío = 5)</span>
           </div>
           <div class="form-field form-field-toggle">
             <label class="field-label">{{ form.activo.label }}</label>
@@ -150,6 +155,58 @@
             <span class="ganancia-value" id="gananciaValue">$0</span>
           </div>
 
+        </div>
+
+        <!-- VENTA AL POR MAYOR -->
+        <div class="form-card">
+          <h3 class="form-card-title">📦 Venta al por mayor</h3>
+
+          <div class="form-field form-field-toggle">
+            <label class="field-label">{{ form.es_mayorista.label }}</label>
+            {{ form.es_mayorista }}
+          </div>
+
+          <div id="mayoristaFields" style="display:none;">
+            <div class="form-field">
+              <label class="field-label">{{ form.cantidad_minima_mayor.label }}</label>
+              {{ form.cantidad_minima_mayor }}
+              <span class="field-hint">Desde esta cantidad se aplica el precio mayorista</span>
+            </div>
+
+            <div class="form-field">
+              <label class="field-label">{{ form.precio_compra_mayor.label }}</label>
+              <div class="input-prefix">
+                <span class="prefix">$</span>
+                {{ form.precio_compra_mayor }}
+              </div>
+            </div>
+
+            <div class="prices-link-row">
+              <div class="form-field">
+                <label class="field-label" style="display:flex;align-items:center;gap:6px;">
+                  {{ form.margen_ganancia_mayor.label }}
+                  <span class="margen-hint">define el precio mayorista</span>
+                </label>
+                <div class="input-suffix">
+                  {{ form.margen_ganancia_mayor }}
+                  <span class="suffix">%</span>
+                </div>
+              </div>
+
+              <div class="prices-link-icon">↔</div>
+
+              <div class="form-field">
+                <label class="field-label" style="display:flex;align-items:center;gap:6px;">
+                  {{ form.precio_venta_mayor.label }}
+                  <span class="margen-hint">o escríbelo directo</span>
+                </label>
+                <div class="input-prefix">
+                  <span class="prefix">$</span>
+                  {{ form.precio_venta_mayor }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -294,5 +351,44 @@ precioCompra.addEventListener('input', _calcFromCompra);
 
 // Inicializar
 _calcFromVenta();
+
+// ── Venta al por mayor ──
+const esMayorista = document.getElementById('id_es_mayorista');
+const mayoristaBox = document.getElementById('mayoristaFields');
+const pcMayor = document.getElementById('id_precio_compra_mayor');
+const pvMayor = document.getElementById('id_precio_venta_mayor');
+const mgMayor = document.getElementById('id_margen_ganancia_mayor');
+
+function _toggleMayorista() {
+  mayoristaBox.style.display = esMayorista.checked ? 'block' : 'none';
+}
+esMayorista.addEventListener('change', _toggleMayorista);
+_toggleMayorista();
+
+function _mayorCalcFromMargen() {
+  const pc = parseFloat(pcMayor.value) || 0;
+  const mg = parseFloat(mgMayor.value);
+  if (!isNaN(mg) && pc > 0) {
+    pvMayor.value = roundToTen(pc * (1 + mg / 100));
+  }
+}
+
+function _mayorCalcFromVenta() {
+  const pc = parseFloat(pcMayor.value) || 0;
+  const pv = parseFloat(pvMayor.value) || 0;
+  if (pc > 0) {
+    mgMayor.value = ((pv - pc) / pc * 100).toFixed(1);
+  }
+}
+
+let _lastMayor = 'venta';
+mgMayor.addEventListener('input', () => { _lastMayor = 'margen'; _mayorCalcFromMargen(); });
+pvMayor.addEventListener('input', () => { _lastMayor = 'venta'; _mayorCalcFromVenta(); });
+pcMayor.addEventListener('input', () => { _lastMayor === 'margen' ? _mayorCalcFromMargen() : _mayorCalcFromVenta(); });
+pvMayor.addEventListener('blur', () => {
+  const v = parseFloat(pvMayor.value);
+  if (!isNaN(v)) { pvMayor.value = roundToTen(v); }
+  _mayorCalcFromVenta();
+});
 </script>
 {% endblock %}
