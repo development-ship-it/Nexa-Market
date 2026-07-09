@@ -28,7 +28,14 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <a href="{% url 'dashboard' %}" class="sidebar-logo">
-        <div class="logo-icon">{{ empresa_actual.nombre|default:'N'|first|upper }}</div>
+        {% firstof empresa_actual.foto_url config_web.logo_url as logo_negocio %}
+        <div class="logo-icon">
+          {% if logo_negocio %}
+            <img src="{{ logo_negocio }}" alt="{{ empresa_actual.nombre }}" />
+          {% else %}
+            {{ empresa_actual.nombre|default:'N'|first|upper }}
+          {% endif %}
+        </div>
         <div class="logo-text-group">
           <span class="logo-text">{{ empresa_actual.nombre|default:'Mi Negocio' }}</span>
           <span class="logo-sub">Mi negocio</span>

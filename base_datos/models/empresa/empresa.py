@@ -10,6 +10,7 @@ class Empresa(models.Model):
     fecha_pago       = models.DateTimeField(null=True, blank=True)
     created_at       = models.DateTimeField(null=True, blank=True)
     sync_status      = models.CharField(max_length=20, default='synced')
+    foto_url         = models.URLField(null=True, blank=True)  # logo del negocio (Supabase Storage)
     id_plan          = models.ForeignKey(
         'Plan', null=True, blank=True,
         on_delete=models.SET_NULL,
