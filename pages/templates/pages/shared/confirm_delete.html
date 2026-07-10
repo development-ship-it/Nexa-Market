@@ -1,21 +1,32 @@
 {% extends 'pages/base.html' %}
 
-{% block title %}Eliminar {{ tipo }} — NexaMarket{% endblock %}
-{% block page_title %}Eliminar {{ tipo }}{% endblock %}
+{% block title %}{% if desactivar %}Desactivar{% else %}Eliminar{% endif %} {{ tipo }} — NexaMarket{% endblock %}
+{% block page_title %}{% if desactivar %}Desactivar{% else %}Eliminar{% endif %} {{ tipo }}{% endblock %}
 
 {% block content %}
 <div class="confirm-delete-page">
   <div class="confirm-card">
     <div class="confirm-icon">⚠️</div>
-    <h2 class="confirm-title">¿Eliminar este {{ tipo|lower }}?</h2>
-    <p class="confirm-desc">
-      Se eliminará <strong>"{{ nombre }}"</strong> de forma permanente.
-      Esta acción no se puede deshacer.
-    </p>
+    {% if desactivar %}
+      <h2 class="confirm-title">¿Desactivar este {{ tipo|lower }}?</h2>
+      <p class="confirm-desc">
+        <strong>"{{ nombre }}"</strong> dejará de aparecer y no podrá iniciar sesión,
+        pero su historial de facturas y movimientos se conserva.
+        Puedes reactivarlo cuando quieras.
+      </p>
+    {% else %}
+      <h2 class="confirm-title">¿Eliminar este {{ tipo|lower }}?</h2>
+      <p class="confirm-desc">
+        Se eliminará <strong>"{{ nombre }}"</strong> de forma permanente.
+        Esta acción no se puede deshacer.
+      </p>
+    {% endif %}
     <form method="post" class="confirm-actions">
       {% csrf_token %}
       <a href="{% url cancelar_url %}" class="btn-secondary">Cancelar</a>
-      <button type="submit" class="btn-danger">Sí, eliminar</button>
+      <button type="submit" class="btn-danger">
+        {% if desactivar %}Sí, desactivar{% else %}Sí, eliminar{% endif %}
+      </button>
     </form>
   </div>
 </div>

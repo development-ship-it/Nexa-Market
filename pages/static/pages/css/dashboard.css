@@ -93,6 +93,61 @@
 }
 .bar-label { font-size: .65rem; color: var(--gray); }
 
+/* Subtítulo en encabezados de tarjeta */
+.card-subtitle { font-size: .74rem; color: var(--gray); font-weight: 500; }
+
+/* LINE CHART (ventas por hora, lineal) */
+.line-chart { position: relative; width: 100%; }
+.line-chart-svg {
+  width: 100%;
+  height: 150px;
+  display: block;
+  overflow: visible;
+}
+.line-chart-labels {
+  position: relative;
+  height: 16px;
+  margin-top: 6px;
+}
+.line-chart-labels span {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: .64rem;
+  color: var(--gray);
+  white-space: nowrap;
+}
+
+/* RANK LIST (más vendidos) */
+.rank-list { display: flex; flex-direction: column; gap: 12px; padding: 4px 0; }
+.rank-item { display: flex; align-items: center; gap: 12px; }
+.rank-pos {
+  width: 26px; height: 26px; flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--navy);
+  border: 1px solid var(--gray2);
+  color: var(--teal);
+  font-size: .8rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.rank-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.rank-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.rank-name {
+  font-size: .84rem; font-weight: 700;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rank-value { font-size: .8rem; font-weight: 800; color: var(--gray); white-space: nowrap; }
+.rank-bar {
+  height: 7px; border-radius: 5px;
+  background: var(--gray2);
+  overflow: hidden;
+}
+.rank-bar span {
+  display: block; height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #5b9bd5, var(--blue));
+}
+.rank-bar.teal span { background: linear-gradient(90deg, var(--teal), var(--teal2)); }
+
 /* BALANCE */
 .balance-box { display: flex; flex-direction: column; gap: 0; }
 .balance-item {

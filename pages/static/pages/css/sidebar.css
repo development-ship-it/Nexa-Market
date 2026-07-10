@@ -124,6 +124,7 @@
 .icon-punto-venta     { --icon: url('../images/svg/Iconos_Inicio/punto_venta.svg'); }
 .icon-punto-compra    { --icon: url('../images/svg/Iconos_Inicio/punto_compra.svg'); }
 .icon-movimientos     { --icon: url('../images/svg/Iconos_Inicio/movimientos.svg'); }
+.icon-merma           { --icon: url('../images/svg/Iconos_Inicio/merma.svg'); }
 .icon-proveedores     { --icon: url('../images/svg/Iconos_Inicio/proveedores.svg'); }
 .icon-empresa         { --icon: url('../images/svg/Iconos_Inicio/empresa.svg'); }
 .icon-personalizacion { --icon: url('../images/svg/Iconos_Inicio/personalizacion.svg'); }

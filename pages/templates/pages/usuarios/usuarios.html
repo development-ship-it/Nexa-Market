@@ -1,0 +1,79 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Usuarios — {{ empresa_actual.nombre|default:'NexaMarket' }}{% endblock %}
+{% block page_title %}Gestión de usuarios{% endblock %}
+
+{% block content %}
+<div class="page-actions">
+  <div class="search-box">
+    <span class="search-icon">🔍</span>
+    <input type="text" placeholder="Buscar usuario..." class="search-input" id="searchInput" />
+  </div>
+  <a href="{% url 'usuario_crear' %}" class="btn-primary">+ Nuevo usuario</a>
+</div>
+
+{% if usuarios %}
+<div class="config-list" id="listaItems">
+  {% for u in usuarios %}
+  <div class="config-row usuario-row {% if not u.activo %}is-inactive{% endif %}"
+       data-nombre="{{ u.nombre|lower }} {{ u.correo|lower }}">
+    <div class="usuario-avatar">
+      {% if u.foto_url %}
+        <img src="{{ u.foto_url }}" alt="{{ u.nombre }}" />
+      {% else %}
+        {{ u.nombre|default:'?'|first|upper }}
+      {% endif %}
+    </div>
+    <div class="config-row-info">
+      <span class="config-row-name">
+        {{ u.nombre }}
+        {% if u.tipo_usuario == 'administrador' %}
+          <span class="badge badge-teal" style="margin-left:6px;">Administrador</span>
+        {% else %}
+          <span class="badge badge-blue" style="margin-left:6px;">Trabajador</span>
+        {% endif %}
+      </span>
+      <span class="config-row-meta">{{ u.correo }}</span>
+      {% if u.categorias_nombres %}
+      <div class="usuario-cats">
+        {% for c in u.categorias_nombres %}<span class="usuario-cat-chip">{{ c }}</span>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div class="config-row-status">
+      {% if u.activo %}
+        <span class="status-badge active">Activo</span>
+      {% else %}
+        <span class="status-badge inactive">Inactivo</span>
+      {% endif %}
+    </div>
+    <div class="config-row-actions">
+      <a href="{% url 'usuario_editar' u.id_usuario %}" class="btn-action edit" title="Editar">✏️</a>
+      {% if u.activo %}
+      <a href="{% url 'usuario_eliminar' u.id_usuario %}" class="btn-action delete" title="Desactivar">🗑️</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+<p class="list-count">{{ usuarios|length }} usuario{{ usuarios|length|pluralize }}</p>
+{% else %}
+<div class="empty-state" style="margin-top:60px;">
+  <span class="empty-icon">👥</span>
+  <p>No hay usuarios registrados</p>
+  <a href="{% url 'usuario_crear' %}" class="btn-primary" style="margin-top:16px;">+ Crear primer usuario</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('searchInput').addEventListener('input', function() {
+  const term = this.value.toLowerCase();
+  document.querySelectorAll('.usuario-row').forEach(row => {
+    row.style.display = row.dataset.nombre.includes(term) ? '' : 'none';
+  });
+});
+</script>
+{% endblock %}

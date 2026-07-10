@@ -67,6 +67,10 @@
         <span class="nav-icon icon-punto-compra"></span>
         <span class="nav-label">Punto de Compra</span>
       </a>
+      <a href="{% url 'merma' %}" class="nav-item {% if page == 'merma' %}active{% endif %}">
+        <span class="nav-icon icon-merma"></span>
+        <span class="nav-label">Merma</span>
+      </a>
       <a href="{% url 'compras_ventas' %}" class="nav-item {% if page == 'compras_ventas' %}active{% endif %}">
         <span class="nav-icon icon-compras-ventas"></span>
         <span class="nav-label">Compras / Ventas</span>
@@ -85,6 +89,10 @@
       <a href="{% url 'proveedores' %}" class="nav-item {% if page == 'proveedores' %}active{% endif %}">
         <span class="nav-icon icon-proveedores"></span>
         <span class="nav-label">Proveedores</span>
+      </a>
+      <a href="{% url 'usuarios' %}" class="nav-item {% if page == 'usuarios' %}active{% endif %}">
+        <span class="nav-icon icon-usuarios"></span>
+        <span class="nav-label">Usuarios</span>
       </a>
       <a href="{% url 'empresa' %}" class="nav-item {% if page == 'empresa' %}active{% endif %}">
         <span class="nav-icon icon-empresa"></span>

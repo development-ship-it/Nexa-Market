@@ -52,17 +52,39 @@
     <div class="chart-card wide">
       <div class="card-header">
         <span class="card-title">Ventas por hora</span>
-        <div class="tab-group">
-          <button class="tab active" data-period="hoy">Hoy</button>
-        </div>
+        <span class="card-subtitle">Actividad por hora del día</span>
       </div>
-      <div class="chart-area" id="salesChart">
-        <div class="chart-bars">
+      {% if hay_ventas_hora %}
+      <div class="line-chart">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="line-chart-svg">
+          <defs>
+            <linearGradient id="lineFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--teal)" stop-opacity="0.28"/>
+              <stop offset="100%" stop-color="var(--teal)" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <polygon points="{{ area_puntos }}" fill="url(#lineFill)" />
+          <polyline points="{{ linea_puntos }}" fill="none" stroke="var(--teal)"
+                    stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"
+                    vector-effect="non-scaling-stroke" />
           {% for v in ventas_por_hora %}
-          <div class="chart-bar-col" style="--h:{{ v.pct }}%" title="${{ v.total|floatformat:0 }}"><span class="bar-label">{{ v.label }}</span></div>
+            {% if v.count %}
+            <circle cx="{{ v.x }}" cy="{{ v.y }}" r="1.4" fill="var(--teal)"
+                    vector-effect="non-scaling-stroke">
+              <title>{{ v.label }} · {{ v.count }} venta{{ v.count|pluralize }} · ${{ v.total|floatformat:0 }}</title>
+            </circle>
+            {% endif %}
+          {% endfor %}
+        </svg>
+        <div class="line-chart-labels">
+          {% for v in ventas_por_hora %}
+            {% if v.mostrar_label %}<span style="left:{{ v.x }}%;">{{ v.label }}</span>{% endif %}
           {% endfor %}
         </div>
       </div>
+      {% else %}
+      <div class="empty-state"><span class="empty-icon">📈</span><p>Aún no hay ventas registradas</p></div>
+      {% endif %}
     </div>
 
     <div class="chart-card">
@@ -84,6 +106,59 @@
           <span class="balance-value teal">${{ balance|floatformat:0 }}</span>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- MÁS VENDIDOS -->
+  <div class="bottom-row">
+    <div class="table-card">
+      <div class="card-header">
+        <span class="card-title">Productos más vendidos</span>
+        <span class="card-subtitle">Por unidades</span>
+      </div>
+      {% if productos_top %}
+        <div class="rank-list">
+          {% for p in productos_top %}
+          <div class="rank-item">
+            <span class="rank-pos">{{ forloop.counter }}</span>
+            <div class="rank-body">
+              <div class="rank-top">
+                <span class="rank-name">{{ p.articulo__nombre_articulo }}</span>
+                <span class="rank-value">{{ p.unidades|floatformat:0 }} uds</span>
+              </div>
+              <div class="rank-bar"><span style="width:{{ p.pct }}%;"></span></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state"><span class="empty-icon">📦</span><p>Sin ventas todavía</p></div>
+      {% endif %}
+    </div>
+
+    <div class="table-card">
+      <div class="card-header">
+        <span class="card-title">Categorías más vendidas</span>
+        <span class="card-subtitle">Por unidades</span>
+      </div>
+      {% if categorias_top %}
+        <div class="rank-list">
+          {% for c in categorias_top %}
+          <div class="rank-item">
+            <span class="rank-pos">{{ forloop.counter }}</span>
+            <div class="rank-body">
+              <div class="rank-top">
+                <span class="rank-name">{{ c.nombre }}</span>
+                <span class="rank-value">{{ c.unidades|floatformat:0 }} uds</span>
+              </div>
+              <div class="rank-bar teal"><span style="width:{{ c.pct }}%;"></span></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state"><span class="empty-icon">🏷️</span><p>Sin ventas todavía</p></div>
+      {% endif %}
     </div>
   </div>
 

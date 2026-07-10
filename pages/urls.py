@@ -31,6 +31,12 @@ urlpatterns = [
     path('proveedores/<str:pk>/editar/', views.proveedor_editar, name='proveedor_editar'),
     path('proveedores/<str:pk>/eliminar/', views.proveedor_eliminar, name='proveedor_eliminar'),
 
+    # Usuarios
+    path('usuarios/', views.usuarios, name='usuarios'),
+    path('usuarios/nuevo/', views.usuario_crear, name='usuario_crear'),
+    path('usuarios/<str:pk>/editar/', views.usuario_editar, name='usuario_editar'),
+    path('usuarios/<str:pk>/eliminar/', views.usuario_eliminar, name='usuario_eliminar'),
+
     # Empresa
     path('empresa/', views.empresa, name='empresa'),
 
@@ -44,6 +50,7 @@ urlpatterns = [
     path('punto-compra/', views.punto_compra, name='punto_compra'),
     path('inventario/', views.inventario, name='inventario'),
     path('punto-venta/', views.punto_venta, name='punto_venta'),
+    path('merma/', views.merma, name='merma'),
     path('compras-ventas/', views.compras_ventas, name='compras_ventas'),
     path('movimientos/', views.movimientos, name='movimientos'),
 ]

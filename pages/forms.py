@@ -1,5 +1,5 @@
 from django import forms
-from base_datos.models import Articulo, Proveedor, Categoria, Empresa, ConfiguracionWeb
+from base_datos.models import Articulo, Proveedor, Categoria, Empresa, ConfiguracionWeb, Usuario
 
 
 class ConfiguracionWebForm(forms.ModelForm):
@@ -135,6 +135,48 @@ class ProveedorForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for f in ['rut', 'correo', 'numero_contacto', 'forma_pago']:
             self.fields[f].required = False
+
+
+class UsuarioForm(forms.ModelForm):
+    """
+    Gestión de usuarios de la empresa (misma tabla que usa la app móvil).
+    `categorias` no es un campo de la tabla: se mapea a/desde el JSON
+    `id_categorias` en la vista. Un trabajador solo verá artículos de esas
+    categorías; un administrador las ve todas.
+    """
+    TIPO_CHOICES = [('administrador', 'Administrador'), ('trabajador', 'Trabajador')]
+
+    tipo_usuario = forms.ChoiceField(choices=TIPO_CHOICES, label='Tipo de usuario')
+    categorias = forms.ModelMultipleChoiceField(
+        queryset=Categoria.objects.none(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label='Categorías asignadas',
+    )
+
+    class Meta:
+        model = Usuario
+        fields = ['nombre', 'correo', 'tipo_usuario', 'activo']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'placeholder': 'Nombre completo'}),
+            'correo': forms.EmailInput(attrs={'placeholder': 'correo@ejemplo.com'}),
+        }
+        labels = {
+            'nombre': 'Nombre completo',
+            'correo': 'Correo electrónico',
+            'activo': 'Usuario activo',
+        }
+
+    def __init__(self, *args, **kwargs):
+        empresa = kwargs.pop('empresa', None)
+        super().__init__(*args, **kwargs)
+        qs_cat = Categoria.objects.filter(estado=True)
+        if empresa:
+            qs_cat = qs_cat.filter(empresa=empresa)
+        self.fields['categorias'].queryset = qs_cat.order_by('categoria')
+        # Precargar las categorías guardadas en id_categorias (JSON con los PK)
+        if self.instance and self.instance.pk and self.instance.id_categorias:
+            self.fields['categorias'].initial = list(self.instance.id_categorias)
 
 
 class EmpresaForm(forms.ModelForm):

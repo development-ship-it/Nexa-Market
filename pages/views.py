@@ -18,7 +18,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from base_datos.models import Empresa, Articulo, Categoria, Proveedor, Usuario, Factura, Stock, ConfiguracionWeb
 from base_datos.cache import cachear
-from .forms import ArticuloForm, CategoriaForm, ProveedorForm, EmpresaForm, ConfiguracionWebForm
+from .forms import ArticuloForm, CategoriaForm, ProveedorForm, EmpresaForm, ConfiguracionWebForm, UsuarioForm
 
 
 def _round10(val):
@@ -186,7 +186,7 @@ def google_callback(request):
 # ── DASHBOARD ─────────────────────────────────────────────────────────────────
 
 def _datos_dashboard(empresa):
-    from django.db.models import Sum, Q, Value, IntegerField
+    from django.db.models import Sum, Count, Q, Value, IntegerField
     from django.db.models.functions import Coalesce, ExtractHour
 
     hoy = timezone.localdate()
@@ -227,25 +227,71 @@ def _datos_dashboard(empresa):
     stock_bajo_count = len(stock_bajo)
     stock_bajo = stock_bajo[:5]
 
-    # Ventas por hora (hoy), 8h a 20h
-    por_hora = {
+    # Ventas por hora del día (conteo de ventas por hora, todo el historial):
+    # muestra las horas más activas del negocio como un gráfico lineal.
+    conteo_hora = {
+        r['h']: r['c']
+        for r in (
+            facturas.filter(tipo='VENTA')
+            .annotate(h=ExtractHour('fecha'))
+            .values('h')
+            .annotate(c=Count('id_nfactura'), t=Sum('total'))
+        )
+    }
+    total_hora = {
         r['h']: r['t'] or 0
         for r in (
-            facturas.filter(tipo='VENTA', fecha__date=hoy)
+            facturas.filter(tipo='VENTA')
             .annotate(h=ExtractHour('fecha'))
             .values('h')
             .annotate(t=Sum('total'))
         )
     }
-    max_hora = max(por_hora.values(), default=0)
-    ventas_por_hora = [
-        {
-            'label': f'{h}h',
-            'total': por_hora.get(h, 0),
-            'pct': round(por_hora.get(h, 0) / max_hora * 100) if max_hora else 0,
-        }
-        for h in range(8, 21)
-    ]
+    max_conteo = max(conteo_hora.values(), default=0)
+    ventas_por_hora = []
+    for i, h in enumerate(range(24)):
+        c = conteo_hora.get(h, 0)
+        pct = round(c / max_conteo * 100) if max_conteo else 0
+        ventas_por_hora.append({
+            'hora': h,
+            'label': f'{h:02d}h',
+            'count': c,
+            'total': total_hora.get(h, 0),
+            'pct': pct,
+            'x': round(i / 23 * 100, 2),          # posición X en el SVG (0–100)
+            'y': round(100 - pct, 2),             # posición Y (invertida: más alto = más ventas)
+            'mostrar_label': h % 3 == 0,          # etiquetar cada 3 horas
+        })
+    # Cadenas de puntos para el SVG (línea + área rellena)
+    linea_puntos = ' '.join(f"{p['x']},{p['y']}" for p in ventas_por_hora)
+    area_puntos = f"0,100 {linea_puntos} 100,100"
+    hay_ventas_hora = max_conteo > 0
+
+    # Top 5 productos más vendidos (unidades salidas, sin contar mermas)
+    salidas_reales = (
+        Stock.objects.filter(empresa=empresa, tipo='SALIDA').exclude(factura__tipo='MERMA')
+    )
+    productos_top = list(
+        salidas_reales
+        .values('articulo__nombre_articulo')
+        .annotate(unidades=Sum('unidades'), total=Sum('total'))
+        .order_by('-unidades')[:5]
+    )
+    max_prod = productos_top[0]['unidades'] if productos_top else 0
+    for p in productos_top:
+        p['pct'] = round((p['unidades'] or 0) / max_prod * 100) if max_prod else 0
+
+    # Top 5 categorías más vendidas
+    categorias_top = list(
+        salidas_reales
+        .values('articulo__categoria__categoria')
+        .annotate(unidades=Sum('unidades'), total=Sum('total'))
+        .order_by('-unidades')[:5]
+    )
+    max_cat = categorias_top[0]['unidades'] if categorias_top else 0
+    for c in categorias_top:
+        c['nombre'] = c['articulo__categoria__categoria'] or 'Sin categoría'
+        c['pct'] = round((c['unidades'] or 0) / max_cat * 100) if max_cat else 0
 
     return {
         'ventas_hoy': ventas_hoy,
@@ -255,6 +301,11 @@ def _datos_dashboard(empresa):
         'stock_bajo': stock_bajo,
         'stock_bajo_count': stock_bajo_count,
         'ventas_por_hora': ventas_por_hora,
+        'linea_puntos': linea_puntos,
+        'area_puntos': area_puntos,
+        'hay_ventas_hora': hay_ventas_hora,
+        'productos_top': productos_top,
+        'categorias_top': categorias_top,
         'total_ventas': total_ventas,
         'total_compras': total_compras,
         'balance': total_ventas - total_compras,
@@ -476,6 +527,84 @@ def proveedor_eliminar(request, pk):
     return render(request, 'pages/shared/confirm_delete.html', {
         'objeto': prov, 'nombre': prov.nombre, 'tipo': 'Proveedor',
         'cancelar_url': 'proveedores', 'page': 'proveedores',
+    })
+
+
+# ── USUARIOS ──────────────────────────────────────────────────────────────────
+
+@login_required
+def usuarios(request):
+    empresa = _get_empresa(request)
+    lista = list(Usuario.objects.filter(empresa=empresa).order_by('-activo', 'nombre'))
+    # Nombres de las categorías asignadas a cada usuario (id_categorias es JSON de PKs)
+    cat_map = {c.id_categoria: c.categoria for c in Categoria.objects.filter(empresa=empresa)}
+    for u in lista:
+        ids = u.id_categorias or []
+        u.categorias_nombres = [cat_map[i] for i in ids if i in cat_map]
+    return render(request, 'pages/usuarios/usuarios.html', {
+        'page': 'usuarios',
+        'usuarios': lista,
+    })
+
+
+def _guardar_usuario(usuario, empresa, form):
+    """Completa empresa + id_categorias (desde el multiselect) y guarda."""
+    usuario.empresa = empresa
+    usuario.id_categorias = [str(c.id_categoria) for c in form.cleaned_data['categorias']]
+    usuario.save()
+
+
+@login_required
+def usuario_crear(request):
+    empresa = _get_empresa(request)
+    if request.method == 'POST':
+        form = UsuarioForm(request.POST, empresa=empresa)
+        if form.is_valid():
+            usuario = form.save(commit=False)
+            usuario.id_usuario = str(uuid.uuid4())
+            _guardar_usuario(usuario, empresa, form)
+            messages.success(request, f'Usuario "{usuario.nombre}" creado.')
+            return redirect('usuarios')
+    else:
+        form = UsuarioForm(empresa=empresa)
+    return render(request, 'pages/usuarios/usuario_form.html', {
+        'form': form, 'page': 'usuarios', 'accion': 'Nuevo usuario',
+    })
+
+
+@login_required
+def usuario_editar(request, pk):
+    empresa = _get_empresa(request)
+    usuario = get_object_or_404(Usuario, id_usuario=pk, empresa=empresa)
+    if request.method == 'POST':
+        form = UsuarioForm(request.POST, instance=usuario, empresa=empresa)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            _guardar_usuario(obj, empresa, form)
+            cache.delete(f'usuario_web:{request.user.pk}')  # por si editó su propio acceso
+            messages.success(request, f'Usuario "{obj.nombre}" actualizado.')
+            return redirect('usuarios')
+    else:
+        form = UsuarioForm(instance=usuario, empresa=empresa)
+    return render(request, 'pages/usuarios/usuario_form.html', {
+        'form': form, 'page': 'usuarios', 'accion': 'Editar usuario', 'objeto': usuario,
+    })
+
+
+@login_required
+def usuario_eliminar(request, pk):
+    empresa = _get_empresa(request)
+    usuario = get_object_or_404(Usuario, id_usuario=pk, empresa=empresa)
+    if request.method == 'POST':
+        # Baja lógica: eliminar en duro arrastraría sus facturas y movimientos (CASCADE)
+        usuario.activo = False
+        usuario.save()
+        cache.delete(f'usuario_web:{request.user.pk}')
+        messages.success(request, f'Usuario "{usuario.nombre}" desactivado.')
+        return redirect('usuarios')
+    return render(request, 'pages/shared/confirm_delete.html', {
+        'objeto': usuario, 'nombre': usuario.nombre, 'tipo': 'Usuario',
+        'cancelar_url': 'usuarios', 'page': 'usuarios', 'desactivar': True,
     })
 
 
@@ -766,34 +895,198 @@ def punto_venta(request):
     })
 
 
+# ── MERMA ─────────────────────────────────────────────────────────────────────
+
+@login_required
+def merma(request):
+    """
+    Registro de merma (pérdida/deterioro) desde la web.
+    Genera una Factura tipo MERMA (MRM-XXXX) con precio de venta 0 y el
+    precio de compra que corresponda; cada línea es una SALIDA de stock.
+    El total de la factura es el costo perdido (para cuantificar la pérdida).
+    """
+    from django.db.models import Sum, Q, Value, IntegerField
+    from django.db.models.functions import Coalesce
+
+    empresa = _get_empresa(request)
+
+    if request.method == 'POST':
+        try:
+            cart = json.loads(request.POST.get('cart_data', '[]'))
+        except json.JSONDecodeError:
+            cart = []
+
+        lineas = []
+        for item in cart:
+            articulo = get_object_or_404(Articulo, id_articulo=item['id'], empresa=empresa)
+            cantidad = int(item['cantidad'])
+            if cantidad <= 0:
+                continue
+            costo_u = float(articulo.precio_compra or 0)
+            lineas.append((articulo, cantidad, costo_u))
+
+        if not lineas:
+            messages.error(request, 'No seleccionaste productos para la merma.')
+            return redirect('merma')
+
+        usuario = _get_usuario(request)
+        total_merma = sum(cantidad * costo for _, cantidad, costo in lineas)
+        conteo = Factura.objects.filter(empresa=empresa, tipo='MERMA').count()
+        numero = f'MRM-{conteo + 1:04d}'
+
+        factura = Factura.objects.create(
+            id_nfactura=str(uuid.uuid4()),
+            empresa=empresa,
+            usuario=usuario,
+            numero_factura=numero,
+            fecha=timezone.now(),
+            total=total_merma,
+            tipo='MERMA',
+        )
+        for articulo, cantidad, costo_u in lineas:
+            Stock.objects.create(
+                id_stock=str(uuid.uuid4()),
+                articulo=articulo,
+                empresa=empresa,
+                usuario=usuario,
+                tipo='SALIDA',
+                unidades=cantidad,
+                precio_unitario_compra=costo_u,
+                precio_unitario_venta=0,   # merma: no hay venta
+                total=costo_u * cantidad,  # costo perdido
+                factura=factura,
+                fecha_hora=timezone.now(),
+            )
+
+        messages.success(request, f'Merma {numero} registrada — Costo perdido: ${total_merma:,.0f}')
+        return redirect('compras_ventas')
+
+    def _cargar():
+        articulos = list(
+            Articulo.objects
+            .filter(empresa=empresa, activo=True)
+            .select_related('categoria')
+            .annotate(
+                entradas=Coalesce(
+                    Sum('movimientos__unidades', filter=Q(movimientos__tipo='ENTRADA')),
+                    Value(0), output_field=IntegerField()
+                ),
+                salidas=Coalesce(
+                    Sum('movimientos__unidades', filter=Q(movimientos__tipo='SALIDA')),
+                    Value(0), output_field=IntegerField()
+                ),
+            )
+            .order_by('nombre_articulo')
+        )
+        for art in articulos:
+            art.stock_actual = art.entradas - art.salidas
+        categorias = list(
+            Categoria.objects
+            .filter(empresa=empresa, estado=True, articulos__empresa=empresa, articulos__activo=True)
+            .distinct()
+            .order_by('categoria')
+        )
+        return articulos, categorias
+
+    articulos, categorias = cachear(empresa.pk, 'merma_pos', _cargar)
+    return render(request, 'pages/merma/merma.html', {
+        'page': 'merma',
+        'articulos': articulos,
+        'categorias': categorias,
+    })
+
+
 MESES = [
     (1, 'Enero'), (2, 'Febrero'), (3, 'Marzo'), (4, 'Abril'),
     (5, 'Mayo'), (6, 'Junio'), (7, 'Julio'), (8, 'Agosto'),
     (9, 'Septiembre'), (10, 'Octubre'), (11, 'Noviembre'), (12, 'Diciembre'),
 ]
+MESES_DICT = dict(MESES)
+
+
+def _agrupar_facturas(facturas):
+    """
+    Agrupa facturas (ya ordenadas por -fecha) en años → meses con conteos y
+    totales, para la vista de desglose tipo AppSheet. Reciente primero.
+    """
+    from collections import OrderedDict
+    anios = OrderedDict()
+    for f in facturas:
+        y, m = f.fecha.year, f.fecha.month
+        a = anios.get(y)
+        if a is None:
+            a = {'anio': y, 'count': 0, 'ventas': 0, 'compras': 0, 'mermas': 0, 'meses': OrderedDict()}
+            anios[y] = a
+        mm = a['meses'].get(m)
+        if mm is None:
+            mm = {'num': m, 'nombre': MESES_DICT[m], 'label': f'{m}.-{MESES_DICT[m]}',
+                  'count': 0, 'ventas': 0, 'compras': 0, 'mermas': 0, 'facturas': []}
+            a['meses'][m] = mm
+        a['count'] += 1
+        mm['count'] += 1
+        mm['facturas'].append(f)
+        if f.tipo == 'VENTA':
+            a['ventas'] += f.total; mm['ventas'] += f.total
+        elif f.tipo == 'COMPRA':
+            a['compras'] += f.total; mm['compras'] += f.total
+        else:
+            a['mermas'] += f.total; mm['mermas'] += f.total
+    result = []
+    for a in anios.values():
+        a['meses'] = list(a['meses'].values())
+        result.append(a)
+    return result
+
+
+def _agrupar_movimientos(movs):
+    """Agrupa movimientos de stock en años → meses con conteos y total de ventas."""
+    from collections import OrderedDict
+    anios = OrderedDict()
+    for mv in movs:
+        y, m = mv.fecha_hora.year, mv.fecha_hora.month
+        es_merma = bool(mv.factura_id and mv.factura and mv.factura.tipo == 'MERMA')
+        clase = 'entradas' if mv.tipo == 'ENTRADA' else ('mermas' if es_merma else 'salidas')
+        a = anios.get(y)
+        if a is None:
+            a = {'anio': y, 'count': 0, 'entradas': 0, 'salidas': 0, 'mermas': 0,
+                 'total_ventas': 0, 'meses': OrderedDict()}
+            anios[y] = a
+        mm = a['meses'].get(m)
+        if mm is None:
+            mm = {'num': m, 'nombre': MESES_DICT[m], 'label': f'{m}.-{MESES_DICT[m]}',
+                  'count': 0, 'entradas': 0, 'salidas': 0, 'mermas': 0,
+                  'total_ventas': 0, 'movimientos': []}
+            a['meses'][m] = mm
+        a['count'] += 1; a[clase] += 1
+        mm['count'] += 1; mm[clase] += 1
+        mm['movimientos'].append(mv)
+        if clase == 'salidas':
+            a['total_ventas'] += mv.total; mm['total_ventas'] += mv.total
+    result = []
+    for a in anios.values():
+        a['meses'] = list(a['meses'].values())
+        result.append(a)
+    return result
 
 
 @login_required
 def compras_ventas(request):
-    from django.db.models import Sum
     empresa = _get_empresa(request)
-    facturas = (
-        Factura.objects
-        .filter(empresa=empresa)
-        .select_related('usuario')
-        .prefetch_related('lineas__articulo')
-        .order_by('-fecha')
-    )
+    base = Factura.objects.filter(empresa=empresa)
 
     # Años con facturas (para el selector, antes de filtrar)
-    anios = [d.year for d in Factura.objects.filter(empresa=empresa).dates('fecha', 'year')]
+    anios = [d.year for d in base.dates('fecha', 'year')]
 
-    # Filtros de fecha: mes, año y rango desde/hasta (combinables)
+    # Filtros: tipo + mes + año + rango desde/hasta (combinables, todos server-side)
+    tipo  = request.GET.get('tipo', '')
     mes   = request.GET.get('mes', '')
     anio  = request.GET.get('anio', '')
     desde = parse_date(request.GET.get('desde') or '')
     hasta = parse_date(request.GET.get('hasta') or '')
 
+    facturas = base.select_related('usuario').prefetch_related('lineas__articulo').order_by('-fecha')
+    if tipo in ('VENTA', 'COMPRA', 'MERMA'):
+        facturas = facturas.filter(tipo=tipo)
     if anio.isdigit():
         facturas = facturas.filter(fecha__year=int(anio))
     if mes.isdigit() and 1 <= int(mes) <= 12:
@@ -803,22 +1096,27 @@ def compras_ventas(request):
     if hasta:
         facturas = facturas.filter(fecha__date__lte=hasta)
 
-    # Los totales reflejan el período filtrado
-    total_ventas  = facturas.filter(tipo='VENTA').aggregate(t=Sum('total'))['t'] or 0
-    total_compras = facturas.filter(tipo='COMPRA').aggregate(t=Sum('total'))['t'] or 0
+    facturas = list(facturas)
+    total_ventas  = sum(f.total for f in facturas if f.tipo == 'VENTA')
+    total_compras = sum(f.total for f in facturas if f.tipo == 'COMPRA')
+    total_mermas  = sum(f.total for f in facturas if f.tipo == 'MERMA')
+
     return render(request, 'pages/compras_ventas/compras_ventas.html', {
         'page': 'compras_ventas',
-        'facturas': facturas,
+        'grupos': _agrupar_facturas(facturas),
+        'total_facturas': len(facturas),
         'total_ventas': total_ventas,
         'total_compras': total_compras,
+        'total_mermas': total_mermas,
         'balance': total_ventas - total_compras,
         'anios': anios,
         'meses': MESES,
+        'filtro_tipo': tipo,
         'filtro_mes': mes,
         'filtro_anio': anio,
         'filtro_desde': request.GET.get('desde', ''),
         'filtro_hasta': request.GET.get('hasta', ''),
-        'filtrando': bool(mes or anio or desde or hasta),
+        'filtrando': bool(tipo or mes or anio or desde or hasta),
     })
 
 
@@ -829,7 +1127,7 @@ def movimientos(request):
     qs = (
         Stock.objects
         .filter(empresa=empresa)
-        .select_related('articulo', 'factura', 'usuario')
+        .select_related('articulo', 'articulo__categoria', 'factura', 'usuario')
         .order_by('-fecha_hora')
     )
     if tipo_filtro == 'ENTRADA':
@@ -840,8 +1138,10 @@ def movimientos(request):
     elif tipo_filtro == 'MERMA':
         qs = qs.filter(factura__tipo='MERMA')
 
+    movs = list(qs)
     return render(request, 'pages/movimientos/movimientos.html', {
         'page': 'movimientos',
-        'movimientos': qs[:500],
+        'grupos': _agrupar_movimientos(movs),
+        'total_movimientos': len(movs),
         'tipo_filtro': tipo_filtro,
     })
