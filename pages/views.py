@@ -1004,69 +1004,120 @@ MESES = [
 MESES_DICT = dict(MESES)
 
 
-def _agrupar_facturas(facturas):
+DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+
+
+def _money(n):
+    """Formato de dinero chileno: $1.234.567 (punto como separador de miles)."""
+    return '$' + f'{n:,.0f}'.replace(',', '.')
+
+
+def _niveles_fecha(getdt):
     """
-    Agrupa facturas (ya ordenadas por -fecha) en años → meses con conteos y
-    totales, para la vista de desglose tipo AppSheet. Reciente primero.
+    Funciones de nivel para el desglose jerárquico tipo AppSheet:
+    Año → Mes → Semana → Día → Hora del día.
+    `getdt(item)` devuelve el datetime local del item.
     """
-    from collections import OrderedDict
-    anios = OrderedDict()
-    for f in facturas:
-        y, m = f.fecha.year, f.fecha.month
-        a = anios.get(y)
-        if a is None:
-            a = {'anio': y, 'count': 0, 'ventas': 0, 'compras': 0, 'mermas': 0, 'meses': OrderedDict()}
-            anios[y] = a
-        mm = a['meses'].get(m)
-        if mm is None:
-            mm = {'num': m, 'nombre': MESES_DICT[m], 'label': f'{m}.-{MESES_DICT[m]}',
-                  'count': 0, 'ventas': 0, 'compras': 0, 'mermas': 0, 'facturas': []}
-            a['meses'][m] = mm
-        a['count'] += 1
-        mm['count'] += 1
-        mm['facturas'].append(f)
+    def anio(it):
+        d = getdt(it); return d.year, str(d.year)
+
+    def mes(it):
+        d = getdt(it); return d.month, f'{d.month}.-{MESES_DICT[d.month]}'
+
+    def semana(it):
+        d = getdt(it); w = d.isocalendar()[1]; return w, f'Semana {w}'
+
+    def dia(it):
+        d = getdt(it)
+        return d.toordinal(), f'{DIAS_SEMANA[d.weekday()]} {d.strftime("%d/%m")}'
+
+    def hora(it):
+        d = getdt(it); return d.hour, f'{d.hour:02d}:00 – {d.hour:02d}:59'
+
+    return [anio, mes, semana, dia, hora]
+
+
+def _agrupar(items, niveles, chips_de):
+    """
+    Agrupa `items` recursivamente según `niveles` (lista de funciones
+    item -> (orden, etiqueta)). Devuelve nodos ordenados (reciente primero)
+    con conteo, chips de resumen e hijos o items (en la hoja).
+    """
+    if not niveles:
+        return None
+    nivel = niveles[0]
+    grupos = {}
+    for it in items:
+        orden, etiqueta = nivel(it)
+        g = grupos.get(orden)
+        if g is None:
+            g = {'orden': orden, 'label': etiqueta, 'items': []}
+            grupos[orden] = g
+        g['items'].append(it)
+    nodos = []
+    for g in sorted(grupos.values(), key=lambda x: x['orden'], reverse=True):
+        sub = g['items']
+        hijos = _agrupar(sub, niveles[1:], chips_de)
+        nodos.append({
+            'label': g['label'],
+            'count': len(sub),
+            'chips': chips_de(sub),
+            'hijos': hijos,
+            'items': None if hijos else sub,
+            'open': False,
+        })
+    return nodos
+
+
+def _abrir_primer_camino(nodos):
+    """Marca abierto el primer nodo de cada nivel (drill-down al más reciente)."""
+    n = nodos
+    while n:
+        n[0]['open'] = True
+        n = n[0]['hijos']
+
+
+def _chips_facturas(items):
+    v = c = m = 0
+    for f in items:
         if f.tipo == 'VENTA':
-            a['ventas'] += f.total; mm['ventas'] += f.total
+            v += f.total
         elif f.tipo == 'COMPRA':
-            a['compras'] += f.total; mm['compras'] += f.total
+            c += f.total
         else:
-            a['mermas'] += f.total; mm['mermas'] += f.total
-    result = []
-    for a in anios.values():
-        a['meses'] = list(a['meses'].values())
-        result.append(a)
-    return result
+            m += f.total
+    chips = []
+    if v:
+        chips.append({'clase': 'venta', 'texto': 'Ventas ' + _money(v)})
+    if c:
+        chips.append({'clase': 'compra', 'texto': 'Compras ' + _money(c)})
+    if m:
+        chips.append({'clase': 'merma', 'texto': 'Merma ' + _money(m)})
+    return chips
 
 
-def _agrupar_movimientos(movs):
-    """Agrupa movimientos de stock en años → meses con conteos y total de ventas."""
-    from collections import OrderedDict
-    anios = OrderedDict()
-    for mv in movs:
-        y, m = mv.fecha_hora.year, mv.fecha_hora.month
+def _chips_movimientos(items):
+    ent = sal = mer = 0
+    total_ventas = 0
+    for mv in items:
         es_merma = bool(mv.factura_id and mv.factura and mv.factura.tipo == 'MERMA')
-        clase = 'entradas' if mv.tipo == 'ENTRADA' else ('mermas' if es_merma else 'salidas')
-        a = anios.get(y)
-        if a is None:
-            a = {'anio': y, 'count': 0, 'entradas': 0, 'salidas': 0, 'mermas': 0,
-                 'total_ventas': 0, 'meses': OrderedDict()}
-            anios[y] = a
-        mm = a['meses'].get(m)
-        if mm is None:
-            mm = {'num': m, 'nombre': MESES_DICT[m], 'label': f'{m}.-{MESES_DICT[m]}',
-                  'count': 0, 'entradas': 0, 'salidas': 0, 'mermas': 0,
-                  'total_ventas': 0, 'movimientos': []}
-            a['meses'][m] = mm
-        a['count'] += 1; a[clase] += 1
-        mm['count'] += 1; mm[clase] += 1
-        mm['movimientos'].append(mv)
-        if clase == 'salidas':
-            a['total_ventas'] += mv.total; mm['total_ventas'] += mv.total
-    result = []
-    for a in anios.values():
-        a['meses'] = list(a['meses'].values())
-        result.append(a)
-    return result
+        if mv.tipo == 'ENTRADA':
+            ent += 1
+        elif es_merma:
+            mer += 1
+        else:
+            sal += 1
+            total_ventas += mv.total
+    chips = []
+    if ent:
+        chips.append({'clase': 'compra', 'texto': f'{ent} entrada{"s" if ent != 1 else ""}'})
+    if sal:
+        chips.append({'clase': 'venta', 'texto': f'{sal} venta{"s" if sal != 1 else ""}'})
+    if mer:
+        chips.append({'clase': 'merma', 'texto': f'{mer} merma{"s" if mer != 1 else ""}'})
+    if total_ventas:
+        chips.append({'clase': 'venta', 'texto': _money(total_ventas)})
+    return chips
 
 
 @login_required
@@ -1101,9 +1152,12 @@ def compras_ventas(request):
     total_compras = sum(f.total for f in facturas if f.tipo == 'COMPRA')
     total_mermas  = sum(f.total for f in facturas if f.tipo == 'MERMA')
 
+    grupos = _agrupar(facturas, _niveles_fecha(lambda f: timezone.localtime(f.fecha)), _chips_facturas)
+    _abrir_primer_camino(grupos)
+
     return render(request, 'pages/compras_ventas/compras_ventas.html', {
         'page': 'compras_ventas',
-        'grupos': _agrupar_facturas(facturas),
+        'grupos': grupos,
         'total_facturas': len(facturas),
         'total_ventas': total_ventas,
         'total_compras': total_compras,
@@ -1139,9 +1193,11 @@ def movimientos(request):
         qs = qs.filter(factura__tipo='MERMA')
 
     movs = list(qs)
+    grupos = _agrupar(movs, _niveles_fecha(lambda m: timezone.localtime(m.fecha_hora)), _chips_movimientos)
+    _abrir_primer_camino(grupos)
     return render(request, 'pages/movimientos/movimientos.html', {
         'page': 'movimientos',
-        'grupos': _agrupar_movimientos(movs),
+        'grupos': grupos,
         'total_movimientos': len(movs),
         'tipo_filtro': tipo_filtro,
     })

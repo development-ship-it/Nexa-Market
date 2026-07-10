@@ -1,0 +1,50 @@
+{% comment %}Hoja del desglose: tabla de movimientos para la lista `items`.{% endcomment %}
+<div class="table-wrapper">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Tipo</th>
+        <th>Artículo</th>
+        <th style="text-align:right">Unidades</th>
+        <th style="text-align:right">Precio unit.</th>
+        <th style="text-align:right">Total</th>
+        <th>Factura</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in items %}
+      <tr>
+        <td style="white-space:nowrap;font-size:.8rem;color:var(--gray);">{{ m.fecha_hora|date:"d/m/Y H:i" }}</td>
+        <td>
+          {% if m.tipo == 'ENTRADA' %}
+            <span class="badge badge-green">↑ Compra</span>
+          {% elif m.factura.tipo == 'MERMA' %}
+            <span class="badge badge-yellow">⚠ Merma</span>
+          {% else %}
+            <span class="badge badge-red">↓ Venta</span>
+          {% endif %}
+        </td>
+        <td>
+          <strong>{{ m.articulo.nombre_articulo }}</strong>
+          {% if m.articulo.categoria %}
+            <br><small style="color:var(--gray);font-size:.7rem;">{{ m.articulo.categoria.categoria }}</small>
+          {% endif %}
+        </td>
+        <td style="text-align:right;font-weight:600;">{{ m.unidades }}</td>
+        <td style="text-align:right;">
+          {% if m.tipo == 'ENTRADA' %}${{ m.precio_unitario_compra|floatformat:0 }}
+          {% else %}${{ m.precio_unitario_venta|floatformat:0 }}{% endif %}
+        </td>
+        <td style="text-align:right;font-weight:600;
+            color:{% if m.tipo == 'ENTRADA' %}var(--green){% else %}var(--red){% endif %};">
+          ${{ m.total|floatformat:0 }}
+        </td>
+        <td style="font-size:.75rem;color:var(--gray);">
+          {% if m.factura %}{{ m.factura.numero_factura }}{% else %}—{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

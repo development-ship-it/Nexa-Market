@@ -22,85 +22,8 @@
 
 {% if grupos %}
 <div class="group-tree">
-  {% for anio in grupos %}
-  <details class="grp-year" {% if forloop.first %}open{% endif %}>
-    <summary class="grp-head grp-year-head">
-      <span class="grp-caret">▸</span>
-      <span class="grp-title">{{ anio.anio }}</span>
-      <span class="grp-count">{{ anio.count }}</span>
-      <span class="grp-totals">
-        {% if anio.entradas %}<span class="grp-t compra">{{ anio.entradas }} entrada{{ anio.entradas|pluralize }}</span>{% endif %}
-        {% if anio.salidas %}<span class="grp-t venta">{{ anio.salidas }} venta{{ anio.salidas|pluralize }}</span>{% endif %}
-        {% if anio.mermas %}<span class="grp-t merma">{{ anio.mermas }} merma{{ anio.mermas|pluralize }}</span>{% endif %}
-        {% if anio.total_ventas %}<span class="grp-t venta">${{ anio.total_ventas|floatformat:0 }}</span>{% endif %}
-      </span>
-    </summary>
-
-    {% for mes in anio.meses %}
-    <details class="grp-month" {% if forloop.parentloop.first and forloop.first %}open{% endif %}>
-      <summary class="grp-head grp-month-head">
-        <span class="grp-caret">▸</span>
-        <span class="grp-title">{{ mes.label }}</span>
-        <span class="grp-count">{{ mes.count }}</span>
-        <span class="grp-totals">
-          {% if mes.total_ventas %}<span class="grp-t venta">Ventas ${{ mes.total_ventas|floatformat:0 }}</span>{% endif %}
-        </span>
-      </summary>
-
-      <div class="grp-body">
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th>Tipo</th>
-                <th>Artículo</th>
-                <th style="text-align:right">Unidades</th>
-                <th style="text-align:right">Precio unit.</th>
-                <th style="text-align:right">Total</th>
-                <th>Factura</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for m in mes.movimientos %}
-              <tr>
-                <td style="white-space:nowrap;font-size:.8rem;color:var(--gray);">{{ m.fecha_hora|date:"d/m/Y H:i" }}</td>
-                <td>
-                  {% if m.tipo == 'ENTRADA' %}
-                    <span class="badge badge-green">↑ Compra</span>
-                  {% elif m.factura.tipo == 'MERMA' %}
-                    <span class="badge badge-yellow">⚠ Merma</span>
-                  {% else %}
-                    <span class="badge badge-red">↓ Venta</span>
-                  {% endif %}
-                </td>
-                <td>
-                  <strong>{{ m.articulo.nombre_articulo }}</strong>
-                  {% if m.articulo.categoria %}
-                    <br><small style="color:var(--gray);font-size:.7rem;">{{ m.articulo.categoria.categoria }}</small>
-                  {% endif %}
-                </td>
-                <td style="text-align:right;font-weight:600;">{{ m.unidades }}</td>
-                <td style="text-align:right;">
-                  {% if m.tipo == 'ENTRADA' %}${{ m.precio_unitario_compra|floatformat:0 }}
-                  {% else %}${{ m.precio_unitario_venta|floatformat:0 }}{% endif %}
-                </td>
-                <td style="text-align:right;font-weight:600;
-                    color:{% if m.tipo == 'ENTRADA' %}var(--green){% else %}var(--red){% endif %};">
-                  ${{ m.total|floatformat:0 }}
-                </td>
-                <td style="font-size:.75rem;color:var(--gray);">
-                  {% if m.factura %}{{ m.factura.numero_factura }}{% else %}—{% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </details>
-    {% endfor %}
-  </details>
+  {% for nodo in grupos %}
+    {% include 'pages/shared/grupo_nodo.html' with nodo=nodo leaf_template='pages/movimientos/_movimientos_leaf.html' %}
   {% endfor %}
 </div>
 {% else %}

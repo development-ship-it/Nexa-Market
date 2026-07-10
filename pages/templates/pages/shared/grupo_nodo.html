@@ -1,0 +1,25 @@
+{% comment %}
+Nodo recursivo del desglose jerárquico (Año → Mes → Semana → Día → Hora).
+Espera: nodo (con label/count/chips/hijos/items/open) y leaf_template.
+{% endcomment %}
+<details class="grp-node" {% if nodo.open %}open{% endif %}>
+  <summary class="grp-head">
+    <span class="grp-caret">▸</span>
+    <span class="grp-title">{{ nodo.label }}</span>
+    <span class="grp-count">{{ nodo.count }}</span>
+    {% if nodo.chips %}
+    <span class="grp-totals">
+      {% for chip in nodo.chips %}<span class="grp-t {{ chip.clase }}">{{ chip.texto }}</span>{% endfor %}
+    </span>
+    {% endif %}
+  </summary>
+  <div class="grp-body">
+    {% if nodo.hijos %}
+      {% for hijo in nodo.hijos %}
+        {% include 'pages/shared/grupo_nodo.html' with nodo=hijo %}
+      {% endfor %}
+    {% else %}
+      {% include leaf_template with items=nodo.items %}
+    {% endif %}
+  </div>
+</details>

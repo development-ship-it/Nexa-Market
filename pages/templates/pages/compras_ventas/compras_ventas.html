@@ -72,86 +72,8 @@
 
 {% if grupos %}
 <div class="group-tree">
-  {% for anio in grupos %}
-  <details class="grp-year" {% if forloop.first %}open{% endif %}>
-    <summary class="grp-head grp-year-head">
-      <span class="grp-caret">▸</span>
-      <span class="grp-title">{{ anio.anio }}</span>
-      <span class="grp-count">{{ anio.count }}</span>
-      <span class="grp-totals">
-        {% if anio.ventas %}<span class="grp-t venta">Ventas ${{ anio.ventas|floatformat:0 }}</span>{% endif %}
-        {% if anio.compras %}<span class="grp-t compra">Compras ${{ anio.compras|floatformat:0 }}</span>{% endif %}
-        {% if anio.mermas %}<span class="grp-t merma">Merma ${{ anio.mermas|floatformat:0 }}</span>{% endif %}
-      </span>
-    </summary>
-
-    {% for mes in anio.meses %}
-    <details class="grp-month" {% if forloop.parentloop.first and forloop.first %}open{% endif %}>
-      <summary class="grp-head grp-month-head">
-        <span class="grp-caret">▸</span>
-        <span class="grp-title">{{ mes.label }}</span>
-        <span class="grp-count">{{ mes.count }}</span>
-        <span class="grp-totals">
-          {% if mes.ventas %}<span class="grp-t venta">${{ mes.ventas|floatformat:0 }}</span>{% endif %}
-          {% if mes.compras %}<span class="grp-t compra">${{ mes.compras|floatformat:0 }}</span>{% endif %}
-          {% if mes.mermas %}<span class="grp-t merma">${{ mes.mermas|floatformat:0 }}</span>{% endif %}
-        </span>
-      </summary>
-
-      <div class="grp-body">
-        <div class="factura-list">
-          {% for f in mes.facturas %}
-          <div class="factura-card">
-            <div class="factura-header">
-              <div class="factura-num">{{ f.numero_factura }}</div>
-              <div style="display:flex;align-items:center;gap:10px;">
-                {% if f.tipo == 'VENTA' %}
-                  <span class="badge badge-teal">Venta</span>
-                {% elif f.tipo == 'MERMA' %}
-                  <span class="badge badge-yellow">⚠ Merma</span>
-                {% else %}
-                  <span class="badge badge-blue">Compra</span>
-                {% endif %}
-                <span class="factura-total">${{ f.total|floatformat:0 }}</span>
-              </div>
-            </div>
-            <div class="factura-meta">
-              <span>{{ f.fecha|date:"d/m/Y H:i" }}</span>
-              {% if f.usuario %}<span>· {{ f.usuario.nombre }}</span>{% endif %}
-              {% with n=f.lineas.all|length %}<span>· {{ n }} línea{{ n|pluralize }}</span>{% endwith %}
-            </div>
-            {% if f.lineas.all %}
-            <table class="factura-lines">
-              <thead>
-                <tr>
-                  <th>Artículo</th>
-                  <th style="text-align:right">Cant.</th>
-                  <th style="text-align:right">Precio u.</th>
-                  <th style="text-align:right">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for linea in f.lineas.all %}
-                <tr>
-                  <td>{{ linea.articulo.nombre_articulo }}</td>
-                  <td style="text-align:right">{{ linea.unidades }}</td>
-                  <td style="text-align:right">
-                    {% if f.tipo == 'VENTA' %}${{ linea.precio_unitario_venta|floatformat:0 }}
-                    {% else %}${{ linea.precio_unitario_compra|floatformat:0 }}{% endif %}
-                  </td>
-                  <td style="text-align:right;font-weight:600;">${{ linea.total|floatformat:0 }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-            {% endif %}
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-    </details>
-    {% endfor %}
-  </details>
+  {% for nodo in grupos %}
+    {% include 'pages/shared/grupo_nodo.html' with nodo=nodo leaf_template='pages/compras_ventas/_facturas_leaf.html' %}
   {% endfor %}
 </div>
 {% else %}
