@@ -5,6 +5,30 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
+
+<!-- PESTAÑAS DE ANÁLISIS -->
+<div class="dash-tabs">
+  <a href="?vista=principal" class="dash-tab {% if vista == 'principal' %}active{% endif %}">
+    <span class="svg-icon icon-dashboard"></span> Panel principal
+  </a>
+  <a href="?vista=productos" class="dash-tab {% if vista == 'productos' %}active{% endif %}">
+    <span class="svg-icon icon-articulos"></span> Análisis de productos
+  </a>
+  <a href="?vista=temporal" class="dash-tab {% if vista == 'temporal' %}active{% endif %}">
+    <span class="svg-icon icon-movimientos"></span> Análisis temporal
+  </a>
+  <a href="?vista=usuarios" class="dash-tab {% if vista == 'usuarios' %}active{% endif %}">
+    <span class="svg-icon icon-usuarios"></span> Análisis de usuarios
+  </a>
+</div>
+
+{% if vista == 'productos' %}
+  {% include 'pages/dashboard/_productos.html' %}
+{% elif vista == 'temporal' %}
+  {% include 'pages/dashboard/_placeholder.html' with titulo='Análisis temporal' icono='🕒' %}
+{% elif vista == 'usuarios' %}
+  {% include 'pages/dashboard/_placeholder.html' with titulo='Análisis de usuarios' icono='👥' %}
+{% else %}
 <div class="dashboard-grid">
 
   <!-- STATS ROW -->
@@ -218,6 +242,7 @@
   </div>
 
 </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

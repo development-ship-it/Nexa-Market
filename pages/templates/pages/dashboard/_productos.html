@@ -1,0 +1,107 @@
+{% comment %}Análisis de productos: más vendidos y los que más ingresos dejan.{% endcomment %}
+<div class="dashboard-grid">
+
+  <!-- Resumen -->
+  <div class="cv-summary-row">
+    <div class="summary-card">
+      <span class="summary-label">Unidades vendidas</span>
+      <span class="summary-value">{{ prod_total_unidades|floatformat:0 }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-label">Ingresos totales</span>
+      <span class="summary-value" style="color:var(--teal);">${{ prod_total_ingresos|floatformat:0 }}</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-label">Ganancia estimada</span>
+      <span class="summary-value" style="color:{% if prod_total_ganancia >= 0 %}var(--green){% else %}var(--red){% endif %};">${{ prod_total_ganancia|floatformat:0 }}</span>
+    </div>
+  </div>
+
+  <!-- Dos rankings -->
+  <div class="bottom-row">
+    <div class="table-card">
+      <div class="card-header">
+        <span class="card-title">Productos más vendidos</span>
+        <span class="card-subtitle">Por unidades</span>
+      </div>
+      {% if prod_top_unidades %}
+        <div class="rank-list">
+          {% for p in prod_top_unidades %}
+          <div class="rank-item">
+            <span class="rank-pos">{{ forloop.counter }}</span>
+            <div class="rank-body">
+              <div class="rank-top">
+                <span class="rank-name">{{ p.nombre }}</span>
+                <span class="rank-value">{{ p.unidades|floatformat:0 }} uds</span>
+              </div>
+              <div class="rank-bar teal"><span style="width:{{ p.pct }}%;"></span></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state"><span class="empty-icon">📦</span><p>Sin ventas todavía</p></div>
+      {% endif %}
+    </div>
+
+    <div class="table-card">
+      <div class="card-header">
+        <span class="card-title">Productos que dejan más ingresos</span>
+        <span class="card-subtitle">Por $ vendido</span>
+      </div>
+      {% if prod_top_ingresos %}
+        <div class="rank-list">
+          {% for p in prod_top_ingresos %}
+          <div class="rank-item">
+            <span class="rank-pos">{{ forloop.counter }}</span>
+            <div class="rank-body">
+              <div class="rank-top">
+                <span class="rank-name">{{ p.nombre }}</span>
+                <span class="rank-value" style="color:var(--teal);">${{ p.ingresos|floatformat:0 }}</span>
+              </div>
+              <div class="rank-bar"><span style="width:{{ p.pct }}%;"></span></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state"><span class="empty-icon">💰</span><p>Sin ventas todavía</p></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Tabla completa -->
+  {% if prod_tabla %}
+  <div class="table-card full-width">
+    <div class="card-header">
+      <span class="card-title">Detalle por producto</span>
+      <span class="card-subtitle">{{ prod_tabla|length }} producto{{ prod_tabla|length|pluralize }} con ventas</span>
+    </div>
+    <div class="table-wrapper" style="border:none;border-radius:0;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th style="text-align:right">Unidades</th>
+            <th style="text-align:right">Ingresos</th>
+            <th style="text-align:right">Ganancia</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in prod_tabla %}
+          <tr>
+            <td><strong>{{ p.nombre }}</strong></td>
+            <td style="color:var(--gray);">{{ p.categoria }}</td>
+            <td style="text-align:right;font-weight:600;">{{ p.unidades|floatformat:0 }}</td>
+            <td style="text-align:right;font-weight:700;color:var(--teal);">${{ p.ingresos|floatformat:0 }}</td>
+            <td style="text-align:right;font-weight:700;color:{% if p.ganancia >= 0 %}var(--green){% else %}var(--red){% endif %};">${{ p.ganancia|floatformat:0 }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
