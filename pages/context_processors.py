@@ -17,9 +17,14 @@ def empresa_actual(request):
 
     ctx = {'empresa_actual': empresa}
     try:
+        from base_datos.cache import cachear
         from base_datos.models import ConfiguracionWeb
-        config, _ = ConfiguracionWeb.objects.get_or_create(empresa=empresa)
-        ctx['config_web'] = config
+
+        def _cargar():
+            config, _ = ConfiguracionWeb.objects.get_or_create(empresa=empresa)
+            return config
+
+        ctx['config_web'] = cachear(empresa.pk, 'config_web', _cargar)
     except Exception:
         # La tabla configuracion_web puede no existir aún (migración pendiente
         # de aplicar en el deploy) — la empresa se muestra igual.

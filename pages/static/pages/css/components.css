@@ -125,6 +125,7 @@
 .badge-red   { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3); color: var(--red); }
 .badge-teal  { background: rgba(37,99,235,.1);   border: 1px solid rgba(37,99,235,.25);  color: var(--teal); }
 .badge-blue  { background: rgba(96,165,250,.08); border: 1px solid rgba(96,165,250,.2);  color: var(--blue); }
+.badge-yellow{ background: rgba(245,194,17,.12); border: 1px solid rgba(245,194,17,.35); color: #a07c00; }
 
 /* FACTURA CARDS */
 .factura-list { display: flex; flex-direction: column; gap: 14px; }

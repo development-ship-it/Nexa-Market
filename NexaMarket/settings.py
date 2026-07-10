@@ -57,7 +57,9 @@ WSGI_APPLICATION = 'NexaMarket.wsgi.application'
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
-    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
+    # conn_max_age: reutiliza la conexión entre requests (persistente 10 min)
+    # conn_health_checks: verifica la conexión antes de usarla (evita errores del pooler)
+    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)}
 else:
     DATABASES = {
         'default': {
@@ -67,6 +69,19 @@ else:
     }
 
 AUTH_PASSWORD_VALIDATORS = []
+
+# Caché en memoria: las lecturas pesadas se guardan 60 s.
+# Los cambios hechos desde la web invalidan al instante (base_datos/signals.py);
+# los hechos desde la app móvil se reflejan en máximo 1 minuto.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'TIMEOUT': 60,
+    }
+}
+
+# Sesiones: lee desde el caché y escribe en la BD (menos consultas por request)
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
 LANGUAGE_CODE = 'es-cl'
 TIME_ZONE = 'America/Santiago'

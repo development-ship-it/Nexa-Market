@@ -42,4 +42,8 @@ class Stock(models.Model):
 
     @property
     def label_tipo(self):
-        return 'Compra' if self.tipo == 'ENTRADA' else 'Venta'
+        if self.tipo == 'ENTRADA':
+            return 'Compra'
+        if self.factura and self.factura.tipo == 'MERMA':
+            return 'Merma'
+        return 'Venta'

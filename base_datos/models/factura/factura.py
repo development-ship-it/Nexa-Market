@@ -6,9 +6,10 @@ class Factura(models.Model):
     Agrupa todos los movimientos de Stock de una transacción.
     Una COMPRA agrupa los artículos ingresados en un mismo carrito de compra.
     Una VENTA agrupa los artículos vendidos antes de confirmar el carrito.
-    tipo: 'COMPRA' → entradas al inventario | 'VENTA' → salidas del inventario
+    Una MERMA agrupa salidas por pérdida/deterioro (las crea la app móvil).
+    tipo: 'COMPRA' → entradas | 'VENTA' → salidas | 'MERMA' → salidas sin venta
     """
-    TIPO_CHOICES = [('COMPRA', 'Compra'), ('VENTA', 'Venta')]
+    TIPO_CHOICES = [('COMPRA', 'Compra'), ('VENTA', 'Venta'), ('MERMA', 'Merma')]
 
     id_nfactura    = models.CharField(max_length=36, primary_key=True)
     empresa        = models.ForeignKey('Empresa', on_delete=models.CASCADE)

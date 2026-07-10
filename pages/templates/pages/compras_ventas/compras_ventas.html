@@ -31,6 +31,7 @@
     <span class="chip active" data-filter="all">Todas</span>
     <span class="chip" data-filter="VENTA">Ventas</span>
     <span class="chip" data-filter="COMPRA">Compras</span>
+    <span class="chip" data-filter="MERMA">Mermas</span>
   </div>
 
   <form method="get" class="cv-date-filter" id="cvDateFilter">
@@ -105,6 +106,8 @@
       <div style="display:flex;align-items:center;gap:10px;">
         {% if f.tipo == 'VENTA' %}
           <span class="badge badge-teal">Venta</span>
+        {% elif f.tipo == 'MERMA' %}
+          <span class="badge badge-yellow">⚠ Merma</span>
         {% else %}
           <span class="badge badge-blue">Compra</span>
         {% endif %}

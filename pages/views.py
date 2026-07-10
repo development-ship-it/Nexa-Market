@@ -7,6 +7,7 @@ from urllib.parse import urlencode
 
 import requests
 from django.conf import settings
+from django.core.cache import cache
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -16,6 +17,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from base_datos.models import Empresa, Articulo, Categoria, Proveedor, Usuario, Factura, Stock, ConfiguracionWeb
+from base_datos.cache import cachear
 from .forms import ArticuloForm, CategoriaForm, ProveedorForm, EmpresaForm, ConfiguracionWebForm
 
 
@@ -39,8 +41,15 @@ def _get_usuario(request):
     Usuario de la app (tabla usuario) vinculado al login web por correo.
     Si el correo no existe en la tabla, se usa el usuario web por defecto
     asociado a la empresa demo.
+    Cacheado 60 s por usuario web: evita repetir la consulta en cada request.
     """
+    cache_key = f'usuario_web:{request.user.pk}'
+    usuario = cache.get(cache_key)
+    if usuario is not None:
+        return usuario
+
     email = (getattr(request.user, 'email', '') or request.user.get_username() or '').strip()
+    usuario = None
     if email:
         usuario = (
             Usuario.objects
@@ -48,20 +57,20 @@ def _get_usuario(request):
             .select_related('empresa')
             .first()
         )
-        if usuario:
-            return usuario
-
-    empresa = _get_empresa_demo()
-    usuario, _ = Usuario.objects.get_or_create(
-        id_usuario='00000000-0000-0000-0000-000000000002',
-        defaults={
-            'empresa': empresa,
-            'nombre': 'Admin Web',
-            'correo': 'admin@nexamarket.com',
-            'tipo_usuario': 'administrador',
-            'activo': True,
-        }
-    )
+    if usuario is None:
+        empresa = _get_empresa_demo()
+        usuario, _ = Usuario.objects.get_or_create(
+            id_usuario='00000000-0000-0000-0000-000000000002',
+            defaults={
+                'empresa': empresa,
+                'nombre': 'Admin Web',
+                'correo': 'admin@nexamarket.com',
+                'tipo_usuario': 'administrador',
+                'activo': True,
+            }
+        )
+    _ = usuario.empresa  # precargar la relación antes de cachear
+    cache.set(cache_key, usuario, 60)
     return usuario
 
 
@@ -176,12 +185,10 @@ def google_callback(request):
 
 # ── DASHBOARD ─────────────────────────────────────────────────────────────────
 
-@login_required
-def dashboard(request):
+def _datos_dashboard(empresa):
     from django.db.models import Sum, Q, Value, IntegerField
     from django.db.models.functions import Coalesce, ExtractHour
 
-    empresa = _get_empresa(request)
     hoy = timezone.localdate()
 
     facturas = Factura.objects.filter(empresa=empresa)
@@ -240,8 +247,7 @@ def dashboard(request):
         for h in range(8, 21)
     ]
 
-    return render(request, 'pages/dashboard/dashboard.html', {
-        'page': 'dashboard',
+    return {
         'ventas_hoy': ventas_hoy,
         'variacion': variacion,
         'stock_total': stock_total,
@@ -252,8 +258,15 @@ def dashboard(request):
         'total_ventas': total_ventas,
         'total_compras': total_compras,
         'balance': total_ventas - total_compras,
-        'ultimas_facturas': facturas.order_by('-fecha')[:4],
-    })
+        'ultimas_facturas': list(facturas.select_related('usuario').order_by('-fecha')[:4]),
+    }
+
+
+@login_required
+def dashboard(request):
+    empresa = _get_empresa(request)
+    datos = cachear(empresa.pk, 'dashboard', lambda: _datos_dashboard(empresa))
+    return render(request, 'pages/dashboard/dashboard.html', {'page': 'dashboard', **datos})
 
 
 def _aplicar_precios_mayor(articulo):
@@ -271,23 +284,28 @@ def _aplicar_precios_mayor(articulo):
 @login_required
 def productos(request):
     empresa = _get_empresa(request)
-    qs = (
-        Articulo.objects
-        .filter(empresa=empresa, activo=True)
-        .select_related('categoria', 'proveedor')
-        .order_by('nombre_articulo')
-    )
-    prov_filter = request.GET.get('proveedor', '')
-    prov_nombre = ''
-    if prov_filter:
-        qs = qs.filter(proveedor__id_proveedor=prov_filter)
-        try:
-            prov_nombre = Proveedor.objects.get(id_proveedor=prov_filter).nombre
-        except Proveedor.DoesNotExist:
-            prov_filter = ''
+    filtro = request.GET.get('proveedor', '')
+
+    def _cargar():
+        qs = (
+            Articulo.objects
+            .filter(empresa=empresa, activo=True)
+            .select_related('categoria', 'proveedor')
+            .order_by('nombre_articulo')
+        )
+        prov_filter, prov_nombre = filtro, ''
+        if prov_filter:
+            qs = qs.filter(proveedor__id_proveedor=prov_filter)
+            try:
+                prov_nombre = Proveedor.objects.get(id_proveedor=prov_filter).nombre
+            except Proveedor.DoesNotExist:
+                prov_filter = ''
+        return list(qs), prov_filter, prov_nombre
+
+    articulos, prov_filter, prov_nombre = cachear(empresa.pk, f'productos:{filtro}', _cargar)
     return render(request, 'pages/productos/productos.html', {
         'page': 'productos',
-        'articulos': qs,
+        'articulos': articulos,
         'prov_filter': prov_filter,
         'prov_nombre': prov_nombre,
     })
@@ -470,6 +488,7 @@ def empresa(request):
         form = EmpresaForm(request.POST, instance=emp)
         if form.is_valid():
             form.save()
+            cache.delete(f'usuario_web:{request.user.pk}')  # refrescar nombre en el sidebar
             messages.success(request, 'Datos de la empresa actualizados.')
             return redirect('empresa')
     else:
@@ -568,20 +587,23 @@ def punto_compra(request):
         messages.success(request, f'Compra {numero} registrada — Total: ${total_compra:,.0f}')
         return redirect('compras_ventas')
 
-    articulos = (
-        Articulo.objects
-        .filter(empresa=empresa, activo=True)
-        .select_related('categoria', 'proveedor')
-        .order_by('nombre_articulo')
-    )
-    # Solo proveedores que tengan artículos activos en esta empresa
-    proveedores_activos = (
-        Proveedor.objects
-        .filter(empresa=empresa, activo=True, articulo__empresa=empresa, articulo__activo=True)
-        .distinct()
-        .order_by('nombre')
-    )
+    def _cargar():
+        articulos = list(
+            Articulo.objects
+            .filter(empresa=empresa, activo=True)
+            .select_related('categoria', 'proveedor')
+            .order_by('nombre_articulo')
+        )
+        # Solo proveedores que tengan artículos activos en esta empresa
+        proveedores_activos = list(
+            Proveedor.objects
+            .filter(empresa=empresa, activo=True, articulo__empresa=empresa, articulo__activo=True)
+            .distinct()
+            .order_by('nombre')
+        )
+        return articulos, proveedores_activos
 
+    articulos, proveedores_activos = cachear(empresa.pk, 'pos_compra', _cargar)
     return render(request, 'pages/punto_compra/punto_compra.html', {
         'page': 'punto_compra',
         'articulos': articulos,
@@ -618,28 +640,31 @@ def inventario(request):
     from django.db.models.functions import Coalesce
 
     empresa = _get_empresa(request)
-    articulos = (
-        Articulo.objects
-        .filter(empresa=empresa, activo=True)
-        .select_related('categoria', 'proveedor')
-        .annotate(
-            entradas=Coalesce(
-                Sum('movimientos__unidades', filter=Q(movimientos__tipo='ENTRADA')),
-                Value(0), output_field=IntegerField()
-            ),
-            salidas=Coalesce(
-                Sum('movimientos__unidades', filter=Q(movimientos__tipo='SALIDA')),
-                Value(0), output_field=IntegerField()
-            ),
+
+    def _cargar():
+        articulos = list(
+            Articulo.objects
+            .filter(empresa=empresa, activo=True)
+            .select_related('categoria', 'proveedor')
+            .annotate(
+                entradas=Coalesce(
+                    Sum('movimientos__unidades', filter=Q(movimientos__tipo='ENTRADA')),
+                    Value(0), output_field=IntegerField()
+                ),
+                salidas=Coalesce(
+                    Sum('movimientos__unidades', filter=Q(movimientos__tipo='SALIDA')),
+                    Value(0), output_field=IntegerField()
+                ),
+            )
+            .order_by('nombre_articulo')
         )
-        .order_by('nombre_articulo')
-    )
-    for art in articulos:
-        art.stock_actual = art.entradas - art.salidas
+        for art in articulos:
+            art.stock_actual = art.entradas - art.salidas
+        return articulos
 
     return render(request, 'pages/inventario/inventario.html', {
         'page': 'inventario',
-        'articulos': articulos,
+        'articulos': cachear(empresa.pk, 'inventario', _cargar),
     })
 
 
@@ -706,32 +731,34 @@ def punto_venta(request):
         messages.success(request, f'Venta {numero} registrada — Total: ${total_venta:,.0f}')
         return redirect('compras_ventas')
 
-    articulos = (
-        Articulo.objects
-        .filter(empresa=empresa, activo=True)
-        .select_related('categoria')
-        .annotate(
-            entradas=Coalesce(
-                Sum('movimientos__unidades', filter=Q(movimientos__tipo='ENTRADA')),
-                Value(0), output_field=IntegerField()
-            ),
-            salidas=Coalesce(
-                Sum('movimientos__unidades', filter=Q(movimientos__tipo='SALIDA')),
-                Value(0), output_field=IntegerField()
-            ),
+    def _cargar():
+        articulos = list(
+            Articulo.objects
+            .filter(empresa=empresa, activo=True)
+            .select_related('categoria')
+            .annotate(
+                entradas=Coalesce(
+                    Sum('movimientos__unidades', filter=Q(movimientos__tipo='ENTRADA')),
+                    Value(0), output_field=IntegerField()
+                ),
+                salidas=Coalesce(
+                    Sum('movimientos__unidades', filter=Q(movimientos__tipo='SALIDA')),
+                    Value(0), output_field=IntegerField()
+                ),
+            )
+            .order_by('nombre_articulo')
         )
-        .order_by('nombre_articulo')
-    )
-    for art in articulos:
-        art.stock_actual = art.entradas - art.salidas
+        for art in articulos:
+            art.stock_actual = art.entradas - art.salidas
+        categorias = list(
+            Categoria.objects
+            .filter(empresa=empresa, estado=True, articulos__empresa=empresa, articulos__activo=True)
+            .distinct()
+            .order_by('categoria')
+        )
+        return articulos, categorias
 
-    categorias = (
-        Categoria.objects
-        .filter(empresa=empresa, estado=True, articulos__empresa=empresa, articulos__activo=True)
-        .distinct()
-        .order_by('categoria')
-    )
-
+    articulos, categorias = cachear(empresa.pk, 'pos_venta', _cargar)
     return render(request, 'pages/punto_venta/punto_venta.html', {
         'page': 'punto_venta',
         'articulos': articulos,
@@ -805,8 +832,13 @@ def movimientos(request):
         .select_related('articulo', 'factura', 'usuario')
         .order_by('-fecha_hora')
     )
-    if tipo_filtro in ('ENTRADA', 'SALIDA'):
-        qs = qs.filter(tipo=tipo_filtro)
+    if tipo_filtro == 'ENTRADA':
+        qs = qs.filter(tipo='ENTRADA')
+    elif tipo_filtro == 'SALIDA':
+        # Ventas reales: salidas que no provienen de una merma
+        qs = qs.filter(tipo='SALIDA').exclude(factura__tipo='MERMA')
+    elif tipo_filtro == 'MERMA':
+        qs = qs.filter(factura__tipo='MERMA')
 
     return render(request, 'pages/movimientos/movimientos.html', {
         'page': 'movimientos',
