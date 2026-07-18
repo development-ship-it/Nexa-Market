@@ -37,7 +37,6 @@ class Articulo(models.Model):
     es_mayorista          = models.BooleanField(default=False, null=True, blank=True)
     precio_venta_mayor    = models.FloatField(null=True, blank=True)
     cantidad_minima_mayor = models.FloatField(null=True, blank=True)
-    precio_compra_mayor   = models.FloatField(null=True, blank=True)
     margen_ganancia_mayor = models.FloatField(null=True, blank=True)
 
     # Umbral para avisos de stock bajo (None = usa el valor por defecto, 5)

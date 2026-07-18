@@ -41,8 +41,9 @@
           <span class="logo-sub">Mi negocio</span>
         </div>
       </a>
-      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
-        <span></span><span></span><span></span>
+      <button class="sidebar-toggle" id="sidebarToggle"
+              aria-label="Ocultar menú" title="Ocultar menú">
+        <span class="svg-icon icon-chevron-izq sm"></span>
       </button>
     </div>
 
@@ -128,7 +129,8 @@
     <!-- TOP BAR -->
     <header class="topbar">
       <div class="topbar-left">
-        <button class="sidebar-toggle-mobile" id="sidebarToggleMobile">
+        <button class="sidebar-toggle-mobile" id="sidebarToggleMobile"
+                aria-label="Mostrar menú" title="Mostrar menú">
           <span></span><span></span><span></span>
         </button>
         <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>

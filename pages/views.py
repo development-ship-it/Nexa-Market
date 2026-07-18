@@ -379,13 +379,13 @@ def dashboard(request):
 
 
 def _aplicar_precios_mayor(articulo):
-    """Redondea los precios mayoristas y recalcula su margen (igual que el normal)."""
-    pcm = _round10(articulo.precio_compra_mayor) if articulo.precio_compra_mayor else None
+    """Redondea el precio de venta mayorista y recalcula su margen.
+    La base es el precio de compra normal: no existe compra al por mayor."""
+    pc = articulo.precio_compra
     pvm = _round10(articulo.precio_venta_mayor) if articulo.precio_venta_mayor else None
-    articulo.precio_compra_mayor = pcm
     articulo.precio_venta_mayor = pvm
-    if pcm and pvm:
-        articulo.margen_ganancia_mayor = round((pvm - pcm) / pcm * 100, 2)
+    if pc and pvm:
+        articulo.margen_ganancia_mayor = round((pvm - pc) / pc * 100, 2)
 
 
 # ── PRODUCTOS ─────────────────────────────────────────────────────────────────

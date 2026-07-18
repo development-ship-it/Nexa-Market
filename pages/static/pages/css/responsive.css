@@ -14,7 +14,7 @@
   }
   .sidebar.open { transform: translateX(0); }
   .main-wrapper { margin-left: 0 !important; }
-  .sidebar-toggle { display: none; }
+  /* La flecha cierra el menú; la hamburguesa del topbar lo abre */
   .sidebar-toggle-mobile { display: flex; }
   .content-area { padding: 16px; }
   .topbar { padding: 0 16px; }

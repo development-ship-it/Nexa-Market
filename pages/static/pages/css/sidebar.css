@@ -16,13 +16,9 @@
   z-index: 200;
   transition: width var(--transition), transform var(--transition);
 }
-.sidebar.collapsed { width: var(--sidebar-collapsed); }
-.sidebar.collapsed .nav-label,
-.sidebar.collapsed .logo-text,
-.sidebar.collapsed .user-details,
-.sidebar.collapsed .logout-btn { display: none; }
-.sidebar.collapsed .sidebar-header { justify-content: center; }
-.sidebar.collapsed .nav-item { justify-content: center; padding: 14px; }
+/* Oculto: se retira a la izquierda y el contenido ocupa toda la pantalla.
+   Vuelve a aparecer con la hamburguesa del topbar. */
+.sidebar.oculto { transform: translateX(-100%); }
 
 .sidebar-header {
   display: flex;
@@ -62,16 +58,24 @@
 }
 .logo-text b { color: var(--teal); }
 .logo-sub { font-size: .7rem; color: var(--gray); }
-.sidebar.collapsed .logo-text-group { display: none; }
 
+/* Flecha para ocultar el menú */
 .sidebar-toggle {
-  background: none; border: none; cursor: pointer;
-  display: flex; flex-direction: column; gap: 4px; padding: 4px;
-}
-.sidebar-toggle span {
-  display: block; width: 18px; height: 2px;
-  background: var(--gray); border-radius: 2px;
+  width: 28px; height: 28px;
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--gray2);
+  border-radius: 50%;
+  color: var(--gray);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
   transition: var(--transition);
+}
+.sidebar-toggle:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+  background: rgba(37,99,235,.08);
 }
 
 /* NAV ITEMS */
@@ -153,6 +157,7 @@
 .icon-apagar          { --icon: url('../images/svg/Iconos_UI/apagar.svg'); }
 .icon-play            { --icon: url('../images/svg/Iconos_UI/play.svg'); }
 .icon-etiqueta        { --icon: url('../images/svg/Iconos_UI/etiqueta.svg'); }
+.icon-chevron-izq     { --icon: url('../images/svg/Iconos_UI/chevron-izquierda.svg'); }
 
 /* Tinte: por defecto heredan el color del texto; con .icono-primario toman
    el color principal que la empresa eligió en Personalización. */
@@ -174,7 +179,6 @@
   text-transform: uppercase; letter-spacing: .9px;
   white-space: nowrap; overflow: hidden;
 }
-.sidebar.collapsed .nav-divider { display: none; }
 
 /* SIDEBAR FOOTER */
 .sidebar-footer {
@@ -214,8 +218,6 @@
   -webkit-mask: url('../images/logos/nexalyze-wordmark.svg') no-repeat center / contain;
   mask: url('../images/logos/nexalyze-wordmark.svg') no-repeat center / contain;
 }
-.sidebar.collapsed .sidebar-nexalyze span,
-.sidebar.collapsed .nexalyze-wordmark { display: none; }
 
 .user-info {
   display: flex;
@@ -263,7 +265,9 @@
   min-height: 100vh;
   transition: margin-left var(--transition);
 }
-.sidebar.collapsed ~ .main-wrapper { margin-left: var(--sidebar-collapsed); }
+/* Con el menú oculto el contenido ocupa todo el ancho y aparece la hamburguesa */
+.sidebar.oculto ~ .main-wrapper { margin-left: 0; }
+.sidebar.oculto ~ .main-wrapper .sidebar-toggle-mobile { display: flex; }
 
 /* TOPBAR */
 .topbar {

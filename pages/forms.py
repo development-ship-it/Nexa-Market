@@ -41,7 +41,7 @@ class ArticuloForm(forms.ModelForm):
             'precio_compra', 'precio_venta', 'margen_ganancia',
             'unidad_medida', 'foto', 'activo', 'stock_minimo',
             'es_mayorista', 'cantidad_minima_mayor',
-            'precio_compra_mayor', 'precio_venta_mayor', 'margen_ganancia_mayor',
+            'precio_venta_mayor', 'margen_ganancia_mayor',
         ]
         widgets = {
             'nombre_articulo': forms.TextInput(attrs={'placeholder': 'Nombre del producto'}),
@@ -53,7 +53,6 @@ class ArticuloForm(forms.ModelForm):
             'margen_ganancia': forms.NumberInput(attrs={'placeholder': '0.0', 'step': '0.1', 'min': '-100'}),
             'stock_minimo': forms.NumberInput(attrs={'placeholder': '5', 'step': '1', 'min': '0'}),
             'cantidad_minima_mayor': forms.NumberInput(attrs={'placeholder': 'Ej: 10', 'step': '1', 'min': '0'}),
-            'precio_compra_mayor': forms.NumberInput(attrs={'placeholder': '0', 'step': '1', 'min': '0'}),
             'precio_venta_mayor': forms.NumberInput(attrs={'placeholder': '0', 'step': '1', 'min': '0'}),
             'margen_ganancia_mayor': forms.NumberInput(attrs={'placeholder': '0.0', 'step': '0.1', 'min': '-100'}),
         }
@@ -72,7 +71,6 @@ class ArticuloForm(forms.ModelForm):
             'activo': 'Producto activo',
             'stock_minimo': 'Stock mínimo',
             'cantidad_minima_mayor': 'Cantidad mínima mayorista',
-            'precio_compra_mayor': 'Precio de compra mayorista ($)',
             'precio_venta_mayor': 'Precio de venta mayorista ($)',
             'margen_ganancia_mayor': 'Margen mayorista (%)',
         }

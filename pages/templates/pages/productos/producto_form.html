@@ -173,14 +173,6 @@
               <span class="field-hint">Desde esta cantidad se aplica el precio mayorista</span>
             </div>
 
-            <div class="form-field">
-              <label class="field-label">{{ form.precio_compra_mayor.label }}</label>
-              <div class="input-prefix">
-                <span class="prefix">$</span>
-                {{ form.precio_compra_mayor }}
-              </div>
-            </div>
-
             <div class="prices-link-row">
               <div class="form-field">
                 <label class="field-label" style="display:flex;align-items:center;gap:6px;">
@@ -355,7 +347,6 @@ _calcFromVenta();
 // ── Venta al por mayor ──
 const esMayorista = document.getElementById('id_es_mayorista');
 const mayoristaBox = document.getElementById('mayoristaFields');
-const pcMayor = document.getElementById('id_precio_compra_mayor');
 const pvMayor = document.getElementById('id_precio_venta_mayor');
 const mgMayor = document.getElementById('id_margen_ganancia_mayor');
 
@@ -365,8 +356,9 @@ function _toggleMayorista() {
 esMayorista.addEventListener('change', _toggleMayorista);
 _toggleMayorista();
 
+// La base del cálculo mayorista es el precio de compra normal
 function _mayorCalcFromMargen() {
-  const pc = parseFloat(pcMayor.value) || 0;
+  const pc = parseFloat(precioCompra.value) || 0;
   const mg = parseFloat(mgMayor.value);
   if (!isNaN(mg) && pc > 0) {
     pvMayor.value = roundToTen(pc * (1 + mg / 100));
@@ -374,7 +366,7 @@ function _mayorCalcFromMargen() {
 }
 
 function _mayorCalcFromVenta() {
-  const pc = parseFloat(pcMayor.value) || 0;
+  const pc = parseFloat(precioCompra.value) || 0;
   const pv = parseFloat(pvMayor.value) || 0;
   if (pc > 0) {
     mgMayor.value = ((pv - pc) / pc * 100).toFixed(1);
@@ -384,7 +376,7 @@ function _mayorCalcFromVenta() {
 let _lastMayor = 'venta';
 mgMayor.addEventListener('input', () => { _lastMayor = 'margen'; _mayorCalcFromMargen(); });
 pvMayor.addEventListener('input', () => { _lastMayor = 'venta'; _mayorCalcFromVenta(); });
-pcMayor.addEventListener('input', () => { _lastMayor === 'margen' ? _mayorCalcFromMargen() : _mayorCalcFromVenta(); });
+precioCompra.addEventListener('input', () => { _lastMayor === 'margen' ? _mayorCalcFromMargen() : _mayorCalcFromVenta(); });
 pvMayor.addEventListener('blur', () => {
   const v = parseFloat(pvMayor.value);
   if (!isNaN(v)) { pvMayor.value = roundToTen(v); }

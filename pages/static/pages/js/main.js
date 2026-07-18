@@ -7,39 +7,55 @@ document.addEventListener('DOMContentLoaded', () => {
   initAlertDismiss();
 });
 
+// Menú lateral: la flecha lo oculta (la pantalla se agranda) y la hamburguesa
+// del topbar lo vuelve a mostrar. En móvil el menú se superpone con fondo.
 function initSidebar() {
   const sidebar = document.getElementById('sidebar');
-  const toggleBtn = document.getElementById('sidebarToggle');
-  const toggleMobile = document.getElementById('sidebarToggleMobile');
+  const btnOcultar = document.getElementById('sidebarToggle');
+  const btnMostrar = document.getElementById('sidebarToggleMobile');
   const overlay = document.getElementById('sidebarOverlay');
 
   if (!sidebar) return;
 
-  // Desktop collapse
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('collapsed');
-      localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-    });
-    if (localStorage.getItem('sidebarCollapsed') === 'true') {
-      sidebar.classList.add('collapsed');
-    }
-  }
+  const esMovil = () => window.matchMedia('(max-width: 768px)').matches;
 
-  // Mobile open/close
-  function openSidebar() {
+  function abrirMovil() {
     sidebar.classList.add('open');
-    overlay.classList.add('show');
+    if (overlay) overlay.classList.add('show');
     document.body.style.overflow = 'hidden';
   }
-  function closeSidebar() {
+  function cerrarMovil() {
     sidebar.classList.remove('open');
-    overlay.classList.remove('show');
+    if (overlay) overlay.classList.remove('show');
     document.body.style.overflow = '';
   }
 
-  if (toggleMobile) toggleMobile.addEventListener('click', openSidebar);
-  if (overlay) overlay.addEventListener('click', closeSidebar);
+  function ocultar() {
+    if (esMovil()) { cerrarMovil(); return; }
+    sidebar.classList.add('oculto');
+    try { localStorage.setItem('sidebarOculto', 'true'); } catch (e) {}
+  }
+  function mostrar() {
+    if (esMovil()) { abrirMovil(); return; }
+    sidebar.classList.remove('oculto');
+    try { localStorage.setItem('sidebarOculto', 'false'); } catch (e) {}
+  }
+
+  if (btnOcultar) btnOcultar.addEventListener('click', ocultar);
+  if (btnMostrar) btnMostrar.addEventListener('click', mostrar);
+  if (overlay) overlay.addEventListener('click', cerrarMovil);
+
+  // Restaurar el estado elegido (solo en escritorio)
+  try {
+    if (localStorage.getItem('sidebarOculto') === 'true' && !esMovil()) {
+      sidebar.classList.add('oculto');
+    }
+  } catch (e) {}
+
+  // Al pasar de móvil a escritorio, limpiar el estado de superposición
+  window.addEventListener('resize', () => {
+    if (!esMovil() && sidebar.classList.contains('open')) cerrarMovil();
+  });
 }
 
 function initCurrentDate() {
