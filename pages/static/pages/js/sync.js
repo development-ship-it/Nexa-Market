@@ -33,10 +33,14 @@
 
     // Al cerrar sesión se vacía todo: en un equipo compartido nadie debe ver
     // páginas cacheadas de la sesión anterior.
-    document.querySelectorAll('a[href*="/logout/"]').forEach(a => {
-      a.addEventListener('click', (ev) => {
+    document.querySelectorAll('form[action*="/logout/"]').forEach(f => {
+      f.addEventListener('submit', (ev) => {
+        if (f.dataset.purgado) return;          // 2.º submit: ya purgamos, dejar pasar
         ev.preventDefault();
-        purgar('PURGAR_TODO').then(() => { location.href = a.href; });
+        purgar('PURGAR_TODO').then(() => {
+          f.dataset.purgado = '1';
+          f.submit();
+        });
       });
     });
 

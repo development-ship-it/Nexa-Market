@@ -113,7 +113,11 @@
           <span class="user-role">{{ request.user.is_superuser|yesno:"Administrador,Usuario" }}</span>
         </div>
       </div>
-      <a href="{% url 'logout' %}" class="logout-btn" title="Cerrar sesión"><span class="svg-icon icon-apagar sm"></span></a>
+      {# LogoutView solo acepta POST desde Django 5 #}
+      <form action="{% url 'logout' %}" method="post" class="logout-form">
+        {% csrf_token %}
+        <button type="submit" class="logout-btn" title="Cerrar sesión"><span class="svg-icon icon-apagar sm"></span></button>
+      </form>
     </div>
     <a href="https://nexalyzeai.com" target="_blank" rel="noopener" class="sidebar-nexalyze"
        title="Desarrollado por Nexalyze">

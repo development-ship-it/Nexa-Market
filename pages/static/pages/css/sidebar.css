@@ -248,11 +248,13 @@
 .user-name { font-size: .82rem; font-weight: 700; color: var(--white); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .user-role { font-size: .72rem; color: var(--gray); }
 
+.logout-form { display: flex; flex-shrink: 0; }
 .logout-btn {
   background: var(--navy); border: 1px solid var(--gray2);
   color: var(--gray); text-decoration: none; border-radius: 8px;
   width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
   font-size: .9rem; transition: var(--transition); flex-shrink: 0;
+  padding: 0; cursor: pointer;
 }
 .logout-btn:hover { background: rgba(248,113,113,.1); border-color: rgba(248,113,113,.3); color: var(--red); }
 
