@@ -36,6 +36,7 @@
 }
 
 .chip {
+  display: inline-flex; align-items: center; gap: 5px;
   font-size: .78rem; font-weight: 600;
   padding: 6px 14px; border-radius: 50px;
   border: 1px solid var(--gray2);
@@ -43,6 +44,7 @@
   cursor: pointer;
   transition: var(--transition);
   white-space: nowrap;
+  -webkit-user-select: none;
   user-select: none;
 }
 .chip:hover { border-color: rgba(37,99,235,.3); color: var(--white); }

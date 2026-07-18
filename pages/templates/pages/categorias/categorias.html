@@ -7,7 +7,7 @@
 {% block content %}
 <div class="page-actions">
   <div class="search-box">
-    <span class="search-icon">🔍</span>
+    <span class="search-icon svg-icon icon-buscar icono-primario"></span>
     <input type="text" placeholder="Buscar categoría..." class="search-input" id="searchInput" />
   </div>
   <a href="{% url 'categoria_crear' %}" class="btn-primary">+ Nueva categoría</a>
@@ -17,7 +17,7 @@
 <div class="config-list" id="listaItems">
   {% for cat in categorias %}
   <div class="config-row" data-nombre="{{ cat.categoria|lower }}">
-    <div class="config-row-icon">🗂️</div>
+    <div class="config-row-icon svg-icon icon-categorias md icono-primario"></div>
     <div class="config-row-info">
       <span class="config-row-name">{{ cat.categoria }}</span>
       <span class="config-row-meta">Categoría de productos</span>
@@ -30,8 +30,8 @@
       {% endif %}
     </div>
     <div class="config-row-actions">
-      <a href="{% url 'categoria_editar' cat.id_categoria %}" class="btn-action edit" title="Editar">✏️</a>
-      <a href="{% url 'categoria_eliminar' cat.id_categoria %}" class="btn-action delete" title="Eliminar">🗑️</a>
+      <a href="{% url 'categoria_editar' cat.id_categoria %}" class="btn-action edit" title="Editar"><span class="svg-icon icon-editar sm"></span></a>
+      <a href="{% url 'categoria_eliminar' cat.id_categoria %}" class="btn-action delete" title="Eliminar"><span class="svg-icon icon-eliminar sm"></span></a>
     </div>
   </div>
   {% endfor %}
@@ -39,7 +39,7 @@
 <p class="list-count">{{ categorias.count }} categoría{{ categorias.count|pluralize }}</p>
 {% else %}
 <div class="empty-state" style="margin-top:60px;">
-  <span class="empty-icon">🗂️</span>
+  <span class="empty-icon svg-icon icon-categorias xl icono-primario"></span>
   <p>No hay categorías registradas</p>
   <a href="{% url 'categoria_crear' %}" class="btn-primary" style="margin-top:16px;">+ Crear primera categoría</a>
 </div>

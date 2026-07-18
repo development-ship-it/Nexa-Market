@@ -113,6 +113,7 @@
   width: 21px; height: 21px;
   flex-shrink: 0;
   background: currentColor;
+  vertical-align: -0.18em;   /* alineación cuando va junto a texto */
   -webkit-mask: var(--icon) no-repeat center / contain;
   mask: var(--icon) no-repeat center / contain;
 }
@@ -129,6 +130,42 @@
 .icon-empresa         { --icon: url('../images/svg/Iconos_Inicio/empresa.svg'); }
 .icon-personalizacion { --icon: url('../images/svg/Iconos_Inicio/personalizacion.svg'); }
 .icon-usuarios        { --icon: url('../images/svg/Iconos_Inicio/usuarios.svg'); }
+
+/* Iconos de interfaz */
+.icon-buscar          { --icon: url('../images/svg/Iconos_UI/buscar.svg'); }
+.icon-editar          { --icon: url('../images/svg/Iconos_UI/editar.svg'); }
+.icon-eliminar        { --icon: url('../images/svg/Iconos_UI/eliminar.svg'); }
+.icon-guardar         { --icon: url('../images/svg/Iconos_UI/guardar.svg'); }
+.icon-dinero          { --icon: url('../images/svg/Iconos_UI/dinero.svg'); }
+.icon-camara          { --icon: url('../images/svg/Iconos_UI/camara.svg'); }
+.icon-candado         { --icon: url('../images/svg/Iconos_UI/candado.svg'); }
+.icon-ojo             { --icon: url('../images/svg/Iconos_UI/ojo.svg'); }
+.icon-usuario         { --icon: url('../images/svg/Iconos_UI/usuario.svg'); }
+.icon-reloj           { --icon: url('../images/svg/Iconos_UI/reloj.svg'); }
+.icon-grafico-linea   { --icon: url('../images/svg/Iconos_UI/grafico-linea.svg'); }
+.icon-grafico-barras  { --icon: url('../images/svg/Iconos_UI/grafico-barras.svg'); }
+.icon-obras           { --icon: url('../images/svg/Iconos_UI/obras.svg'); }
+.icon-campana         { --icon: url('../images/svg/Iconos_UI/campana.svg'); }
+.icon-movil           { --icon: url('../images/svg/Iconos_UI/movil.svg'); }
+.icon-nota            { --icon: url('../images/svg/Iconos_UI/nota.svg'); }
+.icon-calendario      { --icon: url('../images/svg/Iconos_UI/calendario.svg'); }
+.icon-alerta          { --icon: url('../images/svg/Iconos_UI/alerta.svg'); }
+.icon-apagar          { --icon: url('../images/svg/Iconos_UI/apagar.svg'); }
+.icon-play            { --icon: url('../images/svg/Iconos_UI/play.svg'); }
+.icon-etiqueta        { --icon: url('../images/svg/Iconos_UI/etiqueta.svg'); }
+
+/* Tinte: por defecto heredan el color del texto; con .icono-primario toman
+   el color principal que la empresa eligió en Personalización. */
+.icono-primario { color: var(--teal); }
+.icono-exito    { color: var(--green); }
+.icono-peligro  { color: var(--red); }
+.icono-aviso    { color: var(--yellow); }
+
+/* Tamaños */
+.svg-icon.sm { width: 15px; height: 15px; }
+.svg-icon.md { width: 26px; height: 26px; }
+.svg-icon.lg { width: 34px; height: 34px; }
+.svg-icon.xl { width: 46px; height: 46px; }
 
 .nav-divider {
   padding: 16px 14px 4px;
@@ -162,15 +199,44 @@
 }
 .sidebar-powered b { color: var(--teal); font-weight: 700; }
 .powered-logo {
-  width: 16px; height: 16px;
-  background: var(--teal);
-  color: #fff;
-  border-radius: 4px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: .6rem; font-weight: 900;
+  width: 18px; height: 18px;
+  border-radius: 5px;
   flex-shrink: 0;
+  object-fit: contain;
 }
 .sidebar.collapsed .sidebar-powered span { display: none; }
+
+/* Desarrollado por Nexalyze */
+.sidebar-nexalyze {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px 14px;
+  font-size: .64rem;
+  color: var(--gray);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: .75;
+  transition: opacity var(--transition);
+}
+.sidebar-nexalyze:hover { opacity: 1; }
+.nexalyze-icono { width: 16px; height: auto; flex-shrink: 0; border-radius: 4px; }
+
+/* Wordmark NEXALYZE: máscara SVG para que tome el color del contexto
+   (un <img> no heredaría currentColor y saldría siempre negro).
+   Proporción del viewBox: 1038.14 / 145.31 ≈ 7.15 */
+.nexalyze-wordmark {
+  display: inline-block;
+  height: 9px; width: 64px;
+  flex-shrink: 0;
+  background: currentColor;
+  -webkit-mask: url('../images/logos/nexalyze-wordmark.svg') no-repeat center / contain;
+  mask: url('../images/logos/nexalyze-wordmark.svg') no-repeat center / contain;
+}
+.sidebar.collapsed .sidebar-nexalyze span,
+.sidebar.collapsed .nexalyze-wordmark { display: none; }
 
 .user-info {
   display: flex;

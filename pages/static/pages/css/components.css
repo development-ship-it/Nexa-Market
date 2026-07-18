@@ -14,7 +14,10 @@
   gap: 12px;
   flex-wrap: wrap;
 }
-.card-title { font-size: .95rem; font-weight: 700; color: var(--white); }
+.card-title {
+  font-size: .95rem; font-weight: 700; color: var(--white);
+  display: inline-flex; align-items: center; gap: 7px;
+}
 .card-link { font-size: .8rem; color: var(--teal); text-decoration: none; opacity: .8; }
 .card-link:hover { opacity: 1; }
 
@@ -116,11 +119,12 @@
 
 /* BADGES */
 .badge {
-  display: inline-flex; align-items: center;
+  display: inline-flex; align-items: center; gap: 5px;
   font-size: .7rem; font-weight: 700;
   padding: 4px 10px; border-radius: 50px;
   white-space: nowrap;
 }
+.badge .svg-icon { width: 13px; height: 13px; }
 .badge-green { background: rgba(74,222,128,.1);  border: 1px solid rgba(74,222,128,.25); color: var(--green); }
 .badge-red   { background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3); color: var(--red); }
 .badge-teal  { background: rgba(37,99,235,.1);   border: 1px solid rgba(37,99,235,.25);  color: var(--teal); }

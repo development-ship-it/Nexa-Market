@@ -7,7 +7,7 @@
 {% block content %}
 <div class="page-actions">
   <div class="search-box">
-    <span class="search-icon">🔍</span>
+    <span class="search-icon svg-icon icon-buscar icono-primario"></span>
     <input type="text" placeholder="Buscar producto..." class="search-input" id="searchInput" />
   </div>
   <a href="{% url 'producto_crear' %}" class="btn-primary">+ Nuevo producto</a>
@@ -16,7 +16,7 @@
 {% if prov_filter %}
 <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px 14px;
             background:rgba(0,200,200,.07);border:1px solid rgba(0,200,200,.2);border-radius:10px;font-size:.84rem;">
-  <span style="color:var(--teal);">🚚</span>
+  <span class="svg-icon icon-proveedores sm icono-primario"></span>
   <span>Filtrando artículos del proveedor <strong style="color:var(--teal);">{{ prov_nombre }}</strong></span>
   <a href="{% url 'productos' %}" style="margin-left:auto;color:var(--gray);font-size:.78rem;text-decoration:none;">✕ Quitar filtro</a>
 </div>
@@ -31,7 +31,7 @@
       {% if art.imagen_url %}
         <img src="{{ art.imagen_url }}" alt="{{ art.nombre_articulo }}" />
       {% else %}
-        <span class="thumb-placeholder">🏷️</span>
+        <span class="thumb-placeholder svg-icon icon-etiqueta xl"></span>
       {% endif %}
     </div>
 
@@ -64,15 +64,15 @@
 
       {% if art.codigo_barra or art.codigo_qr %}
       <div class="producto-codes">
-        {% if art.codigo_barra %}<span class="code-badge">🔖 {{ art.codigo_barra }}</span>{% endif %}
-        {% if art.codigo_qr %}<span class="code-badge">📱 {{ art.codigo_qr }}</span>{% endif %}
+        {% if art.codigo_barra %}<span class="code-badge"><span class="svg-icon icon-etiqueta sm"></span> {{ art.codigo_barra }}</span>{% endif %}
+        {% if art.codigo_qr %}<span class="code-badge"><span class="svg-icon icon-movil sm"></span> {{ art.codigo_qr }}</span>{% endif %}
       </div>
       {% endif %}
     </div>
 
     <div class="producto-actions">
-      <a href="{% url 'producto_editar' art.id_articulo %}" class="btn-action edit" title="Editar">✏️</a>
-      <a href="{% url 'producto_eliminar' art.id_articulo %}" class="btn-action delete" title="Desactivar">🗑️</a>
+      <a href="{% url 'producto_editar' art.id_articulo %}" class="btn-action edit" title="Editar"><span class="svg-icon icon-editar sm"></span></a>
+      <a href="{% url 'producto_eliminar' art.id_articulo %}" class="btn-action delete" title="Desactivar"><span class="svg-icon icon-eliminar sm"></span></a>
     </div>
 
   </div>
@@ -83,7 +83,7 @@
 
 {% else %}
 <div class="empty-state" style="margin-top: 60px;">
-  <span class="empty-icon">🏷️</span>
+  <span class="empty-icon svg-icon icon-etiqueta xl icono-primario"></span>
   <p>No hay productos registrados</p>
   <span class="empty-sub">Crea tu primer producto con el botón "+ Nuevo producto"</span>
   <a href="{% url 'producto_crear' %}" class="btn-primary" style="margin-top: 18px;">+ Crear primer producto</a>

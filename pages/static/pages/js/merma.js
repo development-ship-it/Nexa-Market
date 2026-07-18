@@ -71,7 +71,7 @@ function mmRenderCart() {
   if (items.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <span class="empty-icon">📦</span>
+        <span class="empty-icon svg-icon icon-inventario xl icono-primario"></span>
         <p>Sin productos</p>
         <span class="empty-sub">Haz clic en un producto para agregarlo a la merma</span>
       </div>`;
@@ -102,7 +102,7 @@ function mmRenderCart() {
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.74rem;color:var(--gray);">
         <span>${mmFmt(item.costo)} costo c/u</span>
-        ${sinStock ? `<span class="pv-stock-warn">⚠ supera el stock (${item.stock})</span>` : ''}
+        ${sinStock ? `<span class="pv-stock-warn"><span class="svg-icon icon-alerta sm"></span> supera el stock (${item.stock})</span>` : ''}
       </div>
     </div>`;
   }).join('');

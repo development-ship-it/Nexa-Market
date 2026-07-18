@@ -90,7 +90,7 @@ function pvRenderCart() {
   if (items.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <span class="empty-icon">🛒</span>
+        <span class="empty-icon svg-icon icon-punto-venta xl icono-primario"></span>
         <p>Carrito vacío</p>
         <span class="empty-sub">Haz clic en un producto para agregarlo</span>
       </div>`;
@@ -127,7 +127,7 @@ function pvRenderCart() {
         <span>${pvFmt(precioU)} c/u</span>
         ${esMayor ? '<span class="pv-precio-mayor-badge">Precio mayorista</span>' : ''}
         ${item.cantMayor > 0 && !esMayor ? `<span>· mayorista desde ${item.cantMayor}u</span>` : ''}
-        ${sinStock ? `<span class="pv-stock-warn">⚠ supera el stock (${item.stock})</span>` : ''}
+        ${sinStock ? `<span class="pv-stock-warn"><span class="svg-icon icon-alerta sm"></span> supera el stock (${item.stock})</span>` : ''}
       </div>
     </div>`;
   }).join('');

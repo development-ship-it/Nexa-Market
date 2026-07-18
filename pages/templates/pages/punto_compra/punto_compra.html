@@ -11,7 +11,7 @@
   <div class="pos-products">
     <div class="page-actions">
       <div class="search-box">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon svg-icon icon-buscar icono-primario"></span>
         <input type="text" placeholder="Buscar artículo o escanear código..."
                class="search-input" id="pcSearch" autocomplete="off" />
       </div>
@@ -31,13 +31,13 @@
     {% if proveedores_activos %}
     <div class="filter-chips" id="provFilter" style="margin-bottom:14px;">
       <span class="chip active" data-prov="">
-        <span style="opacity:.6;font-size:.75rem;">🚚</span> Todos
+        <span class="svg-icon icon-proveedores sm"></span> Todos
       </span>
       {% for prov in proveedores_activos %}
       <div class="prov-chip-group">
         <span class="chip" data-prov="{{ prov.id_proveedor }}">{{ prov.nombre }}</span>
         <a href="{% url 'productos' %}?proveedor={{ prov.id_proveedor }}"
-           class="prov-edit-btn" title="Ver/editar artículos de {{ prov.nombre }}">✏️</a>
+           class="prov-edit-btn" title="Ver/editar artículos de {{ prov.nombre }}"><span class="svg-icon icon-editar sm"></span></a>
       </div>
       {% endfor %}
     </div>
@@ -58,7 +58,7 @@
           {% if art.imagen_url %}
             <img src="{{ art.imagen_url }}" alt="{{ art.nombre_articulo }}" style="width:100%;height:100%;object-fit:cover;" />
           {% else %}
-            <span>🏷️</span>
+            <span class="svg-icon icon-etiqueta lg" style="opacity:.35;"></span>
           {% endif %}
         </div>
         <div class="pos-info">
@@ -74,7 +74,7 @@
     </div>
     {% else %}
     <div class="empty-state">
-      <span class="empty-icon">📦</span>
+      <span class="empty-icon svg-icon icon-inventario xl icono-primario"></span>
       <p>No hay productos activos</p>
       <a href="{% url 'producto_crear' %}" class="btn-primary" style="margin-top:14px;">+ Agregar producto</a>
     </div>
@@ -84,13 +84,13 @@
   <!-- ── PANEL DERECHO: carrito ── -->
   <div class="pos-cart">
     <div class="cart-header">
-      <span class="card-title">📥 Carrito de compra</span>
+      <span class="card-title"><span class="svg-icon icon-punto-compra sm icono-primario"></span> Carrito de compra</span>
       <button class="btn-clear" id="pcClearCart">Limpiar</button>
     </div>
 
     <div class="cart-items" id="pcCartItems">
       <div id="pcEmptyCart" class="empty-state">
-        <span class="empty-icon">📥</span>
+        <span class="empty-icon svg-icon icon-punto-compra xl icono-primario"></span>
         <p>Carrito vacío</p>
         <span class="empty-sub">Haz clic en un producto para agregarlo</span>
       </div>

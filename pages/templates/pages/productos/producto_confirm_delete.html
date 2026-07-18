@@ -7,7 +7,7 @@
 {% block content %}
 <div class="confirm-delete-page">
   <div class="confirm-card">
-    <div class="confirm-icon">⚠️</div>
+    <div class="confirm-icon svg-icon icon-alerta xl icono-peligro"></div>
     <h2 class="confirm-title">¿Desactivar este producto?</h2>
     <p class="confirm-desc">
       El producto <strong>"{{ articulo.nombre_articulo }}"</strong> quedará inactivo
@@ -18,7 +18,7 @@
       {% if articulo.imagen_url %}
         <img src="{{ articulo.imagen_url }}" alt="{{ articulo.nombre_articulo }}" class="confirm-thumb" />
       {% else %}
-        <div class="confirm-thumb-placeholder">🏷️</div>
+        <div class="confirm-thumb-placeholder"><span class="svg-icon icon-etiqueta md"></span></div>
       {% endif %}
       <div>
         <strong>{{ articulo.nombre_articulo }}</strong>

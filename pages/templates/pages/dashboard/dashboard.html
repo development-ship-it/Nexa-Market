@@ -25,9 +25,9 @@
 {% if vista == 'productos' %}
   {% include 'pages/dashboard/_productos.html' %}
 {% elif vista == 'temporal' %}
-  {% include 'pages/dashboard/_placeholder.html' with titulo='Análisis temporal' icono='🕒' %}
+  {% include 'pages/dashboard/_placeholder.html' with titulo='Análisis temporal' icono='reloj' %}
 {% elif vista == 'usuarios' %}
-  {% include 'pages/dashboard/_placeholder.html' with titulo='Análisis de usuarios' icono='👥' %}
+  {% include 'pages/dashboard/_placeholder.html' with titulo='Análisis de usuarios' icono='usuarios' %}
 {% else %}
 <div class="dashboard-grid">
 
@@ -107,7 +107,7 @@
         </div>
       </div>
       {% else %}
-      <div class="empty-state"><span class="empty-icon">📈</span><p>Aún no hay ventas registradas</p></div>
+      <div class="empty-state"><span class="empty-icon svg-icon icon-grafico-linea xl icono-primario"></span><p>Aún no hay ventas registradas</p></div>
       {% endif %}
     </div>
 
@@ -156,7 +156,7 @@
           {% endfor %}
         </div>
       {% else %}
-        <div class="empty-state"><span class="empty-icon">📦</span><p>Sin ventas todavía</p></div>
+        <div class="empty-state"><span class="empty-icon svg-icon icon-inventario xl icono-primario"></span><p>Sin ventas todavía</p></div>
       {% endif %}
     </div>
 
@@ -181,7 +181,7 @@
           {% endfor %}
         </div>
       {% else %}
-        <div class="empty-state"><span class="empty-icon">🏷️</span><p>Sin ventas todavía</p></div>
+        <div class="empty-state"><span class="empty-icon svg-icon icon-etiqueta xl icono-primario"></span><p>Sin ventas todavía</p></div>
       {% endif %}
     </div>
   </div>
@@ -208,7 +208,7 @@
         </div>
       {% else %}
         <div class="empty-state">
-          <span class="empty-icon">🧾</span>
+          <span class="empty-icon svg-icon icon-compras-ventas xl icono-primario"></span>
           <p>No hay facturas aún</p>
         </div>
       {% endif %}
@@ -234,7 +234,7 @@
         </div>
       {% else %}
         <div class="empty-state">
-          <span class="empty-icon">📦</span>
+          <span class="empty-icon svg-icon icon-inventario xl icono-primario"></span>
           <p>Todo el stock está OK</p>
         </div>
       {% endif %}

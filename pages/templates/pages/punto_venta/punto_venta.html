@@ -11,7 +11,7 @@
   <div class="pos-products">
     <div class="page-actions">
       <div class="search-box">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon svg-icon icon-buscar icono-primario"></span>
         <input type="text" placeholder="Buscar producto o escanear código..."
                class="search-input" id="pvSearch" autocomplete="off" autofocus />
       </div>
@@ -44,7 +44,7 @@
           {% if art.imagen_url %}
             <img src="{{ art.imagen_url }}" alt="{{ art.nombre_articulo }}" style="width:100%;height:100%;object-fit:cover;" />
           {% else %}
-            <span>🏷️</span>
+            <span class="svg-icon icon-etiqueta lg" style="opacity:.35;"></span>
           {% endif %}
           <span class="pv-stock {% if art.stock_actual <= 0 %}zero{% elif art.stock_actual < art.stock_minimo|default_if_none:5 %}low{% else %}ok{% endif %}">
             {{ art.stock_actual }}
@@ -65,7 +65,7 @@
     </div>
     {% else %}
     <div class="empty-state">
-      <span class="empty-icon">🛒</span>
+      <span class="empty-icon svg-icon icon-punto-venta xl icono-primario"></span>
       <p>No hay productos activos para vender</p>
       <a href="{% url 'producto_crear' %}" class="btn-primary" style="margin-top:14px;">+ Agregar producto</a>
     </div>
@@ -75,13 +75,13 @@
   <!-- ── PANEL DERECHO: carrito ── -->
   <div class="pos-cart">
     <div class="cart-header">
-      <span class="card-title">🛒 Carrito de venta</span>
+      <span class="card-title"><span class="svg-icon icon-punto-venta sm icono-primario"></span> Carrito de venta</span>
       <button class="btn-clear" id="pvClearCart">Limpiar</button>
     </div>
 
     <div class="cart-items" id="pvCartItems">
       <div class="empty-state">
-        <span class="empty-icon">🛒</span>
+        <span class="empty-icon svg-icon icon-punto-venta xl icono-primario"></span>
         <p>Carrito vacío</p>
         <span class="empty-sub">Haz clic en un producto para agregarlo</span>
       </div>

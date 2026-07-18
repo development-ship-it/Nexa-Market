@@ -14,7 +14,8 @@
   <nav class="ld-nav">
     <div class="ld-nav-inner">
       <a href="#inicio" class="ld-brand">
-        <span class="ld-logo">N</span>
+        <img src="{% static 'pages/images/logos/nexa-market-cuadrado.png' %}"
+             alt="Nexa Market" class="ld-logo" width="36" height="36" />
         <span class="ld-brand-text">Nexa <b>Market</b></span>
       </a>
       <div class="ld-nav-links">
@@ -57,7 +58,7 @@
 
         <div class="ld-hero-extras">
           <a href="#" class="ld-playstore">
-            <span class="ld-play-icon">▶</span>
+            <span class="ld-play-icon svg-icon icon-play sm"></span>
             <span class="ld-play-text"><small>Disponible en</small>Play Store</span>
           </a>
           <span class="ld-check-note"><b>✓</b> Mismo sistema en móvil y web</span>
@@ -75,7 +76,7 @@
             </div>
             <div class="ph-appbar">
               <span class="ph-menu"><i></i><i></i><i></i></span>
-              <span class="ph-brand"><span class="ph-mini-logo">N</span> Nexa Market</span>
+              <span class="ph-brand"><img src="{% static 'pages/images/logos/nexa-market-circular.png' %}" alt="" class="ph-mini-logo" width="22" height="22" loading="lazy" /> Nexa Market</span>
               <span class="ph-ring"></span>
             </div>
             <div class="ph-user">
@@ -113,32 +114,32 @@
     </div>
     <div class="ld-grid">
       <div class="ld-card reveal">
-        <span class="ld-card-icon">📦</span>
+        <span class="ld-card-icon"><span class="svg-icon icon-inventario"></span></span>
         <h3>Gestión de inventario</h3>
         <p>Artículos, categorías y movimientos siempre al día. Sin planillas.</p>
       </div>
       <div class="ld-card reveal">
-        <span class="ld-card-icon">📊</span>
+        <span class="ld-card-icon"><span class="svg-icon icon-grafico-barras"></span></span>
         <h3>Dashboard de datos</h3>
         <p>Ventas por hora, ingresos vs egresos y productos más vendidos de un vistazo.</p>
       </div>
       <div class="ld-card reveal">
-        <span class="ld-card-icon">📷</span>
+        <span class="ld-card-icon"><span class="svg-icon icon-camara"></span></span>
         <h3>Punto de venta con escáner</h3>
         <p>Cobra escaneando el código de barras o QR con la cámara de tu teléfono.</p>
       </div>
       <div class="ld-card reveal">
-        <span class="ld-card-icon">📥</span>
+        <span class="ld-card-icon"><span class="svg-icon icon-punto-compra"></span></span>
         <h3>Punto de compra</h3>
         <p>Registra tus compras a proveedores y actualiza el stock automáticamente.</p>
       </div>
       <div class="ld-card reveal">
-        <span class="ld-card-icon">🏷️</span>
+        <span class="ld-card-icon"><span class="svg-icon icon-etiqueta"></span></span>
         <h3>Venta al por mayor</h3>
         <p>Precios mayoristas que se aplican solos según la cantidad.</p>
       </div>
       <div class="ld-card reveal">
-        <span class="ld-card-icon">🔔</span>
+        <span class="ld-card-icon"><span class="svg-icon icon-campana"></span></span>
         <h3>Aviso de stock bajo</h3>
         <p>Recibe alertas antes de quedarte sin producto.</p>
       </div>
@@ -178,7 +179,7 @@
     <h2>Empieza hoy, gratis</h2>
     <p>Descarga la app o entra directo desde tu navegador.</p>
     <div class="ld-cta-actions">
-      <a href="#" class="ld-btn ld-btn-dark"><span class="ld-play-icon">▶</span> Descargar en Play Store</a>
+      <a href="#" class="ld-btn ld-btn-dark"><span class="ld-play-icon svg-icon icon-play sm"></span> Descargar en Play Store</a>
       <a href="{% url 'login' %}" class="ld-btn ld-btn-primary">Iniciar sesión en la web</a>
     </div>
   </section>
@@ -186,10 +187,15 @@
   <!-- FOOTER -->
   <footer class="ld-footer">
     <a href="#inicio" class="ld-brand">
-      <span class="ld-logo">N</span>
+      <img src="{% static 'pages/images/logos/nexa-market-cuadrado.png' %}"
+           alt="Nexa Market" class="ld-logo" width="36" height="36" loading="lazy" />
       <span class="ld-brand-text">Nexa <b>Market</b></span>
     </a>
-    <span class="ld-footer-note">© 2026 Nexa Market · Nexalyze AI</span>
+    <a href="https://nexalyzeai.com" target="_blank" rel="noopener" class="ld-footer-note">
+      <span>© 2026 Nexa Market · Desarrollado por</span>
+      <img src="{% static 'pages/images/logos/nexalyze-icono.png' %}" alt="" class="nexalyze-icono" width="20" height="22" loading="lazy" />
+      <span class="nexalyze-wordmark" role="img" aria-label="Nexalyze"></span>
+    </a>
   </footer>
 
   <script>

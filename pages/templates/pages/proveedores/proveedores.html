@@ -7,7 +7,7 @@
 {% block content %}
 <div class="page-actions">
   <div class="search-box">
-    <span class="search-icon">🔍</span>
+    <span class="search-icon svg-icon icon-buscar icono-primario"></span>
     <input type="text" placeholder="Buscar proveedor..." class="search-input" id="searchInput" />
   </div>
   <a href="{% url 'proveedor_crear' %}" class="btn-primary">+ Nuevo proveedor</a>
@@ -17,7 +17,7 @@
 <div class="config-list" id="listaItems">
   {% for prov in proveedores %}
   <div class="config-row" data-nombre="{{ prov.nombre|lower }}">
-    <div class="config-row-icon">🏭</div>
+    <div class="config-row-icon svg-icon icon-proveedores md icono-primario"></div>
     <div class="config-row-info">
       <span class="config-row-name">{{ prov.nombre }}</span>
       <span class="config-row-meta">
@@ -33,8 +33,8 @@
     </div>
     {% endif %}
     <div class="config-row-actions">
-      <a href="{% url 'proveedor_editar' prov.id_proveedor %}" class="btn-action edit" title="Editar">✏️</a>
-      <a href="{% url 'proveedor_eliminar' prov.id_proveedor %}" class="btn-action delete" title="Desactivar">🗑️</a>
+      <a href="{% url 'proveedor_editar' prov.id_proveedor %}" class="btn-action edit" title="Editar"><span class="svg-icon icon-editar sm"></span></a>
+      <a href="{% url 'proveedor_eliminar' prov.id_proveedor %}" class="btn-action delete" title="Desactivar"><span class="svg-icon icon-eliminar sm"></span></a>
     </div>
   </div>
   {% endfor %}
@@ -42,7 +42,7 @@
 <p class="list-count">{{ proveedores.count }} proveedor{{ proveedores.count|pluralize:"es" }}</p>
 {% else %}
 <div class="empty-state" style="margin-top:60px;">
-  <span class="empty-icon">🏭</span>
+  <span class="empty-icon svg-icon icon-proveedores xl icono-primario"></span>
   <p>No hay proveedores registrados</p>
   <a href="{% url 'proveedor_crear' %}" class="btn-primary" style="margin-top:16px;">+ Crear primer proveedor</a>
 </div>

@@ -20,7 +20,7 @@
           {% if m.tipo == 'ENTRADA' %}
             <span class="badge badge-green">↑ Compra</span>
           {% elif m.factura.tipo == 'MERMA' %}
-            <span class="badge badge-yellow">⚠ Merma</span>
+            <span class="badge badge-yellow"><span class="svg-icon icon-alerta sm"></span> Merma</span>
           {% else %}
             <span class="badge badge-red">↓ Venta</span>
           {% endif %}

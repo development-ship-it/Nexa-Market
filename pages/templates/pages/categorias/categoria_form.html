@@ -12,7 +12,7 @@
   <form method="post" class="product-form">
     {% csrf_token %}
     <div class="form-card">
-      <h3 class="form-card-title">🗂️ Datos de la categoría</h3>
+      <h3 class="form-card-title"><span class="svg-icon icon-categorias icono-primario"></span> Datos de la categoría</h3>
       <div class="form-field required">
         <label class="field-label">{{ form.categoria.label }}</label>
         {{ form.categoria }}

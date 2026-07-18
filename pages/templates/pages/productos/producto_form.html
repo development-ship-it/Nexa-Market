@@ -21,14 +21,14 @@
 
         <!-- FOTO -->
         <div class="form-card">
-          <h3 class="form-card-title">📷 Foto del producto</h3>
+          <h3 class="form-card-title"><span class="svg-icon icon-camara icono-primario"></span> Foto del producto</h3>
           <div class="foto-upload-area" id="fotoArea">
             <div class="foto-preview" id="fotoPreview">
               {% if articulo and articulo.imagen_url %}
                 <img src="{{ articulo.imagen_url }}" id="previewImg" alt="Preview" />
               {% else %}
                 <div class="foto-placeholder" id="fotoPlaceholder">
-                  <span>🏷️</span>
+                  <span class="svg-icon icon-etiqueta xl" style="opacity:.35;"></span>
                   <p>Haz clic o arrastra una imagen</p>
                   <span class="foto-hint">JPG, PNG, WEBP · Máx 5 MB</span>
                 </div>
@@ -44,7 +44,7 @@
 
         <!-- CÓDIGOS -->
         <div class="form-card">
-          <h3 class="form-card-title">🔖 Códigos</h3>
+          <h3 class="form-card-title"><span class="svg-icon icon-etiqueta icono-primario"></span> Códigos</h3>
           <div class="form-field">
             <label class="field-label">{{ form.codigo_barra.label }}</label>
             {{ form.codigo_barra }}
@@ -58,7 +58,7 @@
 
         <!-- PROVEEDOR Y UNIDAD -->
         <div class="form-card">
-          <h3 class="form-card-title">⚙️ Configuración</h3>
+          <h3 class="form-card-title"><span class="svg-icon icon-personalizacion icono-primario"></span> Configuración</h3>
           <div class="form-field">
             <label class="field-label">{{ form.unidad_medida.label }}</label>
             {{ form.unidad_medida }}
@@ -85,7 +85,7 @@
 
         <!-- INFO BÁSICA -->
         <div class="form-card">
-          <h3 class="form-card-title">📝 Información básica</h3>
+          <h3 class="form-card-title"><span class="svg-icon icon-nota icono-primario"></span> Información básica</h3>
           <div class="form-field required">
             <label class="field-label">{{ form.nombre_articulo.label }}</label>
             {{ form.nombre_articulo }}
@@ -105,7 +105,7 @@
 
         <!-- PRECIOS -->
         <div class="form-card">
-          <h3 class="form-card-title">💰 Precios</h3>
+          <h3 class="form-card-title"><span class="svg-icon icon-dinero icono-primario"></span> Precios</h3>
 
           <!-- Precio de compra -->
           <div class="form-field required">
@@ -159,7 +159,7 @@
 
         <!-- VENTA AL POR MAYOR -->
         <div class="form-card">
-          <h3 class="form-card-title">📦 Venta al por mayor</h3>
+          <h3 class="form-card-title"><span class="svg-icon icon-inventario icono-primario"></span> Venta al por mayor</h3>
 
           <div class="form-field form-field-toggle">
             <label class="field-label">{{ form.es_mayorista.label }}</label>

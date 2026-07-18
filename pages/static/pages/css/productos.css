@@ -60,10 +60,12 @@
 
 .producto-codes { display: flex; gap: 5px; flex-wrap: wrap; }
 .code-badge {
+  display: inline-flex; align-items: center; gap: 4px;
   font-size: .7rem; background: var(--navy);
   border: 1px solid var(--gray2);
   border-radius: 6px; padding: 2px 7px; color: var(--gray);
 }
+.code-badge .svg-icon { width: 12px; height: 12px; }
 
 .producto-actions {
   position: absolute; top: 10px; right: 10px;
@@ -78,9 +80,9 @@
   font-size: .85rem; text-decoration: none;
   transition: var(--transition);
 }
-.btn-action.edit { background: rgba(96,165,250,.15); border: 1px solid rgba(96,165,250,.25); }
+.btn-action.edit { background: rgba(96,165,250,.15); border: 1px solid rgba(96,165,250,.25); color: var(--blue); }
 .btn-action.edit:hover { background: rgba(96,165,250,.3); }
-.btn-action.delete { background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.25); }
+.btn-action.delete { background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.25); color: var(--red); }
 .btn-action.delete:hover { background: rgba(248,113,113,.25); }
 
 .productos-count { font-size: .8rem; color: var(--gray); text-align: right; margin-top: 4px; }
@@ -119,6 +121,7 @@
   font-size: .88rem; font-weight: 700; color: var(--white);
   margin-bottom: 16px; padding-bottom: 10px;
   border-bottom: 1px solid var(--gray2);
+  display: flex; align-items: center; gap: 8px;
 }
 
 /* FORM FIELDS */

@@ -118,7 +118,7 @@ function pcSavePrecios(id) {
 
   const url = PC_API_BASE + id + '/precios/';
   const btn = document.getElementById(`pcSaveBtn-${id}`);
-  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+  if (btn) { btn.innerHTML = '<span class="svg-icon icon-reloj sm"></span>'; btn.disabled = true; }
 
   const pcRounded = _round10(item.precio);
   const pvRounded = _round10(item.precioVenta);
@@ -139,7 +139,7 @@ function pcSavePrecios(id) {
     if (btn) {
       btn.disabled = false;
       if (data.ok) {
-        btn.textContent = '✓';
+        btn.innerHTML = '<span class="svg-icon icon-guardar sm"></span>';
         btn.style.color = 'var(--green)';
         // Actualizar cart con valores redondeados devueltos por el servidor
         pcCart[id].precio      = data.precio_compra;
@@ -155,20 +155,20 @@ function pcSavePrecios(id) {
           if (priceEl) priceEl.textContent = pcFmt(data.precio_compra);
         }
       } else {
-        btn.textContent = '✗';
+        btn.innerHTML = '<span class="svg-icon icon-alerta sm"></span>';
         btn.style.color = 'var(--red)';
       }
       setTimeout(() => {
-        if (btn) { btn.textContent = '💾'; btn.style.color = ''; btn.disabled = false; }
+        if (btn) { btn.innerHTML = '<span class="svg-icon icon-guardar sm"></span>'; btn.style.color = ''; btn.disabled = false; }
       }, 2000);
     }
   })
   .catch(() => {
     if (btn) {
       btn.disabled = false;
-      btn.textContent = '✗';
+      btn.innerHTML = '<span class="svg-icon icon-alerta sm"></span>';
       btn.style.color = 'var(--red)';
-      setTimeout(() => { btn.textContent = '💾'; btn.style.color = ''; }, 2000);
+      setTimeout(() => { btn.innerHTML = '<span class="svg-icon icon-guardar sm"></span>'; btn.style.color = ''; }, 2000);
     }
   });
 }
@@ -201,7 +201,7 @@ function pcRenderCart() {
   if (items.length === 0) {
     container.innerHTML = `
       <div id="pcEmptyCart" class="empty-state">
-        <span class="empty-icon">📥</span>
+        <span class="empty-icon svg-icon icon-punto-compra xl icono-primario"></span>
         <p>Carrito vacío</p>
         <span class="empty-sub">Haz clic en un producto para agregarlo</span>
       </div>`;
@@ -254,13 +254,13 @@ function pcRenderCart() {
           </div>
           <button class="pc-save-btn" id="pcSaveBtn-${item.id}"
                   onclick="pcSavePrecios('${item.id}')"
-                  title="Guardar precios en el artículo">💾</button>
+                  title="Guardar precios en el artículo"><span class="svg-icon icon-guardar sm"></span></button>
         </div>
       </div>
 
       <!-- Fecha de vencimiento -->
       <div class="pc-date-row">
-        <span class="pc-row-icon" title="Vencimiento">📅</span>
+        <span class="pc-row-icon svg-icon icon-calendario sm" title="Vencimiento"></span>
         <input type="date" class="pc-ctrl-input pc-date-input"
                value="${item.fechaVencimiento}"
                onchange="pcSetFecha('${item.id}', this.value)" />

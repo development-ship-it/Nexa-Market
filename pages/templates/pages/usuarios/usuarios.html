@@ -7,7 +7,7 @@
 {% block content %}
 <div class="page-actions">
   <div class="search-box">
-    <span class="search-icon">🔍</span>
+    <span class="search-icon svg-icon icon-buscar icono-primario"></span>
     <input type="text" placeholder="Buscar usuario..." class="search-input" id="searchInput" />
   </div>
   <a href="{% url 'usuario_crear' %}" class="btn-primary">+ Nuevo usuario</a>
@@ -49,9 +49,9 @@
       {% endif %}
     </div>
     <div class="config-row-actions">
-      <a href="{% url 'usuario_editar' u.id_usuario %}" class="btn-action edit" title="Editar">✏️</a>
+      <a href="{% url 'usuario_editar' u.id_usuario %}" class="btn-action edit" title="Editar"><span class="svg-icon icon-editar sm"></span></a>
       {% if u.activo %}
-      <a href="{% url 'usuario_eliminar' u.id_usuario %}" class="btn-action delete" title="Desactivar">🗑️</a>
+      <a href="{% url 'usuario_eliminar' u.id_usuario %}" class="btn-action delete" title="Desactivar"><span class="svg-icon icon-eliminar sm"></span></a>
       {% endif %}
     </div>
   </div>
@@ -60,7 +60,7 @@
 <p class="list-count">{{ usuarios|length }} usuario{{ usuarios|length|pluralize }}</p>
 {% else %}
 <div class="empty-state" style="margin-top:60px;">
-  <span class="empty-icon">👥</span>
+  <span class="empty-icon svg-icon icon-usuarios xl icono-primario"></span>
   <p>No hay usuarios registrados</p>
   <a href="{% url 'usuario_crear' %}" class="btn-primary" style="margin-top:16px;">+ Crear primer usuario</a>
 </div>

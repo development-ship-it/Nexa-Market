@@ -50,7 +50,8 @@
     <div class="login-card">
       <!-- Logo -->
       <div class="login-logo">
-        <div class="logo-icon-lg">N</div>
+        <img src="{% static 'pages/images/logos/nexa-market-cuadrado.png' %}"
+             alt="Nexa Market" class="logo-icon-lg" width="46" height="46" />
         <span class="login-brand">Nexa<b>-Market</b></span>
       </div>
 
@@ -68,7 +69,7 @@
         <div class="form-group">
           <label class="form-label" for="username">Usuario</label>
           <div class="input-wrapper">
-            <span class="input-icon">👤</span>
+            <span class="input-icon svg-icon icon-usuario sm"></span>
             <input
               type="text"
               id="username"
@@ -84,7 +85,7 @@
         <div class="form-group">
           <label class="form-label" for="password">Contraseña</label>
           <div class="input-wrapper">
-            <span class="input-icon">🔒</span>
+            <span class="input-icon svg-icon icon-candado sm"></span>
             <input
               type="password"
               id="password"
@@ -94,7 +95,7 @@
               required
               autocomplete="current-password"
             />
-            <button type="button" class="toggle-password" id="togglePwd" aria-label="Mostrar contraseña">👁</button>
+            <button type="button" class="toggle-password" id="togglePwd" aria-label="Mostrar contraseña"><span class="svg-icon icon-ojo sm"></span></button>
           </div>
         </div>
 
@@ -108,7 +109,11 @@
         Continuar con Google
       </a>
 
-      <p class="login-footer">© 2026 Nexalyze · NexaMarket</p>
+      <a href="https://nexalyzeai.com" target="_blank" rel="noopener" class="login-footer">
+        <span>Desarrollado por</span>
+        <img src="{% static 'pages/images/logos/nexalyze-icono.png' %}" alt="" class="nexalyze-icono" width="18" height="20" />
+        <span class="nexalyze-wordmark" role="img" aria-label="Nexalyze"></span>
+      </a>
     </div>
   </div>
 

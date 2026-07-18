@@ -51,10 +51,9 @@
 
 .logo-icon-lg {
   width: 46px; height: 46px;
-  background: linear-gradient(135deg, var(--teal), #0070f3);
   border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 1.2rem; font-weight: 900; color: var(--navy);
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .login-brand { font-size: 1.4rem; font-weight: 800; }
@@ -75,7 +74,9 @@
 }
 .input-icon {
   position: absolute; left: 12px;
+  top: 50%; transform: translateY(-50%);
   font-size: .9rem; opacity: .6; z-index: 1;
+  color: var(--teal);
 }
 .form-input {
   width: 100%;
@@ -93,7 +94,10 @@
 
 .toggle-password {
   position: absolute; right: 12px;
+  top: 50%; transform: translateY(-50%);
   background: none; border: none; cursor: pointer;
+  display: flex; align-items: center;
+  color: var(--gray);
   font-size: .9rem; opacity: .5; transition: opacity var(--transition);
 }
 .toggle-password:hover { opacity: 1; }
@@ -112,6 +116,12 @@
 .btn-login:disabled { opacity: .5; cursor: not-allowed; transform: none; }
 
 .login-footer {
-  font-size: .72rem; color: rgba(168,192,214,.4);
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  font-size: .72rem; color: var(--gray);
   text-align: center; margin-top: 24px;
+  text-decoration: none; opacity: .8;
+  transition: opacity var(--transition);
 }
+.login-footer:hover { opacity: 1; }
+.login-footer .nexalyze-icono { width: 18px; height: auto; border-radius: 4px; }
+.login-footer .nexalyze-wordmark { height: 10px; width: 71px; }

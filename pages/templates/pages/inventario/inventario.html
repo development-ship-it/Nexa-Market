@@ -7,7 +7,7 @@
 {% block content %}
 <div class="page-actions">
   <div class="search-box">
-    <span class="search-icon">🔍</span>
+    <span class="search-icon svg-icon icon-buscar icono-primario"></span>
     <input type="text" placeholder="Buscar artículo..." class="search-input" id="searchInput" />
   </div>
   <div class="filter-chips" id="filterChips">
@@ -30,7 +30,7 @@
       {% if art.imagen_url %}
         <img src="{{ art.imagen_url }}" alt="{{ art.nombre_articulo }}" />
       {% else %}
-        <span style="font-size:2rem;opacity:.4;">🏷️</span>
+        <span class="svg-icon icon-etiqueta lg" style="opacity:.35;"></span>
       {% endif %}
 
       <!-- Badge de stock -->
@@ -66,7 +66,7 @@
 
 {% else %}
 <div class="empty-state" style="margin-top:60px;">
-  <span class="empty-icon">📦</span>
+  <span class="empty-icon svg-icon icon-inventario xl icono-primario"></span>
   <p>No hay artículos activos</p>
   <a href="{% url 'producto_crear' %}" class="btn-primary" style="margin-top:16px;">+ Agregar producto</a>
 </div>

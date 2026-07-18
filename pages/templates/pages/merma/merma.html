@@ -10,13 +10,13 @@
   <!-- ── PANEL IZQUIERDO: productos ── -->
   <div class="pos-products">
     <div class="merma-hint">
-      ⚠ La merma descuenta stock por pérdida o deterioro. Se registra como
+      <span class="svg-icon icon-alerta sm"></span> La merma descuenta stock por pérdida o deterioro. Se registra como
       <strong>MRM-XXXX</strong> con precio de venta $0 y el costo (precio de compra) como pérdida.
     </div>
 
     <div class="page-actions">
       <div class="search-box">
-        <span class="search-icon">🔍</span>
+        <span class="search-icon svg-icon icon-buscar icono-primario"></span>
         <input type="text" placeholder="Buscar producto o escanear código..."
                class="search-input" id="mmSearch" autocomplete="off" autofocus />
       </div>
@@ -46,7 +46,7 @@
           {% if art.imagen_url %}
             <img src="{{ art.imagen_url }}" alt="{{ art.nombre_articulo }}" style="width:100%;height:100%;object-fit:cover;" />
           {% else %}
-            <span>🏷️</span>
+            <span class="svg-icon icon-etiqueta lg" style="opacity:.35;"></span>
           {% endif %}
           <span class="pv-stock {% if art.stock_actual <= 0 %}zero{% elif art.stock_actual < art.stock_minimo|default_if_none:5 %}low{% else %}ok{% endif %}">
             {{ art.stock_actual }}
@@ -64,7 +64,7 @@
     </div>
     {% else %}
     <div class="empty-state">
-      <span class="empty-icon">📦</span>
+      <span class="empty-icon svg-icon icon-inventario xl icono-primario"></span>
       <p>No hay productos activos</p>
       <a href="{% url 'producto_crear' %}" class="btn-primary" style="margin-top:14px;">+ Agregar producto</a>
     </div>
@@ -74,13 +74,13 @@
   <!-- ── PANEL DERECHO: carrito de merma ── -->
   <div class="pos-cart">
     <div class="cart-header">
-      <span class="card-title">⚠ Merma</span>
+      <span class="card-title"><span class="svg-icon icon-merma sm icono-aviso"></span> Merma</span>
       <button class="btn-clear" id="mmClearCart">Limpiar</button>
     </div>
 
     <div class="cart-items" id="mmCartItems">
       <div class="empty-state">
-        <span class="empty-icon">📦</span>
+        <span class="empty-icon svg-icon icon-inventario xl icono-primario"></span>
         <p>Sin productos</p>
         <span class="empty-sub">Haz clic en un producto para agregarlo a la merma</span>
       </div>
@@ -91,7 +91,7 @@
         <span>Costo perdido</span>
         <span class="total-value" id="mmTotal" style="color:var(--red);">$0</span>
       </div>
-      <button class="btn-login" id="mmConfirmarBtn" disabled>⚠ Registrar merma</button>
+      <button class="btn-login" id="mmConfirmarBtn" disabled><span class="svg-icon icon-merma sm"></span> Registrar merma</button>
     </div>
   </div>
 
