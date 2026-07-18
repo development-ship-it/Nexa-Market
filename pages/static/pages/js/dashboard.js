@@ -3,28 +3,11 @@
 document.addEventListener('DOMContentLoaded', () => {
   initTabSwitcher();
   animateBars();
-  initAutoRefresh();
 });
 
-// Refresco en segundo plano cada 60 s: trae el HTML nuevo y reemplaza
-// solo el contenido del dashboard, sin recargar la página ni mover el scroll.
-function initAutoRefresh() {
-  const REFRESH_MS = 60000;
-  setInterval(async () => {
-    if (document.hidden) return;  // pestaña en segundo plano: no gastar red
-    try {
-      const resp = await fetch(window.location.href, { credentials: 'same-origin' });
-      if (!resp.ok) return;
-      const doc = new DOMParser().parseFromString(await resp.text(), 'text/html');
-      const nuevo = doc.querySelector('.dashboard-grid');
-      const actual = document.querySelector('.dashboard-grid');
-      if (nuevo && actual) {
-        actual.innerHTML = nuevo.innerHTML;
-        animateBars();
-      }
-    } catch (e) { /* sin conexión: se reintenta en el próximo ciclo */ }
-  }, REFRESH_MS);
-}
+// Nota: el refresco automático se retiró a propósito. Ahora la app trabaja
+// con el caché del navegador y el botón Sync del topbar (sync.js) avisa
+// cuando hay datos nuevos, en vez de traer la página entera cada minuto.
 
 function initTabSwitcher() {
   document.querySelectorAll('.tab[data-period]').forEach(tab => {

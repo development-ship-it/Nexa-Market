@@ -109,6 +109,10 @@ LOGOUT_REDIRECT_URL = '/login/'
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
 
+# Versión del Service Worker: cambia en cada deploy para invalidar el caché
+# del navegador automáticamente (Render expone el commit desplegado).
+SW_VERSION = (os.getenv('RENDER_GIT_COMMIT') or 'dev')[:12]
+
 # Supabase API (opcional — Storage u otras integraciones)
 SUPABASE_URL = os.getenv('SUPABASE_URL', '')
 SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', '')

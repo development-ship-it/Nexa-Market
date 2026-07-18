@@ -131,6 +131,10 @@
         <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
       </div>
       <div class="topbar-right">
+        <button type="button" class="sync-btn" id="syncBtn" title="Sincronizar datos">
+          <span class="sync-icon">⟳</span>
+          <span class="sync-text">Al día</span>
+        </button>
         <span class="topbar-date" id="currentDate"></span>
         <div class="topbar-user">
           <div class="user-avatar-sm">{{ request.user.username|first|upper }}</div>
@@ -153,6 +157,7 @@
   <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
   <script src="{% static 'pages/js/main.js' %}"></script>
+  <script src="{% static 'pages/js/sync.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

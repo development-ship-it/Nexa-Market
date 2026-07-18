@@ -1,6 +1,7 @@
 import uuid
 import json
 import math
+import hashlib
 import secrets
 from datetime import timedelta
 from urllib.parse import urlencode
@@ -816,6 +817,45 @@ def api_precios_update(request, pk):
         return JsonResponse({'ok': True, 'precio_compra': pc, 'precio_venta': pv})
     except Exception as e:
         return JsonResponse({'ok': False, 'error': str(e)}, status=400)
+
+
+# ── SINCRONIZACIÓN (caché en el navegador, estilo AppSheet) ──────────────────
+
+def service_worker(request):
+    """
+    Sirve el Service Worker desde la raíz (/sw.js) para que su alcance sea
+    todo el sitio. Si se sirviera desde /static/ solo controlaría esa carpeta.
+    """
+    return render(request, 'pages/sw.js', {'version': settings.SW_VERSION},
+                  content_type='application/javascript')
+
+
+@login_required
+def api_estado(request):
+    """
+    Firma del estado de los datos de la empresa. El navegador la compara con
+    la que tenía al sincronizar: si cambió, enciende el botón Sync.
+    Es una respuesta minúscula y se cachea 30 s en el servidor, así el sondeo
+    no golpea la base de datos.
+    """
+    from django.db.models import Max, Count
+
+    empresa = _get_empresa(request)
+
+    def _firma():
+        art = Articulo.objects.filter(empresa=empresa).aggregate(n=Count('pk'), t=Max('updated_at'))
+        fac = Factura.objects.filter(empresa=empresa).aggregate(t=Max('fecha'))
+        stk = Stock.objects.filter(empresa=empresa).aggregate(t=Max('fecha_hora'))
+        crudo = '|'.join(str(x) for x in (art['n'], art['t'], fac['t'], stk['t']))
+        return hashlib.md5(crudo.encode()).hexdigest()[:16]
+
+    # La clave de `cachear` incluye la versión de la empresa: un cambio hecho
+    # desde la web la sube y recalcula al instante; los de la app móvil los
+    # detecta el propio contenido de la firma (máximos de fecha).
+    return JsonResponse({
+        'firma': cachear(empresa.pk, 'firma', _firma, ttl=30),
+        'usuario': request.user.pk,
+    })
 
 
 # ── OTRAS VISTAS ──────────────────────────────────────────────────────────────

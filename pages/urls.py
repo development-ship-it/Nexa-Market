@@ -46,6 +46,10 @@ urlpatterns = [
     # API interna
     path('api/articulo/<str:pk>/precios/', views.api_precios_update, name='api_precios_update'),
 
+    # Sincronización (caché en el navegador)
+    path('sw.js', views.service_worker, name='service_worker'),
+    path('api/estado/', views.api_estado, name='api_estado'),
+
     # Otras
     path('punto-compra/', views.punto_compra, name='punto_compra'),
     path('inventario/', views.inventario, name='inventario'),
