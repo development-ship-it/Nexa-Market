@@ -170,7 +170,7 @@
 .nav-divider {
   padding: 16px 14px 4px;
   font-size: .65rem; font-weight: 700;
-  color: rgba(168,192,214,.3);
+  color: var(--gray);
   text-transform: uppercase; letter-spacing: .9px;
   white-space: nowrap; overflow: hidden;
 }

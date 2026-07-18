@@ -90,7 +90,7 @@
   transition: border-color var(--transition);
 }
 .form-input:focus { border-color: rgba(37,99,235,.5); background: rgba(37,99,235,.04); }
-.form-input::placeholder { color: rgba(168,192,214,.45); }
+.form-input::placeholder { color: rgba(92,107,128,.55); }
 
 .toggle-password {
   position: absolute; right: 12px;

@@ -128,7 +128,7 @@
 .form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .form-field:last-child { margin-bottom: 0; }
 .field-label { font-size: .8rem; font-weight: 600; color: var(--gray); }
-.field-hint { font-size: .72rem; color: rgba(168,192,214,.5); }
+.field-hint { font-size: .72rem; color: var(--gray); opacity: .85; }
 .field-error { font-size: .75rem; color: var(--red); }
 
 .form-field input[type="text"],
@@ -150,7 +150,7 @@
 .form-field textarea:focus,
 .form-field select:focus { border-color: rgba(37,99,235,.5); background: rgba(37,99,235,.04); }
 .form-field input::placeholder,
-.form-field textarea::placeholder { color: rgba(168,192,214,.4); }
+.form-field textarea::placeholder { color: rgba(92,107,128,.55); }
 .form-field select option { background: var(--navy2); color: var(--white); }
 .form-field textarea { resize: vertical; min-height: 80px; }
 
