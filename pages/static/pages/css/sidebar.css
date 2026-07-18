@@ -185,34 +185,13 @@
   gap: 10px;
 }
 
-/* Powered by Nexa Market */
-.sidebar-powered {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 10px 14px 14px;
-  font-size: .7rem;
-  color: var(--gray);
-  white-space: nowrap;
-  overflow: hidden;
-}
-.sidebar-powered b { color: var(--teal); font-weight: 700; }
-.powered-logo {
-  width: 18px; height: 18px;
-  border-radius: 5px;
-  flex-shrink: 0;
-  object-fit: contain;
-}
-.sidebar.collapsed .sidebar-powered span { display: none; }
-
 /* Desarrollado por Nexalyze */
 .sidebar-nexalyze {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 0 14px 14px;
+  padding: 10px 14px 16px;
   font-size: .64rem;
   color: var(--gray);
   text-decoration: none;
