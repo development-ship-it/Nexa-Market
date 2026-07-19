@@ -158,6 +158,9 @@
 .icon-play            { --icon: url('../images/svg/Iconos_UI/play.svg'); }
 .icon-etiqueta        { --icon: url('../images/svg/Iconos_UI/etiqueta.svg'); }
 .icon-chevron-izq     { --icon: url('../images/svg/Iconos_UI/chevron-izquierda.svg'); }
+.icon-casa            { --icon: url('../images/svg/Iconos_UI/casa.svg'); }
+.icon-cuadricula      { --icon: url('../images/svg/Iconos_UI/cuadricula.svg'); }
+.icon-escaner-qr      { --icon: url('../images/svg/Iconos_UI/escaner-qr.svg'); }
 
 /* Tinte: por defecto heredan el color del texto; con .icono-primario toman
    el color principal que la empresa eligió en Personalización. */

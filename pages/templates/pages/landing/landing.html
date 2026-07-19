@@ -58,7 +58,8 @@
 
         <div class="ld-hero-extras">
           <a href="#" class="ld-playstore">
-            <span class="ld-play-icon svg-icon icon-play sm"></span>
+            <img src="{% static 'pages/images/svg/icono_celular/playstore.svg' %}"
+                 alt="" class="ld-play-icon" width="48" height="48" />
             <span class="ld-play-text"><small>Disponible en</small>Play Store</span>
           </a>
           <span class="ld-check-note"><b>✓</b> Mismo sistema en móvil y web</span>
@@ -80,23 +81,28 @@
               <span class="ph-ring"></span>
             </div>
             <div class="ph-user">
-              <span class="ph-avatar">A</span>
-              <span class="ph-username">alonia</span>
+              <span class="ph-avatar">
+                <img src="{% static 'pages/images/svg/icono_celular/minimarket-ohiggins.svg' %}"
+                     alt="" width="46" height="46" loading="lazy" />
+              </span>
+              <span class="ph-username">Minimarket O'higgins</span>
             </div>
             <div class="ph-tiles">
-              <div class="ph-tile t-red"><span class="ph-tile-icon"></span><span>Artículos</span></div>
-              <div class="ph-tile t-blue"><span class="ph-tile-icon"></span><span>Categorías</span></div>
-              <div class="ph-tile t-teal"><span class="ph-tile-icon"></span><span>Compras Ventas</span></div>
-              <div class="ph-tile t-green"><span class="ph-tile-icon"></span><span>Dashboard</span></div>
-              <div class="ph-tile t-purple"><span class="ph-tile-icon"></span><span>Inventario</span></div>
-              <div class="ph-tile t-orange"><span class="ph-tile-icon"></span><span>Movimientos</span></div>
+              <div class="ph-tile t-red"><span class="ph-tile-icon svg-icon icon-articulos"></span><span>Artículos</span></div>
+              <div class="ph-tile t-blue"><span class="ph-tile-icon svg-icon icon-categorias"></span><span>Categorías</span></div>
+              <div class="ph-tile t-teal"><span class="ph-tile-icon svg-icon icon-compras-ventas"></span><span>Compras Ventas</span></div>
+              <div class="ph-tile t-green"><span class="ph-tile-icon svg-icon icon-dashboard"></span><span>Dashboard</span></div>
+              <div class="ph-tile t-purple"><span class="ph-tile-icon svg-icon icon-inventario"></span><span>Inventario</span></div>
+              <div class="ph-tile t-orange"><span class="ph-tile-icon svg-icon icon-movimientos"></span><span>Movimientos</span></div>
+              <div class="ph-tile t-indigo"><span class="ph-tile-icon svg-icon icon-usuarios"></span><span>Usuarios</span></div>
+              <div class="ph-tile t-lime"><span class="ph-tile-icon svg-icon icon-proveedores"></span><span>Proveedores</span></div>
             </div>
             <div class="ph-nav">
-              <span class="ph-nav-item active"><i></i>Inicio</span>
-              <span class="ph-nav-item"><i></i>Venta Img</span>
-              <span class="ph-nav-item"><i></i>Pto. Venta</span>
-              <span class="ph-nav-item"><i></i>Pto. Compra</span>
-              <span class="ph-nav-item"><i></i>Compra Scan</span>
+              <span class="ph-nav-item active"><i class="svg-icon icon-casa"></i>Inicio</span>
+              <span class="ph-nav-item"><i class="svg-icon icon-cuadricula"></i>Venta Img</span>
+              <span class="ph-nav-item"><i class="svg-icon icon-punto-venta"></i>Pto. Venta</span>
+              <span class="ph-nav-item"><i class="svg-icon icon-punto-compra"></i>Pto. Compra</span>
+              <span class="ph-nav-item"><i class="svg-icon icon-escaner-qr"></i>Compra Scan</span>
             </div>
             <span class="ph-home-bar"></span>
           </div>
@@ -179,7 +185,8 @@
     <h2>Empieza hoy, gratis</h2>
     <p>Descarga la app o entra directo desde tu navegador.</p>
     <div class="ld-cta-actions">
-      <a href="#" class="ld-btn ld-btn-dark"><span class="ld-play-icon svg-icon icon-play sm"></span> Descargar en Play Store</a>
+      <a href="#" class="ld-btn ld-btn-dark"><img src="{% static 'pages/images/svg/icono_celular/playstore.svg' %}"
+           alt="" class="ld-play-icon" width="48" height="48" loading="lazy" /> Descargar en Play Store</a>
       <a href="{% url 'login' %}" class="ld-btn ld-btn-primary">Iniciar sesión en la web</a>
     </div>
   </section>

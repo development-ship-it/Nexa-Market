@@ -20,6 +20,8 @@
   --ld-green:  #2f9e44;
   --ld-purple: #7b2ff2;
   --ld-orange: #f08c00;
+  --ld-indigo: #4c56c0;
+  --ld-lime:   #5c940d;
 
   --ld-radius: 16px;
   --ld-radius-sm: 10px;
@@ -36,6 +38,42 @@ body.landing {
   line-height: 1.6;
   overflow-x: hidden;
 }
+
+/* ── Iconos SVG ─────────────────────────────────────────────
+   La landing no carga sidebar.css, así que replica aquí el mismo
+   sistema de máscaras: el SVG se tiñe con currentColor.          */
+.svg-icon {
+  display: inline-block;
+  width: 21px; height: 21px;
+  flex-shrink: 0;
+  background: currentColor;
+  vertical-align: -0.18em;
+  -webkit-mask: var(--icon) no-repeat center / contain;
+  mask: var(--icon) no-repeat center / contain;
+}
+.svg-icon.sm { width: 15px; height: 15px; }
+.svg-icon.md { width: 26px; height: 26px; }
+.svg-icon.lg { width: 34px; height: 34px; }
+
+.icon-articulos      { --icon: url('../images/svg/Iconos_Inicio/articulos.svg'); }
+.icon-categorias     { --icon: url('../images/svg/Iconos_Inicio/categorias.svg'); }
+.icon-compras-ventas { --icon: url('../images/svg/Iconos_Inicio/compras_ventas.svg'); }
+.icon-dashboard      { --icon: url('../images/svg/Iconos_Inicio/dashboard.svg'); }
+.icon-inventario     { --icon: url('../images/svg/Iconos_Inicio/inventario.svg'); }
+.icon-movimientos    { --icon: url('../images/svg/Iconos_Inicio/movimientos.svg'); }
+.icon-usuarios       { --icon: url('../images/svg/Iconos_Inicio/usuarios.svg'); }
+.icon-proveedores    { --icon: url('../images/svg/Iconos_Inicio/proveedores.svg'); }
+.icon-punto-compra   { --icon: url('../images/svg/Iconos_Inicio/punto_compra.svg'); }
+.icon-punto-venta    { --icon: url('../images/svg/Iconos_Inicio/punto_venta.svg'); }
+.icon-merma          { --icon: url('../images/svg/Iconos_Inicio/merma.svg'); }
+
+.icon-camara         { --icon: url('../images/svg/Iconos_UI/camara.svg'); }
+.icon-campana        { --icon: url('../images/svg/Iconos_UI/campana.svg'); }
+.icon-casa           { --icon: url('../images/svg/Iconos_UI/casa.svg'); }
+.icon-cuadricula     { --icon: url('../images/svg/Iconos_UI/cuadricula.svg'); }
+.icon-escaner-qr     { --icon: url('../images/svg/Iconos_UI/escaner-qr.svg'); }
+.icon-etiqueta       { --icon: url('../images/svg/Iconos_UI/etiqueta.svg'); }
+.icon-grafico-barras { --icon: url('../images/svg/Iconos_UI/grafico-barras.svg'); }
 
 /* ── Animación de aparición ─────────────────────────────── */
 .reveal {
@@ -239,7 +277,8 @@ body.landing {
   transition: .2s;
 }
 .ld-playstore:hover { background: #000; transform: translateY(-2px); }
-.ld-play-icon { font-size: 15px; }
+/* logo Play Store: es a color, así que va como <img> y no como máscara */
+.ld-play-icon { flex-shrink: 0; display: block; object-fit: contain; }
 .ld-play-text { display: flex; flex-direction: column; line-height: 1.2; font-size: 16px; font-weight: 700; }
 .ld-play-text small { font-size: 10.5px; font-weight: 400; opacity: .8; }
 .ld-check-note { font-size: 13.5px; color: var(--ld-muted); }
@@ -314,25 +353,31 @@ body.landing {
 }
 .ph-avatar {
   width: 46px; height: 46px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: #fff;
   color: var(--ld-blue);
   font-size: 20px;
   font-weight: 700;
+  overflow: hidden;
   display: flex; align-items: center; justify-content: center;
 }
-.ph-username { color: #fff; font-size: 17px; font-weight: 700; }
+.ph-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ph-username {
+  color: #fff; font-size: 17px; font-weight: 700;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 
 /* tiles */
 .ph-tiles {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  padding: 18px 16px 26px;
+  gap: 12px;
+  padding: 16px 16px 22px;
   background: #fff;
 }
 .ph-tile {
-  height: 112px;
+  height: 92px;
   border-radius: 14px;
   padding: 12px;
   display: flex;
@@ -343,18 +388,15 @@ body.landing {
   font-weight: 700;
   box-shadow: 0 8px 18px rgba(15,31,51,.18);
 }
-.ph-tile-icon {
-  width: 26px; height: 26px;
-  border-radius: 7px;
-  border: 2.5px solid rgba(255,255,255,.85);
-  background: rgba(255,255,255,.14);
-}
+.ph-tile-icon.svg-icon { width: 26px; height: 26px; }
 .t-red    { background: var(--ld-red); }
 .t-blue   { background: var(--ld-blue); }
 .t-teal   { background: var(--ld-teal); }
 .t-green  { background: var(--ld-green); }
 .t-purple { background: var(--ld-purple); }
 .t-orange { background: var(--ld-orange); }
+.t-indigo { background: var(--ld-indigo); }
+.t-lime   { background: var(--ld-lime); }
 
 /* bottom nav */
 .ph-nav {
@@ -372,13 +414,9 @@ body.landing {
   font-size: 8.5px;
   font-weight: 600;
 }
-.ph-nav-item i {
-  width: 18px; height: 18px;
-  border-radius: 5px;
-  border: 2px solid rgba(255,255,255,.9);
-}
+.ph-nav-item i { width: 19px; height: 19px; vertical-align: 0; }
+/* el icono hereda el color del item, así el activo se tiñe solo */
 .ph-nav-item.active { color: var(--ld-yellow); }
-.ph-nav-item.active i { border-color: var(--ld-yellow); }
 .ph-home-bar {
   position: absolute;
   bottom: 5px; left: 50%;
@@ -418,10 +456,12 @@ body.landing {
   width: 46px; height: 46px;
   border-radius: 12px;
   background: var(--ld-blue-soft);
+  color: var(--ld-blue-d);
   font-size: 21px;
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 16px;
 }
+.ld-card-icon .svg-icon { width: 24px; height: 24px; vertical-align: 0; }
 .ld-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
 .ld-card p { font-size: 14px; color: var(--ld-muted); }
 
