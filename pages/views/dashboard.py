@@ -5,6 +5,7 @@ from django.shortcuts import render
 from base_datos.cache import cachear
 
 from .comunes import _get_empresa
+from .dashboard_filtros import resolver_periodo, PERIODO_OPCIONES
 from .dashboard_principal import _datos_dashboard
 from .dashboard_productos import _datos_productos
 
@@ -21,7 +22,11 @@ def dashboard(request):
 
     ctx = {'page': 'dashboard', 'vista': vista}
     if vista == 'principal':
-        ctx.update(cachear(empresa.pk, 'dashboard', lambda: _datos_dashboard(empresa)))
+        periodo = resolver_periodo(request)
+        ctx.update(cachear(empresa.pk, f'dashboard:{periodo["clave"]}',
+                           lambda: _datos_dashboard(empresa, periodo)))
+        ctx['periodo'] = periodo
+        ctx['periodo_opciones'] = PERIODO_OPCIONES
     elif vista == 'productos':
         ctx.update(cachear(empresa.pk, 'dash_productos', lambda: _datos_productos(empresa)))
     # 'temporal' y 'usuarios': sin datos por ahora (placeholders)

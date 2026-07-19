@@ -1,23 +1,14 @@
 // Dashboard-specific JS
 
 document.addEventListener('DOMContentLoaded', () => {
-  initTabSwitcher();
   animateBars();
 });
 
 // Nota: el refresco automático se retiró a propósito. Ahora la app trabaja
 // con el caché del navegador y el botón Sync del topbar (sync.js) avisa
 // cuando hay datos nuevos, en vez de traer la página entera cada minuto.
-
-function initTabSwitcher() {
-  document.querySelectorAll('.tab[data-period]').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab[data-period]').forEach(t => t.classList.remove('active'));
-      tab.classList.add('active');
-      // Future: fetch data for period tab.dataset.period
-    });
-  });
-}
+// El filtro de período (Día/Semana/Mes/Año/Histórico) se envía solo al cambiar
+// cualquier control (onchange="this.form.submit()"), sin JS extra.
 
 function animateBars() {
   // Dibujado progresivo de la línea de ventas por hora

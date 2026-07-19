@@ -30,6 +30,87 @@
   box-shadow: var(--shadow-teal);
 }
 
+/* BARRA DE FILTROS (período) */
+.dash-filtros {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.periodo-controles {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  transition: opacity var(--transition);
+}
+/* al marcar «Histórico» el rango por fecha deja de aplicar: se atenúa */
+.dash-filtros:has(.periodo-historico input:checked) .periodo-controles {
+  opacity: .4;
+  pointer-events: none;
+}
+
+.periodo-chips {
+  display: inline-flex;
+  background: var(--card);
+  border: 1px solid var(--gray2);
+  border-radius: 50px;
+  padding: 3px;
+}
+.periodo-chip {
+  position: relative;
+  padding: 7px 16px;
+  border-radius: 50px;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--gray);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+.periodo-chip input { position: absolute; opacity: 0; pointer-events: none; }
+.periodo-chip:hover { color: var(--teal); }
+.periodo-chip.active {
+  background: var(--teal);
+  color: #fff;
+  box-shadow: var(--shadow-teal);
+}
+
+.periodo-fecha {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--gray2);
+  background: var(--card);
+  color: var(--white);
+  font-size: .82rem;
+  font-family: inherit;
+  color-scheme: dark;
+}
+.periodo-fecha:focus { outline: none; border-color: var(--teal); }
+
+.periodo-historico {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--gray);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.periodo-historico input { width: 15px; height: 15px; accent-color: var(--teal); cursor: pointer; }
+
+.dash-periodo-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--teal);
+  margin-top: -6px;
+}
+
 /* PLACEHOLDER (vistas por construir) */
 .dash-placeholder {
   display: flex;
@@ -84,6 +165,7 @@
 .stat-body { flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .stat-label { font-size: .76rem; color: var(--gray); }
 .stat-value { font-size: 1.4rem; font-weight: 800; }
+.stat-value.neg { color: var(--red); }
 
 .stat-badge {
   font-size: .7rem; font-weight: 700;
@@ -100,6 +182,8 @@
   grid-template-columns: 2fr 1fr;
   gap: 16px;
 }
+.charts-row.single { grid-template-columns: 1fr; }
+.charts-row.single .chart-card { width: 100%; }
 
 .chart-card {
   background: var(--card);
