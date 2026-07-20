@@ -15,6 +15,8 @@
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
+    // Cuando el SW toma control (primera visita tras instalarse), precarga las vistas.
+    navigator.serviceWorker.addEventListener('controllerchange', precargarVistas);
   }
 
   document.addEventListener('DOMContentLoaded', init);
@@ -48,6 +50,62 @@
     setInterval(() => comprobar(false), POLL_MS);
     window.addEventListener('online',  () => comprobar(false));
     window.addEventListener('offline', () => pintar('offline'));
+
+    precargarVistas();
+  }
+
+  // ── Precarga de vistas (estilo AppSheet) ───────────────────────────────────
+  // Al primer ingreso se calienta el caché del Service Worker con todas las
+  // vistas del menú, así el primer clic en cada una es instantáneo (ya no hay
+  // viaje al servidor). Se hace una vez por pestaña, escalonado y en reposo.
+
+  function rutasVistas() {
+    const aqui = location.pathname + location.search;
+    const rutas = new Set();
+    document.querySelectorAll('a.nav-item, a.dash-tab').forEach((a) => {
+      const raw = a.getAttribute('href');
+      if (!raw) return;
+      let u;
+      try { u = new URL(raw, location.href); } catch (e) { return; }
+      if (u.origin !== location.origin) return;
+      const ruta = u.pathname + u.search;
+      if (ruta !== aqui) rutas.add(ruta);
+    });
+    return [...rutas];
+  }
+
+  // Descarga las vistas de a una (escalonadas) para no saturar la conexión.
+  function precargar() {
+    const sw = navigator.serviceWorker;
+    if (!sw || !sw.controller || !navigator.onLine) return;
+    const con = navigator.connection;
+    if (con && (con.saveData || /(^|-)2g$/.test(con.effectiveType || ''))) return;  // datos limitados
+
+    const rutas = rutasVistas();
+    let i = 0;
+    (function paso() {
+      if (i >= rutas.length) return;
+      const url = rutas[i++];
+      // Accept: text/html hace que el SW la trate como página y la cachee.
+      fetch(url, { credentials: 'same-origin', headers: { Accept: 'text/html' } })
+        .catch(() => {})
+        .finally(() => setTimeout(paso, 250));
+    })();
+  }
+
+  function precargarVistas() {
+    if (leer('nm_prefetch', sessionStorage)) return;   // una sola vez por pestaña
+    guardar('nm_prefetch', '1', sessionStorage);
+    const arranca = () => precargar();
+    if ('requestIdleCallback' in window) requestIdleCallback(arranca, { timeout: 2500 });
+    else setTimeout(arranca, 1200);
+  }
+
+  // Vacía las páginas viejas y las vuelve a cargar frescas: tras un cambio
+  // externo, la próxima navegación ya trae datos al día e instantáneos.
+  async function refrescarCache() {
+    await purgar('PURGAR');
+    precargar();
   }
 
   // ── Almacenamiento (tolerante a modo privado) ──────────────────────────────
@@ -92,7 +150,16 @@
     if (!leer(claveBase()) || escrituraPropia) {
       fijarBase(datos.firma);
     }
-    pintar(datos.firma === leer(claveBase()) ? 'ok' : 'cambios');
+    const hayCambios = datos.firma !== leer(claveBase());
+    pintar(hayCambios ? 'cambios' : 'ok');
+
+    // Cambio externo (app móvil u otro equipo): refresca el caché por detrás una
+    // vez por firma nueva, para que al navegar ya se vean datos frescos al toque.
+    // El botón sigue en «Hay cambios» para refrescar la vista actual con un clic.
+    if (hayCambios && leer('nm_refresco') !== datos.firma) {
+      guardar('nm_refresco', datos.firma);
+      refrescarCache();
+    }
   }
 
   function fijarBase(firma) {

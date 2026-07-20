@@ -102,7 +102,9 @@ async function cacheFirst(req, nombre, max) {
 // Devuelve la copia guardada al instante y actualiza el caché por detrás.
 async function revalidarEnSegundoPlano(evento, req) {
   const cache = await caches.open(C_PAGINAS);
-  const guardado = await cache.match(req);
+  // ignoreVary: la precarga pide con Accept:text/html y la navegación con otro
+  // Accept; sin esto no calzarían y la precarga no serviría de nada.
+  const guardado = await cache.match(req, { ignoreVary: true });
 
   const red = fetch(req).then(async (resp) => {
     const cacheable = resp && resp.ok && resp.status === 200 &&
