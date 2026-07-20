@@ -1,12 +1,17 @@
-"""Filtro de período del dashboard: cascada año → meses → semanas.
+"""Filtro de período del dashboard.
 
-El usuario elige un año, opcionalmente uno o varios meses, y —si dejó un solo
-mes— una o varias semanas de ese mes. «Histórico» ignora la fecha por completo.
+Modos, por orden de precedencia:
+  hoy        casilla «Hoy» → solo el día de hoy
+  rango      fechas «Desde/Hasta» → rango libre
+  historico  casilla «Histórico» → todas las fechas
+  cascada    año → meses (varios) → semanas (varias, si hay un solo mes)
+
 La semana N de un mes es el bloque de 7 días: 1 = 1–7, 2 = 8–14, …
 """
 import calendar
 
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 
 from .agrupamiento import MESES_DICT
 
@@ -37,8 +42,8 @@ def semanas_de_mes(anio, mes):
 
 
 def resolver_periodo(request, empresa):
-    """Normaliza los parámetros del filtro. Devuelve todo lo que la plantilla y
-    las consultas necesitan (opciones para los chips incluidas)."""
+    """Normaliza los parámetros del filtro a un dict con todo lo que la plantilla
+    y las consultas necesitan (opciones de los chips y estado de cada modo)."""
     from base_datos.models import Factura
 
     hoy = timezone.localdate()
@@ -46,40 +51,57 @@ def resolver_periodo(request, empresa):
     anios.add(hoy.year)
     anios = sorted(anios, reverse=True)
 
+    hoy_flag = request.GET.get('hoy') == '1'
     historico = request.GET.get('historico') == '1'
-    tocado = any(k in request.GET for k in ('anio', 'meses', 'semanas', 'historico'))
+    desde = parse_date(request.GET.get('desde') or '')
+    hasta = parse_date(request.GET.get('hasta') or '')
+    if desde and hasta and desde > hasta:          # rango al revés: lo enderezamos
+        desde, hasta = hasta, desde
 
+    # Cascada: se calcula siempre para poder pintar los chips aunque no sea el modo activo.
+    tocado = any(k in request.GET for k in ('anio', 'meses', 'semanas'))
     anio_raw = request.GET.get('anio', '')
     anio = int(anio_raw) if anio_raw.isdigit() and int(anio_raw) in anios else hoy.year
-
     meses = _enteros(request, 'meses', set(range(1, 13)))
-    if not tocado:                        # primera carga: arranca en el mes actual
+    if not tocado:                                 # primera carga: arranca en el mes actual
         anio, meses = hoy.year, [hoy.month]
     mes_unico = meses[0] if len(meses) == 1 else None
-
     semanas_disp = semanas_de_mes(anio, mes_unico) if mes_unico else []
     semanas = _enteros(request, 'semanas', {s[0] for s in semanas_disp}) if mes_unico else []
 
-    return {
-        'historico': historico,
-        'anio': anio,
-        'anios': anios,
-        'meses': meses,
-        'meses_opciones': MESES_OPCIONES,
-        'mes_unico': mes_unico,
-        'semanas': semanas,
-        'semanas_disp': semanas_disp,
-        'etiqueta': _etiqueta(historico, anio, meses, mes_unico, semanas),
-        'clave': 'hist' if historico
-                 else f"{anio}.{'-'.join(map(str, meses))}.{'-'.join(map(str, semanas))}",
+    p = {
+        'anio': anio, 'anios': anios,
+        'meses': meses, 'meses_opciones': MESES_OPCIONES,
+        'mes_unico': mes_unico, 'semanas': semanas, 'semanas_disp': semanas_disp,
+        'desde': None, 'hasta': None,
     }
+    if hoy_flag:
+        p.update(modo='hoy', desde=hoy, hasta=hoy,
+                 etiqueta=f'Hoy · {hoy:%d/%m/%Y}', clave=f'hoy:{hoy.isoformat()}')
+    elif desde or hasta:
+        p.update(modo='rango', desde=desde, hasta=hasta,
+                 etiqueta=_etq_rango(desde, hasta), clave=f"r:{desde or ''}:{hasta or ''}")
+    elif historico:
+        p.update(modo='historico', etiqueta='Histórico (todas las fechas)', clave='hist')
+    else:
+        p.update(modo='cascada', etiqueta=_etq_cascada(anio, meses, mes_unico, semanas),
+                 clave=f"{anio}.{'-'.join(map(str, meses))}.{'-'.join(map(str, semanas))}")
+    return p
 
 
 def aplicar_filtro(qs, campo, periodo):
     """Aplica el filtro de período a `qs` usando el campo de fecha indicado
     (`fecha` en Factura, `fecha_hora` en Stock)."""
-    if periodo['historico']:
+    modo = periodo['modo']
+    if modo == 'historico':
         return qs
+    if modo in ('hoy', 'rango'):
+        if periodo['desde']:
+            qs = qs.filter(**{f'{campo}__date__gte': periodo['desde']})
+        if periodo['hasta']:
+            qs = qs.filter(**{f'{campo}__date__lte': periodo['hasta']})
+        return qs
+    # cascada
     qs = qs.filter(**{f'{campo}__year': periodo['anio']})
     if periodo['meses']:
         qs = qs.filter(**{f'{campo}__month__in': periodo['meses']})
@@ -92,9 +114,15 @@ def aplicar_filtro(qs, campo, periodo):
     return qs
 
 
-def _etiqueta(historico, anio, meses, mes_unico, semanas):
-    if historico:
-        return 'Histórico (todas las fechas)'
+def _etq_rango(desde, hasta):
+    if desde and hasta:
+        return f'{desde:%d/%m/%Y} – {hasta:%d/%m/%Y}'
+    if desde:
+        return f'Desde {desde:%d/%m/%Y}'
+    return f'Hasta {hasta:%d/%m/%Y}'
+
+
+def _etq_cascada(anio, meses, mes_unico, semanas):
     if not meses:
         return f'Año {anio}'
     if mes_unico:

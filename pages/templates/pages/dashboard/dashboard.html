@@ -31,10 +31,11 @@
 {% else %}
 <div class="dashboard-grid">
 
-  <!-- BARRA DE FILTROS (año → meses → semanas) -->
+  <!-- BARRA DE FILTROS (año → meses → semanas · rango · hoy · histórico) -->
   <form class="dash-filtros" method="get">
     <input type="hidden" name="vista" value="principal" />
-    <div class="periodo-controles">
+
+    <div class="periodo-controles {% if periodo.modo != 'cascada' %}atenuado{% endif %}">
       <div class="filtro-grupo">
         <span class="filtro-tag">Año</span>
         <select name="anio" class="periodo-select" onchange="this.form.submit()">
@@ -73,17 +74,35 @@
       {% endif %}
     </div>
 
-    <label class="periodo-historico">
-      <input type="checkbox" name="historico" value="1"
-             {% if periodo.historico %}checked{% endif %} onchange="this.form.submit()" />
-      Histórico
-    </label>
+    <div class="filtro-grupo rango-grupo {% if periodo.modo == 'hoy' or periodo.modo == 'historico' %}atenuado{% endif %}">
+      <span class="filtro-tag">Rango de fechas</span>
+      <div class="rango-inputs">
+        <input type="date" name="desde" class="periodo-fecha" onchange="this.form.submit()"
+               value="{% if periodo.modo == 'rango' %}{{ periodo.desde|date:'Y-m-d' }}{% endif %}" />
+        <span class="rango-sep">–</span>
+        <input type="date" name="hasta" class="periodo-fecha" onchange="this.form.submit()"
+               value="{% if periodo.modo == 'rango' %}{{ periodo.hasta|date:'Y-m-d' }}{% endif %}" />
+      </div>
+    </div>
+
+    <div class="filtros-rapidos">
+      <label class="periodo-quick">
+        <input type="checkbox" name="hoy" value="1"
+               {% if periodo.modo == 'hoy' %}checked{% endif %} onchange="this.form.submit()" />
+        Hoy
+      </label>
+      <label class="periodo-quick">
+        <input type="checkbox" name="historico" value="1"
+               {% if periodo.modo == 'historico' %}checked{% endif %} onchange="this.form.submit()" />
+        Histórico
+      </label>
+    </div>
   </form>
 
   <div class="dash-periodo-label">
     <span class="svg-icon icon-calendario sm"></span> {{ periodo.etiqueta }}
-    {% if periodo.meses or periodo.semanas or periodo.historico %}
-    <a href="?vista=principal&amp;anio={{ periodo.anio }}" class="periodo-reset">↺ Año completo</a>
+    {% if periodo.modo != 'cascada' or periodo.meses or periodo.semanas %}
+    <a href="?vista=principal&amp;anio={{ periodo.anio }}" class="periodo-reset">↺ Limpiar</a>
     {% endif %}
   </div>
 

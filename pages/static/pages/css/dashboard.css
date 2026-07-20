@@ -50,11 +50,8 @@
   flex-wrap: wrap;
   transition: opacity var(--transition);
 }
-/* al marcar «Histórico» los filtros de fecha dejan de aplicar: se atenúan */
-.dash-filtros:has(.periodo-historico input:checked) .periodo-controles {
-  opacity: .35;
-  pointer-events: none;
-}
+/* un grupo se atenúa cuando otro modo tiene la prioridad (lo decide el servidor) */
+.atenuado { opacity: .35; pointer-events: none; }
 
 .filtro-grupo { display: flex; flex-direction: column; gap: 8px; }
 .filtro-tag {
@@ -94,13 +91,28 @@
   box-shadow: var(--shadow-teal);
 }
 
-.periodo-historico {
+/* Rango de fechas libre */
+.rango-inputs { display: flex; align-items: center; gap: 8px; }
+.rango-sep { color: var(--gray); font-weight: 700; }
+.periodo-fecha {
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--gray2);
+  background: var(--navy);
+  color: var(--white);
+  font-size: .8rem; font-family: inherit;
+  color-scheme: dark;
+}
+.periodo-fecha:focus { outline: none; border-color: var(--teal); }
+
+/* Accesos rápidos: Hoy / Histórico */
+.filtros-rapidos { display: flex; flex-direction: column; gap: 10px; padding-top: 22px; }
+.periodo-quick {
   display: inline-flex; align-items: center; gap: 8px;
   font-size: .82rem; font-weight: 600; color: var(--gray);
   cursor: pointer; white-space: nowrap;
-  padding-top: 22px;   /* alinea con los chips, bajo su etiqueta */
 }
-.periodo-historico input { width: 15px; height: 15px; accent-color: var(--teal); cursor: pointer; }
+.periodo-quick input { width: 15px; height: 15px; accent-color: var(--teal); cursor: pointer; }
 
 .dash-periodo-label {
   display: inline-flex; align-items: center; gap: 8px;
