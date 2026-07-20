@@ -6,17 +6,15 @@ acumulado del período: suma cada hora a lo largo de todos sus días.
 """
 from base_datos.models import Factura, Stock
 
+from .dashboard_filtros import aplicar_filtro
+
 
 def _datos_dashboard(empresa, periodo):
     from django.db.models import Sum, Count, F, FloatField
     from django.db.models.functions import ExtractHour
 
-    desde, hasta = periodo['desde'], periodo['hasta']
-
     # ── Tarjetas: ventas, compras y n.º de ventas del período ──────────────────
-    facturas = Factura.objects.filter(empresa=empresa)
-    if desde and hasta:
-        facturas = facturas.filter(fecha__date__gte=desde, fecha__date__lte=hasta)
+    facturas = aplicar_filtro(Factura.objects.filter(empresa=empresa), 'fecha', periodo)
 
     ventas = facturas.filter(tipo='VENTA')
     total_ventas = ventas.aggregate(t=Sum('total'))['t'] or 0
@@ -25,9 +23,9 @@ def _datos_dashboard(empresa, periodo):
 
     # ── Utilidad: margen real de lo vendido (precio venta − compra, por línea) ──
     # Solo salidas de venta reales (una SALIDA es venta si su factura no es merma).
-    lineas = Stock.objects.filter(empresa=empresa, tipo='SALIDA').exclude(factura__tipo='MERMA')
-    if desde and hasta:
-        lineas = lineas.filter(fecha_hora__date__gte=desde, fecha_hora__date__lte=hasta)
+    lineas = aplicar_filtro(
+        Stock.objects.filter(empresa=empresa, tipo='SALIDA').exclude(factura__tipo='MERMA'),
+        'fecha_hora', periodo)
     utilidad = lineas.aggregate(
         u=Sum((F('precio_unitario_venta') - F('precio_unitario_compra')) * F('unidades'),
               output_field=FloatField())

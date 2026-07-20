@@ -11,21 +11,14 @@ document.addEventListener('DOMContentLoaded', () => {
 // cualquier control (onchange="this.form.submit()"), sin JS extra.
 
 function animateBars() {
-  // Dibujado progresivo de la línea de ventas por hora
-  const line = document.querySelector('.line-chart-svg polyline');
-  if (line) {
-    const len = line.getTotalLength ? line.getTotalLength() : 0;
-    if (len) {
-      line.style.transition = 'none';
-      line.style.strokeDasharray = len;
-      line.style.strokeDashoffset = len;
-      // forzar reflow y animar
-      void line.getBoundingClientRect();
-      line.style.transition = 'stroke-dashoffset 1s ease';
-      line.style.strokeDashoffset = '0';
-    }
-  }
-  // Crecimiento de las barras de ranking (más vendidos)
+  // Crecimiento de las barras de ventas por hora (0 → altura real)
+  document.querySelectorAll('.hour-col').forEach((col, i) => {
+    const h = col.style.getPropertyValue('--h');
+    col.style.setProperty('--h', '0%');
+    void col.getBoundingClientRect();
+    setTimeout(() => { col.style.setProperty('--h', h); }, i * 12);
+  });
+  // Crecimiento de las barras de ranking (más vendidos, pestaña Productos)
   document.querySelectorAll('.rank-bar span').forEach((bar, i) => {
     const w = bar.style.width;
     bar.style.transition = 'none';

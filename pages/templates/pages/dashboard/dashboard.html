@@ -31,22 +31,48 @@
 {% else %}
 <div class="dashboard-grid">
 
-  <!-- BARRA DE FILTROS -->
+  <!-- BARRA DE FILTROS (año → meses → semanas) -->
   <form class="dash-filtros" method="get">
     <input type="hidden" name="vista" value="principal" />
     <div class="periodo-controles">
-      <div class="periodo-chips">
-        {% for valor, texto in periodo_opciones %}
-        <label class="periodo-chip {% if periodo.sel == valor %}active{% endif %}">
-          <input type="radio" name="periodo" value="{{ valor }}"
-                 {% if periodo.sel == valor %}checked{% endif %} onchange="this.form.submit()" />
-          {{ texto }}
-        </label>
-        {% endfor %}
+      <div class="filtro-grupo">
+        <span class="filtro-tag">Año</span>
+        <select name="anio" class="periodo-select" onchange="this.form.submit()">
+          {% for a in periodo.anios %}
+          <option value="{{ a }}" {% if a == periodo.anio %}selected{% endif %}>{{ a }}</option>
+          {% endfor %}
+        </select>
       </div>
-      <input type="date" name="fecha" class="periodo-fecha" value="{{ periodo.fecha|date:'Y-m-d' }}"
-             onchange="this.form.submit()" />
+
+      <div class="filtro-grupo">
+        <span class="filtro-tag">Meses</span>
+        <div class="chip-row">
+          {% for num, txt in periodo.meses_opciones %}
+          <label class="chip {% if num in periodo.meses %}active{% endif %}">
+            <input type="checkbox" name="meses" value="{{ num }}"
+                   {% if num in periodo.meses %}checked{% endif %} onchange="this.form.submit()" />
+            {{ txt }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if periodo.semanas_disp %}
+      <div class="filtro-grupo">
+        <span class="filtro-tag">Semanas</span>
+        <div class="chip-row">
+          {% for num, txt, rango in periodo.semanas_disp %}
+          <label class="chip sm {% if num in periodo.semanas %}active{% endif %}" title="Días {{ rango }}">
+            <input type="checkbox" name="semanas" value="{{ num }}"
+                   {% if num in periodo.semanas %}checked{% endif %} onchange="this.form.submit()" />
+            {{ txt }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
     </div>
+
     <label class="periodo-historico">
       <input type="checkbox" name="historico" value="1"
              {% if periodo.historico %}checked{% endif %} onchange="this.form.submit()" />
@@ -56,6 +82,9 @@
 
   <div class="dash-periodo-label">
     <span class="svg-icon icon-calendario sm"></span> {{ periodo.etiqueta }}
+    {% if periodo.meses or periodo.semanas or periodo.historico %}
+    <a href="?vista=principal&amp;anio={{ periodo.anio }}" class="periodo-reset">↺ Año completo</a>
+    {% endif %}
   </div>
 
   <!-- STATS ROW -->
@@ -98,35 +127,23 @@
         <span class="card-subtitle">Acumulado del período · monto por hora del día</span>
       </div>
       {% if hay_ventas_hora %}
-      <div class="line-chart">
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="line-chart-svg">
-          <defs>
-            <linearGradient id="lineFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="var(--teal)" stop-opacity="0.28"/>
-              <stop offset="100%" stop-color="var(--teal)" stop-opacity="0"/>
-            </linearGradient>
-          </defs>
-          <polygon points="{{ area_puntos }}" fill="url(#lineFill)" />
-          <polyline points="{{ linea_puntos }}" fill="none" stroke="var(--teal)"
-                    stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"
-                    vector-effect="non-scaling-stroke" />
+      <div class="hour-chart">
+        <div class="hour-bars">
           {% for v in ventas_por_hora %}
-            {% if v.count %}
-            <circle cx="{{ v.x }}" cy="{{ v.y }}" r="1.4" fill="var(--teal)"
-                    vector-effect="non-scaling-stroke">
-              <title>{{ v.label }} · {{ v.count }} venta{{ v.count|pluralize }} · ${{ v.total|floatformat:0 }}</title>
-            </circle>
-            {% endif %}
+          <div class="hour-col{% if v.count %} has-data{% endif %}" style="--h:{{ v.pct }}%;">
+            <span class="hour-bar"
+                  {% if v.count %}title="{{ v.label }} · {{ v.count }} venta{{ v.count|pluralize }} · ${{ v.total|floatformat:0 }}"{% endif %}></span>
+          </div>
           {% endfor %}
-        </svg>
-        <div class="line-chart-labels">
+        </div>
+        <div class="hour-ticks">
           {% for v in ventas_por_hora %}
-            {% if v.mostrar_label %}<span style="left:{{ v.x }}%;">{{ v.label }}</span>{% endif %}
+          <span>{% if v.mostrar_label %}{{ v.label }}{% endif %}</span>
           {% endfor %}
         </div>
       </div>
       {% else %}
-      <div class="empty-state"><span class="empty-icon svg-icon icon-grafico-linea xl icono-primario"></span><p>No hay ventas en este período</p></div>
+      <div class="empty-state"><span class="empty-icon svg-icon icon-grafico-barras xl icono-primario"></span><p>No hay ventas en este período</p></div>
       {% endif %}
     </div>
   </div>

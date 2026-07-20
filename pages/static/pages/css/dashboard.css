@@ -30,86 +30,88 @@
   box-shadow: var(--shadow-teal);
 }
 
-/* BARRA DE FILTROS (período) */
+/* BARRA DE FILTROS (año → meses → semanas) */
 .dash-filtros {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   flex-wrap: wrap;
+  background: var(--card);
+  border: 1px solid var(--gray2);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
 }
 .periodo-controles {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 22px;
   flex-wrap: wrap;
   transition: opacity var(--transition);
 }
-/* al marcar «Histórico» el rango por fecha deja de aplicar: se atenúa */
+/* al marcar «Histórico» los filtros de fecha dejan de aplicar: se atenúan */
 .dash-filtros:has(.periodo-historico input:checked) .periodo-controles {
-  opacity: .4;
+  opacity: .35;
   pointer-events: none;
 }
 
-.periodo-chips {
-  display: inline-flex;
-  background: var(--card);
-  border: 1px solid var(--gray2);
-  border-radius: 50px;
-  padding: 3px;
-}
-.periodo-chip {
-  position: relative;
-  padding: 7px 16px;
-  border-radius: 50px;
-  font-size: .82rem;
-  font-weight: 600;
-  color: var(--gray);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: var(--transition);
-}
-.periodo-chip input { position: absolute; opacity: 0; pointer-events: none; }
-.periodo-chip:hover { color: var(--teal); }
-.periodo-chip.active {
-  background: var(--teal);
-  color: #fff;
-  box-shadow: var(--shadow-teal);
+.filtro-grupo { display: flex; flex-direction: column; gap: 8px; }
+.filtro-tag {
+  font-size: .68rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .6px; color: var(--gray);
 }
 
-.periodo-fecha {
+.periodo-select {
   padding: 8px 12px;
   border-radius: 10px;
   border: 1px solid var(--gray2);
-  background: var(--card);
+  background: var(--navy);
   color: var(--white);
-  font-size: .82rem;
-  font-family: inherit;
+  font-size: .84rem; font-weight: 600; font-family: inherit;
+  cursor: pointer;
   color-scheme: dark;
 }
-.periodo-fecha:focus { outline: none; border-color: var(--teal); }
+.periodo-select:focus { outline: none; border-color: var(--teal); }
+
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  position: relative;
+  padding: 7px 13px;
+  border-radius: 50px;
+  border: 1px solid var(--gray2);
+  background: var(--navy);
+  color: var(--gray);
+  font-size: .8rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; -webkit-user-select: none; user-select: none;
+  transition: var(--transition);
+}
+.chip.sm { padding: 6px 11px; font-size: .76rem; }
+.chip input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+.chip:hover { border-color: var(--teal); color: var(--teal); }
+.chip.active {
+  background: var(--teal); border-color: var(--teal); color: #fff;
+  box-shadow: var(--shadow-teal);
+}
 
 .periodo-historico {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: .82rem;
-  font-weight: 600;
-  color: var(--gray);
-  cursor: pointer;
-  white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .82rem; font-weight: 600; color: var(--gray);
+  cursor: pointer; white-space: nowrap;
+  padding-top: 22px;   /* alinea con los chips, bajo su etiqueta */
 }
 .periodo-historico input { width: 15px; height: 15px; accent-color: var(--teal); cursor: pointer; }
 
 .dash-periodo-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: .82rem;
-  font-weight: 600;
-  color: var(--teal);
-  margin-top: -6px;
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .84rem; font-weight: 700; color: var(--teal);
+  margin-top: -8px;
 }
+.periodo-reset {
+  font-size: .76rem; font-weight: 600; color: var(--gray);
+  text-decoration: none; padding-left: 4px;
+}
+.periodo-reset:hover { color: var(--teal); }
 
 /* PLACEHOLDER (vistas por construir) */
 .dash-placeholder {
@@ -193,62 +195,54 @@
   box-shadow: var(--shadow);
 }
 
-/* BAR CHART */
-.chart-area { width: 100%; }
-.chart-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  height: 140px;
-  padding: 0 4px;
-}
-.chart-bar-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  height: 100%;
-  justify-content: flex-end;
-  position: relative;
-}
-.chart-bar-col::before {
-  content: '';
-  display: block;
-  width: 100%;
-  height: var(--h, 0%);
-  min-height: 3px;
-  background: linear-gradient(180deg, var(--teal), var(--teal2));
-  border-radius: 6px 6px 0 0;
-  transition: height .4s ease;
-}
-.bar-label { font-size: .65rem; color: var(--gray); }
-
 /* Subtítulo en encabezados de tarjeta */
 .card-subtitle { font-size: .74rem; color: var(--gray); font-weight: 500; }
 
-/* LINE CHART (ventas por hora, lineal) */
-.line-chart { position: relative; width: 100%; }
-.line-chart-svg {
+/* GRÁFICO DE VENTAS POR HORA (barras 0–23h) */
+.hour-chart { margin-top: 18px; }
+.hour-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 190px;
+}
+.hour-col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  min-width: 0;
+}
+.hour-bar {
   width: 100%;
-  height: 150px;
-  display: block;
-  overflow: visible;
+  max-width: 24px;
+  height: var(--h, 0%);
+  min-height: 3px;
+  border-radius: 5px 5px 0 0;
+  background: var(--gray2);      /* horas sin ventas: barrita tenue */
+  transition: height .5s ease, filter .15s ease;
 }
-.line-chart-labels {
-  position: relative;
-  height: 16px;
-  margin-top: 6px;
+.hour-col.has-data .hour-bar {
+  background: linear-gradient(180deg, var(--teal), var(--teal2));
+  cursor: pointer;
 }
-.line-chart-labels span {
-  position: absolute;
-  transform: translateX(-50%);
-  font-size: .64rem;
+.hour-col.has-data .hour-bar:hover { filter: brightness(1.15); }
+.hour-ticks {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+.hour-ticks span {
+  flex: 1;
+  text-align: center;
+  font-size: .62rem;
   color: var(--gray);
   white-space: nowrap;
+  min-width: 0;
 }
 
-/* RANK LIST (más vendidos) */
+/* RANK LIST (más vendidos — usado en la pestaña Productos) */
 .rank-list { display: flex; flex-direction: column; gap: 12px; padding: 4px 0; }
 .rank-item { display: flex; align-items: center; gap: 12px; }
 .rank-pos {
@@ -278,69 +272,3 @@
   background: linear-gradient(90deg, #5b9bd5, var(--blue));
 }
 .rank-bar.teal span { background: linear-gradient(90deg, var(--teal), var(--teal2)); }
-
-/* BALANCE */
-.balance-box { display: flex; flex-direction: column; gap: 0; }
-.balance-item {
-  padding: 16px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--navy);
-  border: 1px solid var(--gray2);
-}
-.balance-item.expense { margin-top: 8px; }
-.balance-label { font-size: .8rem; color: var(--gray); }
-.balance-value { font-size: 1.1rem; font-weight: 800; }
-.balance-value.teal  { color: var(--teal); }
-.balance-value.blue  { color: var(--blue); }
-.balance-value.green { color: var(--green); }
-.balance-value.red   { color: var(--red); }
-.balance-divider { height: 1px; background: var(--gray2); margin: 4px 0; }
-.balance-total {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 12px 4px 0;
-  border-top: 1px solid var(--gray2);
-  margin-top: 8px;
-  font-size: .84rem; font-weight: 700; color: var(--gray);
-}
-
-/* BOTTOM ROW */
-.bottom-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-/* MINI LISTS (últimas facturas / stock bajo) */
-.mini-list { display: flex; flex-direction: column; gap: 10px; }
-.mini-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  background: var(--navy);
-  border: 1px solid var(--gray2);
-  border-radius: var(--radius-sm);
-}
-.mini-icon {
-  width: 34px; height: 34px;
-  border-radius: 9px;
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: .9rem;
-  flex-shrink: 0;
-}
-.mini-icon .svg-icon { width: 17px; height: 17px; }
-.mini-icon.blue { background: rgba(37,99,235,.1); color: var(--teal); }
-.mini-icon.red  { background: rgba(220,38,38,.09); color: var(--red); }
-.mini-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-.mini-title { font-size: .84rem; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mini-sub { font-size: .72rem; color: var(--gray); }
-.mini-value { font-size: .9rem; font-weight: 800; }
-.mini-badge {
-  font-size: .7rem; font-weight: 700;
-  padding: 4px 10px; border-radius: 50px;
-  background: rgba(220,38,38,.09); color: var(--red);
-  white-space: nowrap;
-}
