@@ -258,12 +258,15 @@ function pcRenderCart() {
         </div>
       </div>
 
-      <!-- Fecha de vencimiento -->
+      <!-- Fecha de vencimiento (mini calendario propio, dd/mm/aaaa) -->
       <div class="pc-date-row">
         <span class="pc-row-icon svg-icon icon-calendario sm" title="Vencimiento"></span>
-        <input type="date" class="pc-ctrl-input pc-date-input"
-               value="${item.fechaVencimiento}"
-               onchange="pcSetFecha('${item.id}', this.value)" />
+        <input type="text" readonly class="pc-ctrl-input pc-date-input"
+               data-iso="${item.fechaVencimiento || ''}"
+               value="${nmDatePicker.fmt(item.fechaVencimiento)}"
+               placeholder="dd/mm/aaaa"
+               onclick="nmDatePicker.abrir(this)"
+               onchange="pcSetFecha('${item.id}', this.dataset.iso)" />
         <span class="pc-field-lbl" style="margin-left:4px;">Vencimiento</span>
       </div>
 

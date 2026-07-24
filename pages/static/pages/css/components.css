@@ -327,3 +327,46 @@ details[open] > .grp-head > .grp-caret { transform: rotate(90deg); }
 /* Producto sin stock en el punto de venta: no se puede agregar */
 .pos-card.sin-stock { opacity: .5; cursor: not-allowed; }
 .pos-card.sin-stock:hover { transform: none; border-color: var(--gray2); }
+
+/* MINI CALENDARIO (fecha de vencimiento en Punto de Compra) */
+.pc-date-input { cursor: pointer; }
+.nm-cal {
+  position: absolute; z-index: 10000;
+  width: 258px;
+  background: var(--card);
+  border: 1px solid var(--gray2);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 14px 40px rgba(0,0,0,.4);
+  padding: 12px;
+  -webkit-user-select: none; user-select: none;
+}
+.nm-cal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.nm-cal-title { font-size: .9rem; font-weight: 700; color: var(--white); }
+.nm-cal-nav {
+  width: 28px; height: 28px; border-radius: 8px;
+  border: 1px solid var(--gray2); background: var(--navy); color: var(--gray);
+  font-size: 1rem; line-height: 1; cursor: pointer;
+}
+.nm-cal-nav:hover { border-color: var(--teal); color: var(--teal); }
+.nm-cal-semana, .nm-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.nm-cal-semana span {
+  text-align: center; font-size: .66rem; font-weight: 700;
+  color: var(--gray); padding: 4px 0;
+}
+.nm-cal-dia {
+  aspect-ratio: 1; border: none; background: transparent; color: var(--white);
+  border-radius: 8px; font-size: .8rem; cursor: pointer;
+}
+.nm-cal-dia:hover { background: var(--navy); }
+.nm-cal-dia.otro { color: var(--gray); opacity: .45; }
+.nm-cal-dia.hoy { outline: 1px solid var(--teal); outline-offset: -1px; }
+.nm-cal-dia.sel { background: var(--teal); color: #fff; font-weight: 700; }
+.nm-cal-foot { display: flex; justify-content: space-between; margin-top: 10px; }
+.nm-cal-foot button {
+  font-size: .74rem; font-weight: 600; color: var(--gray);
+  background: none; border: none; cursor: pointer; padding: 4px 6px;
+}
+.nm-cal-foot button:hover { color: var(--teal); }
