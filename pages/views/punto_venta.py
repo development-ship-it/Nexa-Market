@@ -4,6 +4,7 @@ import uuid
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -11,6 +12,7 @@ from base_datos.cache import cachear
 from base_datos.models import Articulo, Categoria, Factura, Stock
 
 from .comunes import _get_empresa, _get_usuario
+from .stock_control import bloquear_articulos, revisar_disponibilidad
 
 
 @login_required
@@ -46,32 +48,45 @@ def punto_venta(request):
 
         usuario = _get_usuario(request)
         total_venta = sum(cantidad * precio for _, cantidad, precio in lineas)
-        conteo = Factura.objects.filter(empresa=empresa, tipo='VENTA').count()
-        numero = f'VTA-{conteo + 1:04d}'
 
-        factura = Factura.objects.create(
-            id_nfactura=str(uuid.uuid4()),
-            empresa=empresa,
-            usuario=usuario,
-            numero_factura=numero,
-            fecha=timezone.now(),
-            total=total_venta,
-            tipo='VENTA',
-        )
-        for articulo, cantidad, precio_u in lineas:
-            Stock.objects.create(
-                id_stock=str(uuid.uuid4()),
-                articulo=articulo,
+        # El inventario no puede quedar negativo. Se valida dentro de la
+        # transacción y con los artículos bloqueados: el stock que vio el
+        # navegador puede estar viejo (página cacheada, otra caja, app móvil).
+        with transaction.atomic():
+            bloquear_articulos(empresa, [a.pk for a, _, _ in lineas])
+            faltantes = revisar_disponibilidad(empresa, [(a, c) for a, c, _ in lineas])
+            if faltantes:
+                messages.error(
+                    request,
+                    'No se registró la venta — sin stock suficiente: ' + '; '.join(faltantes)
+                )
+                return redirect('punto_venta')
+
+            conteo = Factura.objects.filter(empresa=empresa, tipo='VENTA').count()
+            numero = f'VTA-{conteo + 1:04d}'
+            factura = Factura.objects.create(
+                id_nfactura=str(uuid.uuid4()),
                 empresa=empresa,
                 usuario=usuario,
-                tipo='SALIDA',
-                unidades=cantidad,
-                precio_unitario_compra=float(articulo.precio_compra or 0),
-                precio_unitario_venta=precio_u,
-                total=precio_u * cantidad,
-                factura=factura,
-                fecha_hora=timezone.now(),
+                numero_factura=numero,
+                fecha=timezone.now(),
+                total=total_venta,
+                tipo='VENTA',
             )
+            for articulo, cantidad, precio_u in lineas:
+                Stock.objects.create(
+                    id_stock=str(uuid.uuid4()),
+                    articulo=articulo,
+                    empresa=empresa,
+                    usuario=usuario,
+                    tipo='SALIDA',
+                    unidades=cantidad,
+                    precio_unitario_compra=float(articulo.precio_compra or 0),
+                    precio_unitario_venta=precio_u,
+                    total=precio_u * cantidad,
+                    factura=factura,
+                    fecha_hora=timezone.now(),
+                )
 
         messages.success(request, f'Venta {numero} registrada — Total: ${total_venta:,.0f}')
         return redirect('compras_ventas')

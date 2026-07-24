@@ -297,3 +297,33 @@ details[open] > .grp-head > .grp-caret { transform: rotate(90deg); }
 .cat-chip-check:has(input:checked) {
   border-color: var(--teal); background: rgba(37,99,235,.1); color: var(--teal);
 }
+
+/* AVISOS FLOTANTES (reglas de negocio: sin stock, etc.) */
+.nm-avisos {
+  position: fixed;
+  top: 18px; right: 18px;
+  z-index: 9999;
+  display: flex; flex-direction: column; gap: 8px;
+  max-width: min(360px, calc(100vw - 36px));
+  pointer-events: none;
+}
+.nm-aviso {
+  background: var(--card);
+  border: 1px solid rgba(220,38,38,.35);
+  border-left: 4px solid var(--red);
+  color: var(--white);
+  border-radius: var(--radius-sm);
+  padding: 12px 15px;
+  font-size: .84rem; font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0,0,0,.28);
+  animation: nmAvisoEntra .22s ease;
+}
+.nm-aviso.saliendo { opacity: 0; transform: translateX(12px); transition: opacity .3s, transform .3s; }
+@keyframes nmAvisoEntra {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Producto sin stock en el punto de venta: no se puede agregar */
+.pos-card.sin-stock { opacity: .5; cursor: not-allowed; }
+.pos-card.sin-stock:hover { transform: none; border-color: var(--gray2); }

@@ -4,6 +4,7 @@ import uuid
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -11,6 +12,7 @@ from base_datos.cache import cachear
 from base_datos.models import Articulo, Categoria, Factura, Stock
 
 from .comunes import _get_empresa, _get_usuario
+from .stock_control import bloquear_articulos, revisar_disponibilidad
 
 
 @login_required
@@ -47,32 +49,43 @@ def merma(request):
 
         usuario = _get_usuario(request)
         total_merma = sum(cantidad * costo for _, cantidad, costo in lineas)
-        conteo = Factura.objects.filter(empresa=empresa, tipo='MERMA').count()
-        numero = f'MRM-{conteo + 1:04d}'
 
-        factura = Factura.objects.create(
-            id_nfactura=str(uuid.uuid4()),
-            empresa=empresa,
-            usuario=usuario,
-            numero_factura=numero,
-            fecha=timezone.now(),
-            total=total_merma,
-            tipo='MERMA',
-        )
-        for articulo, cantidad, costo_u in lineas:
-            Stock.objects.create(
-                id_stock=str(uuid.uuid4()),
-                articulo=articulo,
+        # Dar de baja más de lo que hay dejaría el inventario negativo.
+        with transaction.atomic():
+            bloquear_articulos(empresa, [a.pk for a, _, _ in lineas])
+            faltantes = revisar_disponibilidad(empresa, [(a, c) for a, c, _ in lineas])
+            if faltantes:
+                messages.error(
+                    request,
+                    'No se registró la merma — sin stock suficiente: ' + '; '.join(faltantes)
+                )
+                return redirect('merma')
+
+            conteo = Factura.objects.filter(empresa=empresa, tipo='MERMA').count()
+            numero = f'MRM-{conteo + 1:04d}'
+            factura = Factura.objects.create(
+                id_nfactura=str(uuid.uuid4()),
                 empresa=empresa,
                 usuario=usuario,
-                tipo='SALIDA',
-                unidades=cantidad,
-                precio_unitario_compra=costo_u,
-                precio_unitario_venta=0,   # merma: no hay venta
-                total=costo_u * cantidad,  # costo perdido
-                factura=factura,
-                fecha_hora=timezone.now(),
+                numero_factura=numero,
+                fecha=timezone.now(),
+                total=total_merma,
+                tipo='MERMA',
             )
+            for articulo, cantidad, costo_u in lineas:
+                Stock.objects.create(
+                    id_stock=str(uuid.uuid4()),
+                    articulo=articulo,
+                    empresa=empresa,
+                    usuario=usuario,
+                    tipo='SALIDA',
+                    unidades=cantidad,
+                    precio_unitario_compra=costo_u,
+                    precio_unitario_venta=0,   # merma: no hay venta
+                    total=costo_u * cantidad,  # costo perdido
+                    factura=factura,
+                    fecha_hora=timezone.now(),
+                )
 
         messages.success(request, f'Merma {numero} registrada — Costo perdido: ${total_merma:,.0f}')
         return redirect('compras_ventas')

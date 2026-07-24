@@ -31,18 +31,33 @@ function pvApplyFilters() {
 
 // ── Carrito ───────────────────────────────────────────────────────────────────
 
+// Regla: no se vende lo que no hay. El inventario nunca queda negativo.
+// (El servidor vuelve a validarlo al confirmar: este stock puede estar viejo.)
+function pvSinStock(nombre) {
+  nmAviso(`"${nombre}" no tiene stock disponible.`);
+}
+function pvTope(item) {
+  nmAviso(`Solo quedan ${item.stock} unidades de "${item.nombre}".`);
+}
+
 function pvAddToCart(card) {
   const id = card.dataset.id;
+  const stock = parseFloat(card.dataset.stock) || 0;
+  const nombre = card.dataset.nombre;
+
+  if (stock <= 0) { pvSinStock(nombre); return; }
+
   if (pvCart[id]) {
+    if (pvCart[id].cantidad + 1 > pvCart[id].stock) { pvTope(pvCart[id]); return; }
     pvCart[id].cantidad += 1;
   } else {
     pvCart[id] = {
       id,
-      nombre:      card.dataset.nombre,
+      nombre,
       precio:      parseFloat(card.dataset.precio) || 0,
       precioMayor: parseFloat(card.dataset.precioMayor) || 0,
       cantMayor:   parseFloat(card.dataset.cantMayor) || 0,
-      stock:       parseFloat(card.dataset.stock) || 0,
+      stock,
       cantidad:    1,
     };
   }
@@ -57,17 +72,22 @@ function pvRemove(id) {
 }
 
 function pvAddQty(id, delta) {
-  if (!pvCart[id]) return;
-  const next = pvCart[id].cantidad + delta;
+  const item = pvCart[id];
+  if (!item) return;
+  const next = item.cantidad + delta;
   if (next < 1) { pvRemove(id); return; }
-  pvCart[id].cantidad = next;
+  if (next > item.stock) { pvTope(item); return; }
+  item.cantidad = next;
   pvRenderCart();
 }
 
 function pvSetQty(id, val) {
-  const qty = parseInt(val);
+  const item = pvCart[id];
+  if (!item) return;
+  let qty = parseInt(val);
   if (!qty || qty < 1) return;
-  pvCart[id].cantidad = qty;
+  if (qty > item.stock) { qty = item.stock; pvTope(item); }   // se recorta al stock
+  item.cantidad = qty;
   pvRenderCart();
 }
 
@@ -99,7 +119,8 @@ function pvRenderCart() {
     return;
   }
 
-  confirmBtn.disabled = false;
+  // Red de seguridad: si alguna línea supera el stock, no se puede cobrar.
+  confirmBtn.disabled = items.some(i => i.cantidad > i.stock);
 
   container.innerHTML = items.map(item => {
     const precioU  = pvPrecioUnitario(item);
@@ -116,7 +137,7 @@ function pvRenderCart() {
         <button class="pc-qty-btn" onclick="pvAddQty('${item.id}', -1)">−</button>
         <input type="number" id="pvQty-${item.id}"
                class="pc-ctrl-input pc-qty-input"
-               value="${item.cantidad}" min="1"
+               value="${item.cantidad}" min="1" max="${item.stock}"
                onchange="pvSetQty('${item.id}', this.value)"
                oninput="pvSetQty('${item.id}', this.value)" />
         <button class="pc-qty-btn" onclick="pvAddQty('${item.id}', 1)">+</button>

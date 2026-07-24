@@ -89,3 +89,28 @@ function initAlertDismiss() {
 function formatCLP(value) {
   return '$' + Number(value).toLocaleString('es-CL');
 }
+
+// Aviso flotante para reglas de negocio (ej: producto sin stock).
+// Reemplaza el mismo mensaje si se repite, para no apilar avisos iguales.
+function nmAviso(mensaje, tipo) {
+  let caja = document.getElementById('nmAvisos');
+  if (!caja) {
+    caja = document.createElement('div');
+    caja.id = 'nmAvisos';
+    caja.className = 'nm-avisos';
+    document.body.appendChild(caja);
+  }
+  const previo = [...caja.children].find(n => n.dataset.msg === mensaje);
+  if (previo) previo.remove();
+
+  const aviso = document.createElement('div');
+  aviso.className = 'nm-aviso' + (tipo ? ' ' + tipo : '');
+  aviso.dataset.msg = mensaje;
+  aviso.textContent = mensaje;
+  caja.appendChild(aviso);
+
+  setTimeout(() => {
+    aviso.classList.add('saliendo');
+    setTimeout(() => aviso.remove(), 300);
+  }, 3200);
+}

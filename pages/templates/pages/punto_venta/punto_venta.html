@@ -30,7 +30,7 @@
     {% if articulos %}
     <div class="pos-grid" id="pvGrid">
       {% for art in articulos %}
-      <div class="pos-card pv-card"
+      <div class="pos-card pv-card {% if art.stock_actual <= 0 %}sin-stock{% endif %}"
            data-id="{{ art.id_articulo }}"
            data-nombre="{{ art.nombre_articulo }}"
            data-codigo="{{ art.codigo_barra|default:'' }} {{ art.codigo_qr|default:'' }}"
