@@ -21,16 +21,31 @@ function mmApplyFilters() {
 
 // ── Carrito ───────────────────────────────────────────────────────────────────
 
+// Regla: no se puede mermar lo que no hay en inventario (quedaría negativo).
+// (El servidor lo revalida al confirmar: este stock puede estar viejo.)
+function mmSinStock(nombre) {
+  nmAviso(`"${nombre}" no tiene stock para dar de baja.`);
+}
+function mmTope(item) {
+  nmAviso(`Solo quedan ${item.stock} unidades de "${item.nombre}".`);
+}
+
 function mmAddToCart(card) {
   const id = card.dataset.id;
+  const stock = parseFloat(card.dataset.stock) || 0;
+  const nombre = card.dataset.nombre;
+
+  if (stock <= 0) { mmSinStock(nombre); return; }
+
   if (mmCart[id]) {
+    if (mmCart[id].cantidad + 1 > mmCart[id].stock) { mmTope(mmCart[id]); return; }
     mmCart[id].cantidad += 1;
   } else {
     mmCart[id] = {
       id,
-      nombre:   card.dataset.nombre,
+      nombre,
       costo:    parseFloat(card.dataset.costo) || 0,
-      stock:    parseFloat(card.dataset.stock) || 0,
+      stock,
       cantidad: 1,
     };
   }
@@ -42,17 +57,22 @@ function mmAddToCart(card) {
 function mmRemove(id) { delete mmCart[id]; mmRenderCart(); }
 
 function mmAddQty(id, delta) {
-  if (!mmCart[id]) return;
-  const next = mmCart[id].cantidad + delta;
+  const item = mmCart[id];
+  if (!item) return;
+  const next = item.cantidad + delta;
   if (next < 1) { mmRemove(id); return; }
-  mmCart[id].cantidad = next;
+  if (next > item.stock) { mmTope(item); return; }
+  item.cantidad = next;
   mmRenderCart();
 }
 
 function mmSetQty(id, val) {
-  const qty = parseInt(val);
+  const item = mmCart[id];
+  if (!item) return;
+  let qty = parseInt(val);
   if (!qty || qty < 1) return;
-  mmCart[id].cantidad = qty;
+  if (qty > item.stock) { qty = item.stock; mmTope(item); }   // se recorta al stock
+  item.cantidad = qty;
   mmRenderCart();
 }
 
@@ -80,7 +100,8 @@ function mmRenderCart() {
     return;
   }
 
-  confirmBtn.disabled = false;
+  // Red de seguridad: si alguna línea supera el stock, no se puede confirmar.
+  confirmBtn.disabled = items.some(i => i.cantidad > i.stock);
 
   container.innerHTML = items.map(item => {
     const sinStock = item.cantidad > item.stock;
@@ -94,7 +115,7 @@ function mmRenderCart() {
         <button class="pc-qty-btn" onclick="mmAddQty('${item.id}', -1)">−</button>
         <input type="number" id="mmQty-${item.id}"
                class="pc-ctrl-input pc-qty-input"
-               value="${item.cantidad}" min="1"
+               value="${item.cantidad}" min="1" max="${item.stock}"
                onchange="mmSetQty('${item.id}', this.value)"
                oninput="mmSetQty('${item.id}', this.value)" />
         <button class="pc-qty-btn" onclick="mmAddQty('${item.id}', 1)">+</button>

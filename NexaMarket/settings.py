@@ -116,6 +116,8 @@ SW_VERSION = (os.getenv('RENDER_GIT_COMMIT') or 'dev')[:12]
 # Supabase API (opcional — Storage u otras integraciones)
 SUPABASE_URL = os.getenv('SUPABASE_URL', '')
 SUPABASE_ANON_KEY = os.getenv('SUPABASE_ANON_KEY', '')
+# Bucket donde la app móvil guarda las fotos de artículos; la web usa el mismo.
+SUPABASE_BUCKET = os.getenv('SUPABASE_BUCKET', 'Articulos-Imagen')
 
 # Producción detrás del proxy de Render (HTTPS + CSRF)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

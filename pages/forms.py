@@ -39,7 +39,7 @@ class ArticuloForm(forms.ModelForm):
             'categoria', 'proveedor',
             'codigo_qr', 'codigo_barra',
             'precio_compra', 'precio_venta', 'margen_ganancia',
-            'unidad_medida', 'foto', 'activo', 'stock_minimo',
+            'unidad_medida', 'activo', 'stock_minimo',
             'es_mayorista', 'cantidad_minima_mayor',
             'precio_venta_mayor', 'margen_ganancia_mayor',
         ]
@@ -67,7 +67,6 @@ class ArticuloForm(forms.ModelForm):
             'precio_venta': 'Precio de venta ($)',
             'margen_ganancia': 'Margen de ganancia (%)',
             'unidad_medida': 'Unidad de medida',
-            'foto': 'Foto del producto',
             'activo': 'Producto activo',
             'stock_minimo': 'Stock mínimo',
             'cantidad_minima_mayor': 'Cantidad mínima mayorista',
@@ -89,7 +88,6 @@ class ArticuloForm(forms.ModelForm):
         self.fields['proveedor'].queryset = qs_prov
         self.fields['proveedor'].required = False
         self.fields['proveedor'].empty_label = '— Sin proveedor —'
-        self.fields['foto'].required = False
         self.fields['descripcion'].required = False
         self.fields['codigo_qr'].required = False
         self.fields['codigo_barra'].required = False

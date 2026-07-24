@@ -11,6 +11,20 @@ from base_datos.models import Articulo, Proveedor
 from ..forms import ArticuloForm
 
 from .comunes import _get_empresa, _round10
+from .supabase_storage import subir_imagen_articulo
+
+
+def _guardar_foto(request, articulo, empresa):
+    """Si se subió una foto, la manda a Supabase Storage y setea foto_url.
+    No bloquea el guardado del producto: si falla, avisa y sigue."""
+    archivo = request.FILES.get('foto')
+    if not archivo:
+        return
+    url, error = subir_imagen_articulo(empresa.pk, archivo)
+    if url:
+        articulo.foto_url = url
+    elif error:
+        messages.warning(request, f'El producto se guardó, pero la imagen no: {error}')
 
 
 def _aplicar_precios_mayor(articulo):
@@ -70,6 +84,7 @@ def producto_crear(request):
             articulo.precio_venta = pv
             articulo.margen_ganancia = round(((pv - pc) / pc * 100) if pc > 0 else 0, 2)
             _aplicar_precios_mayor(articulo)
+            _guardar_foto(request, articulo, empresa)
             articulo.save()
             messages.success(request, f'Producto "{articulo.nombre_articulo}" creado correctamente.')
             return redirect('productos')
@@ -92,6 +107,7 @@ def producto_editar(request, pk):
             obj.precio_venta = pv
             obj.margen_ganancia = round(((pv - pc) / pc * 100) if pc > 0 else 0, 2)
             _aplicar_precios_mayor(obj)
+            _guardar_foto(request, obj, empresa)
             obj.save()
             messages.success(request, f'Producto "{obj.nombre_articulo}" actualizado.')
             return redirect('productos')
