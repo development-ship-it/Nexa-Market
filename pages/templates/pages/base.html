@@ -48,8 +48,6 @@
     </div>
 
     <nav class="sidebar-nav">
-      {# Sin suscripción vigente el menú se reduce: nada de ofrecer enlaces que
-         el middleware va a rebotar de vuelta a Mis Pagos. #}
       {% if suscripcion_bloqueada %}
       <div class="nav-aviso-suscripcion">
         <strong>Suscripción no activa</strong>
