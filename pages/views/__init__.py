@@ -14,6 +14,7 @@ Para tocar una vista, ve directo a su módulo:
     proveedores.py          CRUD de proveedores
     usuarios.py             CRUD de usuarios
     empresa.py              datos de empresa y personalización
+    pagos.py                suscripción del cliente: vigencia, cobro e historial
     punto_compra.py         punto de compra
     punto_venta.py          punto de venta
     merma.py                bajas de stock por merma
@@ -32,6 +33,7 @@ from .categorias import categorias, categoria_crear, categoria_editar, categoria
 from .proveedores import proveedores, proveedor_crear, proveedor_editar, proveedor_eliminar
 from .usuarios import usuarios, usuario_crear, usuario_editar, usuario_eliminar
 from .empresa import empresa, personalizacion
+from .pagos import mis_pagos
 from .punto_compra import punto_compra
 from .punto_venta import punto_venta
 from .merma import merma
@@ -48,7 +50,7 @@ __all__ = [
     'categorias', 'categoria_crear', 'categoria_editar', 'categoria_eliminar',
     'proveedores', 'proveedor_crear', 'proveedor_editar', 'proveedor_eliminar',
     'usuarios', 'usuario_crear', 'usuario_editar', 'usuario_eliminar',
-    'empresa', 'personalizacion',
+    'empresa', 'personalizacion', 'mis_pagos',
     'punto_compra', 'punto_venta', 'merma', 'inventario',
     'compras_ventas', 'movimientos',
     'api_precios_update', 'service_worker', 'api_estado',

@@ -99,6 +99,14 @@
         <span class="nav-icon icon-empresa"></span>
         <span class="nav-label">Mi Empresa</span>
       </a>
+      <a href="{% url 'mis_pagos' %}" class="nav-item {% if page == 'mis_pagos' %}active{% endif %}">
+        <span class="nav-icon icon-dinero"></span>
+        <span class="nav-label">Mis Pagos</span>
+        {# Avisa en el menú solo cuando queda poco: 7 días o menos, o ya venció #}
+        {% if empresa_actual.fecha_vencimiento and empresa_actual.dias_restantes <= 7 %}
+          <span class="nav-aviso {% if empresa_actual.esta_vigente %}por-vencer{% else %}vencido{% endif %}"></span>
+        {% endif %}
+      </a>
       <a href="{% url 'personalizacion' %}" class="nav-item {% if page == 'personalizacion' %}active{% endif %}">
         <span class="nav-icon icon-personalizacion"></span>
         <span class="nav-label">Personalización</span>

@@ -1,0 +1,184 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Mis Pagos — NexaMarket{% endblock %}
+{% block page_title %}Mis Pagos{% endblock %}
+
+{% block content %}
+<div class="form-page" style="max-width:720px;">
+
+  {# ── ESTADO DE LA SUSCRIPCIÓN ─────────────────────────────────────────── #}
+  <div class="form-card">
+    <h3 class="form-card-title">
+      <span class="svg-icon icon-dinero icono-primario"></span> Estado de tu suscripción
+    </h3>
+
+    <div class="info-row">
+      <span class="info-label">Plan actual</span>
+      <span class="info-value">{{ empresa.id_plan.nombre|default:'Gratuito' }}</span>
+    </div>
+
+    <div class="info-row">
+      <span class="info-label">Estado</span>
+      {% if empresa.estado_suscripcion == 'ACTIVA' %}
+        <span class="status-badge active">Activa</span>
+      {% elif empresa.estado_suscripcion == 'GRACIA' %}
+        <span class="status-badge neutral">Periodo de gracia</span>
+      {% elif empresa.estado_suscripcion == 'VENCIDA' %}
+        <span class="status-badge inactive">Vencida</span>
+      {% else %}
+        <span class="status-badge neutral">Plan gratuito</span>
+      {% endif %}
+    </div>
+
+    {% if empresa.fecha_vencimiento %}
+      <div class="info-row">
+        <span class="info-label">Vence el</span>
+        <span class="info-value">{{ empresa.fecha_vencimiento|date:"d/m/Y" }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Días restantes</span>
+        {% if empresa.en_gracia %}
+          <span class="badge badge-yellow">Venció — sigues operando por unos días</span>
+        {% elif empresa.esta_vigente %}
+          <span class="info-value">{{ empresa.dias_restantes }} días</span>
+        {% else %}
+          <span class="badge badge-red">Suscripción vencida</span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="info-row">
+      <span class="info-label">Usuarios activos</span>
+      <span class="info-value">{{ empresa.usuarios_activos }}</span>
+    </div>
+  </div>
+
+  {# ── PRÓXIMO COBRO ────────────────────────────────────────────────────── #}
+  {% if cobro %}
+  <div class="form-card" style="margin-top:0;">
+    <h3 class="form-card-title">Tu próximo cobro</h3>
+
+    <div class="info-row">
+      <span class="info-label">
+        Plan {{ empresa.id_plan.nombre }} + {{ cobro.usuarios }} usuario{{ cobro.usuarios|pluralize:"s" }}
+      </span>
+      <span class="info-value">${{ cobro.bruto|floatformat:0 }}</span>
+    </div>
+
+    {% if cobro.descuento %}
+    <div class="info-row">
+      <span class="info-label">Descuento ({{ empresa.descuento_porcentaje }}%)</span>
+      <span class="info-value" style="color:var(--green);">−${{ cobro.descuento|floatformat:0 }}</span>
+    </div>
+    {% endif %}
+
+    <div class="info-row">
+      <span class="info-label">Neto</span>
+      <span class="info-value">${{ cobro.neto|floatformat:0 }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">IVA (19%)</span>
+      <span class="info-value">${{ cobro.iva|floatformat:0 }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label" style="font-weight:700;">Total a pagar</span>
+      <span class="info-value" style="font-size:1.05rem;">${{ cobro.total|floatformat:0 }}</span>
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── SOLICITAR / CAMBIAR PLAN ─────────────────────────────────────────── #}
+  <div class="form-card" style="margin-top:0;">
+    <h3 class="form-card-title">
+      {% if empresa.id_plan %}Cambiar de plan{% else %}Pasar a un plan de pago{% endif %}
+    </h3>
+
+    {% if solicitud_abierta %}
+      <div class="info-row">
+        <span class="info-label">
+          Solicitud enviada el {{ solicitud_abierta.fecha_solicitud|date:"d/m/Y" }}
+        </span>
+        <span class="status-badge neutral">{{ solicitud_abierta.get_estado_display }}</span>
+      </div>
+      <p style="font-size:.85rem;color:var(--gray);margin-top:10px;">
+        Te vamos a contactar para coordinar el pago y activar tu plan.
+      </p>
+
+    {% elif planes %}
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-field">
+          <label class="field-label">Plan que te interesa</label>
+          <select name="id_plan">
+            {% for p in planes %}
+              <option value="{{ p.id_plan }}">
+                {{ p.nombre }} — ${{ p.precio_base|floatformat:0 }}
+                {% if p.precio_por_usuario %}+ ${{ p.precio_por_usuario|floatformat:0 }} por usuario{% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-submit-row">
+          <button type="submit" class="btn-primary">Solicitar este plan</button>
+        </div>
+      </form>
+      <p style="font-size:.85rem;color:var(--gray);margin-top:4px;">
+        Los precios se muestran con IVA incluido. Te contactamos para coordinar el pago.
+      </p>
+
+    {% else %}
+      <div class="empty-state"><p>No hay otros planes disponibles por ahora.</p></div>
+    {% endif %}
+  </div>
+
+  {# ── HISTORIAL ────────────────────────────────────────────────────────── #}
+  <div class="form-card" style="margin-top:0;">
+    <h3 class="form-card-title">Historial de pagos</h3>
+
+    {% if pagos %}
+    <div style="overflow-x:auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Periodo cubierto</th>
+            <th>Método</th>
+            <th style="text-align:right">Monto</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in pagos %}
+          <tr>
+            <td style="white-space:nowrap;font-size:.8rem;color:var(--gray);">
+              {{ p.fecha_pago|date:"d/m/Y" }}
+            </td>
+            <td style="white-space:nowrap;font-size:.8rem;">
+              {% if p.periodo_inicio %}
+                {{ p.periodo_inicio|date:"d/m/y" }} → {{ p.periodo_fin|date:"d/m/y" }}
+              {% else %}—{% endif %}
+            </td>
+            <td>{{ p.get_metodo_pago_display }}</td>
+            <td style="text-align:right">${{ p.monto_total|floatformat:0 }}</td>
+            <td>
+              {% if p.estado == 'CONFIRMADO' %}
+                <span class="badge badge-green">Confirmado</span>
+              {% elif p.estado == 'PENDIENTE' %}
+                <span class="badge badge-yellow">Pendiente</span>
+              {% else %}
+                <span class="badge badge-red">{{ p.get_estado_display }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <div class="empty-state"><p>Todavía no registras pagos.</p></div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

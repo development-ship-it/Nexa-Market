@@ -15,6 +15,8 @@ registrar la nueva entidad:
         factura/        → Factura (agrupa movimientos de un carrito confirmado)
         stock/          → Stock (libro append-only: ENTRADA=compra, SALIDA=venta)
         configuracion/  → Configuracion (personalización visual por empresa/usuario)
+        pago/           → Pago y SolicitudPremium (cobro de la suscripción SaaS;
+                          backoffice de NexaMarket, no datos del cliente)
 
 Para añadir un sub-modelo: crear el archivo dentro de la carpeta de la
 entidad, exportarlo en el __init__.py de esa carpeta y añadirlo aquí.
@@ -30,6 +32,7 @@ from .factura           import Factura
 from .stock             import Stock
 from .configuracion     import Configuracion
 from .configuracion_web import ConfiguracionWeb
+from .pago              import Pago, SolicitudPremium
 
 __all__ = [
     'Plan',
@@ -42,4 +45,6 @@ __all__ = [
     'Stock',
     'Configuracion',
     'ConfiguracionWeb',
+    'Pago',
+    'SolicitudPremium',
 ]

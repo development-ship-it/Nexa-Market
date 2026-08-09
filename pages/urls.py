@@ -40,6 +40,9 @@ urlpatterns = [
     # Empresa
     path('empresa/', views.empresa, name='empresa'),
 
+    # Suscripción
+    path('mis-pagos/', views.mis_pagos, name='mis_pagos'),
+
     # Personalización web
     path('personalizacion/', views.personalizacion, name='personalizacion'),
 
