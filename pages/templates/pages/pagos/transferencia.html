@@ -1,0 +1,85 @@
+{% extends 'pages/base.html' %}
+{% load static %}
+
+{% block title %}Pagar por transferencia — NexaMarket{% endblock %}
+{% block page_title %}Pagar por transferencia{% endblock %}
+
+{% block content %}
+<div class="form-page" style="max-width:620px;">
+
+  {# ── CUÁNTO Y A DÓNDE ─────────────────────────────────────────────────── #}
+  <div class="form-card">
+    <h3 class="form-card-title">1. Transfiere ${{ cobro.total|floatformat:0 }}</h3>
+
+    {% if datos.numero %}
+      <div class="info-row">
+        <span class="info-label">Titular</span>
+        <span class="info-value">{{ datos.titular }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">RUT</span>
+        <span class="info-value">{{ datos.rut }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Banco</span>
+        <span class="info-value">{{ datos.banco }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">{{ datos.tipo_cuenta }}</span>
+        <span class="info-value">{{ datos.numero }}</span>
+      </div>
+      {% if datos.correo %}
+      <div class="info-row">
+        <span class="info-label">Correo</span>
+        <span class="info-value">{{ datos.correo }}</span>
+      </div>
+      {% endif %}
+      <div class="info-row">
+        <span class="info-label" style="font-weight:700;">Monto exacto</span>
+        <span class="info-value" style="font-size:1.05rem;">${{ cobro.total|floatformat:0 }}</span>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>Los datos bancarios todavía no están configurados. Escríbenos para coordinar el pago.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  {# ── COMPROBANTE ──────────────────────────────────────────────────────── #}
+  <div class="form-card" style="margin-top:0;">
+    <h3 class="form-card-title">2. Adjunta tu comprobante</h3>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="form-field required">
+        <label class="field-label">Fecha de la transferencia</label>
+        <input type="date" name="fecha_pago" value="{{ hoy }}" max="{{ hoy }}" required />
+      </div>
+
+      <div class="form-field required">
+        <label class="field-label">Número de operación</label>
+        <input type="text" name="referencia_externa" required
+               placeholder="El que aparece en tu comprobante" />
+      </div>
+
+      <div class="form-field required">
+        <label class="field-label">Foto del comprobante</label>
+        <input type="file" name="comprobante" accept="image/jpeg,image/png,image/webp" required />
+      </div>
+
+      <div class="form-submit-row">
+        <a href="{% url 'mis_pagos' %}" class="btn-secondary"
+           style="text-decoration:none;">Volver</a>
+        <button type="submit" class="btn-primary">Enviar comprobante</button>
+      </div>
+    </form>
+
+    <p style="font-size:.85rem;color:var(--gray);margin-top:10px;">
+      JPG, PNG o WEBP, hasta 5 MB. Tu plan queda en revisión hasta que validemos
+      la transferencia — normalmente el mismo día hábil.
+    </p>
+  </div>
+
+</div>
+{% endblock %}

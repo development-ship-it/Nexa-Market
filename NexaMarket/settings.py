@@ -115,6 +115,22 @@ GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
 # Ponlo en False si te dejas afuera durante el desarrollo.
 MURO_DE_PAGO = os.getenv('MURO_DE_PAGO', 'True') == 'True'
 
+# Flow (flow.cl) — Mi Comercio > Configuración > API. La secret key firma las
+# peticiones: si se filtra, cualquiera puede crear cobros a tu nombre.
+FLOW_API_KEY = os.getenv('FLOW_API_KEY', '')
+FLOW_SECRET_KEY = os.getenv('FLOW_SECRET_KEY', '')
+FLOW_SANDBOX = os.getenv('FLOW_SANDBOX', 'True') == 'True'
+
+# Datos bancarios que se le muestran al cliente para pagar por transferencia.
+TRANSFERENCIA = {
+    'titular':     os.getenv('TRANSFERENCIA_TITULAR', ''),
+    'rut':         os.getenv('TRANSFERENCIA_RUT', ''),
+    'banco':       os.getenv('TRANSFERENCIA_BANCO', ''),
+    'tipo_cuenta': os.getenv('TRANSFERENCIA_TIPO_CUENTA', 'Cuenta Corriente'),
+    'numero':      os.getenv('TRANSFERENCIA_NUMERO', ''),
+    'correo':      os.getenv('TRANSFERENCIA_CORREO', ''),
+}
+
 # Versión del Service Worker: cambia en cada deploy para invalidar el caché
 # del navegador automáticamente (Render expone el commit desplegado).
 SW_VERSION = (os.getenv('RENDER_GIT_COMMIT') or 'dev')[:12]

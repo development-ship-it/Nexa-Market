@@ -17,7 +17,14 @@ from django.shortcuts import redirect
 VISTAS_LIBRES = {
     'index', 'login', 'logout',
     'google_login', 'google_callback',
-    'mis_pagos',
+    # Todo el circuito de pago
+    'mis_pagos', 'elegir_plan', 'solicitar_contacto',
+    'pagar_transferencia', 'pagar_flow', 'flow_retorno', 'flow_confirmacion',
+    # Sin pagar igual debe poder ver su empresa y sus usuarios: son los datos
+    # que necesita completar (razón social, giro) para que le emitan la boleta.
+    'empresa',
+    'usuarios', 'usuario_crear', 'usuario_editar', 'usuario_eliminar',
+    # Lo que necesita el service worker de la PWA para no romperse
     'service_worker', 'api_estado',
 }
 

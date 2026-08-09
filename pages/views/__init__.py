@@ -33,7 +33,10 @@ from .categorias import categorias, categoria_crear, categoria_editar, categoria
 from .proveedores import proveedores, proveedor_crear, proveedor_editar, proveedor_eliminar
 from .usuarios import usuarios, usuario_crear, usuario_editar, usuario_eliminar
 from .empresa import empresa, personalizacion
-from .pagos import mis_pagos
+from .pagos import (
+    mis_pagos, elegir_plan, solicitar_contacto,
+    pagar_transferencia, pagar_flow, flow_retorno, flow_confirmacion,
+)
 from .punto_compra import punto_compra
 from .punto_venta import punto_venta
 from .merma import merma
@@ -50,7 +53,9 @@ __all__ = [
     'categorias', 'categoria_crear', 'categoria_editar', 'categoria_eliminar',
     'proveedores', 'proveedor_crear', 'proveedor_editar', 'proveedor_eliminar',
     'usuarios', 'usuario_crear', 'usuario_editar', 'usuario_eliminar',
-    'empresa', 'personalizacion', 'mis_pagos',
+    'empresa', 'personalizacion',
+    'mis_pagos', 'elegir_plan', 'solicitar_contacto',
+    'pagar_transferencia', 'pagar_flow', 'flow_retorno', 'flow_confirmacion',
     'punto_compra', 'punto_venta', 'merma', 'inventario',
     'compras_ventas', 'movimientos',
     'api_precios_update', 'service_worker', 'api_estado',

@@ -33,13 +33,6 @@
       {% endif %}
     </div>
 
-    {% if empresa.estado_actual == 'SIN_ACTIVAR' %}
-      <p style="font-size:.85rem;color:var(--gray);margin-top:10px;">
-        Tienes el plan {{ empresa.id_plan.nombre }} asignado pero todavía sin pago registrado.
-        Se activa cuando confirmemos el primer pago.
-      </p>
-    {% endif %}
-
     {% if empresa.fecha_vencimiento %}
       <div class="info-row">
         <span class="info-label">Vence el</span>
@@ -61,13 +54,53 @@
       <span class="info-label">Usuarios activos</span>
       <span class="info-value">{{ empresa.usuarios_activos }}</span>
     </div>
+
+    {% if not empresa.esta_vigente %}
+      <p style="font-size:.85rem;color:var(--gray);margin-top:10px;">
+        {% if empresa.id_plan %}
+          Tienes el plan {{ empresa.id_plan.nombre }} seleccionado pero todavía sin pago
+          registrado. Se activa apenas confirmemos el pago.
+        {% else %}
+          Elige un plan para activar NexaMarket en la web.
+        {% endif %}
+      </p>
+    {% endif %}
   </div>
 
-  {# ── PRÓXIMO COBRO ────────────────────────────────────────────────────── #}
+  {# ── ELEGIR PLAN ──────────────────────────────────────────────────────── #}
+  {% if planes %}
+  <div class="form-card" style="margin-top:0;">
+    <h3 class="form-card-title">
+      {% if empresa.id_plan and empresa.esta_vigente %}Cambiar de plan{% else %}Elige tu plan{% endif %}
+    </h3>
+    <form method="post" action="{% url 'elegir_plan' %}">
+      {% csrf_token %}
+      <div class="form-field">
+        <label class="field-label">Plan</label>
+        <select name="id_plan">
+          {% for p in planes %}
+            <option value="{{ p.id_plan }}">
+              {{ p.nombre }} — ${{ p.precio_base|floatformat:0 }}
+              {% if p.precio_por_usuario %}+ ${{ p.precio_por_usuario|floatformat:0 }} por usuario{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-submit-row">
+        <button type="submit" class="btn-secondary">Seleccionar plan</button>
+      </div>
+    </form>
+    <p style="font-size:.85rem;color:var(--gray);margin-top:4px;">
+      Precios con IVA incluido. Elegir el plan es gratis — se activa cuando pagas.
+    </p>
+  </div>
+  {% endif %}
+
+  {# ── COBRO Y BOTONES DE PAGO ──────────────────────────────────────────── #}
   {% if cobro %}
   <div class="form-card" style="margin-top:0;">
     <h3 class="form-card-title">
-      {% if empresa.esta_vigente %}Tu próximo cobro{% else %}Lo que debes pagar para activar{% endif %}
+      {% if empresa.esta_vigente %}Tu próximo cobro{% else %}Activa tu plan{% endif %}
     </h3>
 
     <div class="info-row">
@@ -96,54 +129,47 @@
       <span class="info-label" style="font-weight:700;">Total a pagar</span>
       <span class="info-value" style="font-size:1.05rem;">${{ cobro.total|floatformat:0 }}</span>
     </div>
-  </div>
-  {% endif %}
 
-  {# ── SOLICITAR / CAMBIAR PLAN ─────────────────────────────────────────── #}
-  <div class="form-card" style="margin-top:0;">
-    <h3 class="form-card-title">
-      {% if not empresa.esta_vigente %}Activa tu plan
-      {% elif empresa.id_plan %}Cambiar de plan
-      {% else %}Pasar a un plan de pago{% endif %}
-    </h3>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
+      {% if flow_disponible %}
+      <form method="post" action="{% url 'pagar_flow' %}" style="flex:1 1 220px;">
+        {% csrf_token %}
+        <button type="submit" class="btn-primary" style="width:100%;">
+          Pagar con tarjeta (Flow)
+        </button>
+      </form>
+      {% endif %}
+      <a href="{% url 'pagar_transferencia' %}" class="btn-secondary"
+         style="flex:1 1 220px;text-align:center;text-decoration:none;">
+        Pagar por transferencia
+      </a>
+    </div>
+
+    <p style="font-size:.85rem;color:var(--gray);margin-top:14px;">
+      Con tarjeta se activa al instante. Por transferencia lo activamos
+      después de revisar tu comprobante.
+    </p>
+
+    {% if not solicitud_abierta %}
+      <form method="post" action="{% url 'solicitar_contacto' %}" style="margin-top:6px;">
+        {% csrf_token %}
+        <button type="submit"
+                style="background:none;border:none;padding:0;color:var(--teal);cursor:pointer;font-size:.85rem;text-decoration:underline;">
+          Prefiero que me contacten para coordinar el pago
+        </button>
+      </form>
+    {% endif %}
 
     {% if solicitud_abierta %}
-      <div class="info-row">
+      <div class="info-row" style="margin-top:8px;">
         <span class="info-label">
-          Solicitud enviada el {{ solicitud_abierta.fecha_solicitud|date:"d/m/Y" }}
+          Pediste que te contactemos el {{ solicitud_abierta.fecha_solicitud|date:"d/m/Y" }}
         </span>
         <span class="status-badge neutral">{{ solicitud_abierta.get_estado_display }}</span>
       </div>
-      <p style="font-size:.85rem;color:var(--gray);margin-top:10px;">
-        Te vamos a contactar para coordinar el pago y activar tu plan.
-      </p>
-
-    {% elif planes %}
-      <form method="post">
-        {% csrf_token %}
-        <div class="form-field">
-          <label class="field-label">Plan que te interesa</label>
-          <select name="id_plan">
-            {% for p in planes %}
-              <option value="{{ p.id_plan }}">
-                {{ p.nombre }} — ${{ p.precio_base|floatformat:0 }}
-                {% if p.precio_por_usuario %}+ ${{ p.precio_por_usuario|floatformat:0 }} por usuario{% endif %}
-              </option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="form-submit-row">
-          <button type="submit" class="btn-primary">Solicitar este plan</button>
-        </div>
-      </form>
-      <p style="font-size:.85rem;color:var(--gray);margin-top:4px;">
-        Los precios se muestran con IVA incluido. Te contactamos para coordinar el pago.
-      </p>
-
-    {% else %}
-      <div class="empty-state"><p>No hay otros planes disponibles por ahora.</p></div>
     {% endif %}
   </div>
+  {% endif %}
 
   {# ── HISTORIAL ────────────────────────────────────────────────────────── #}
   <div class="form-card" style="margin-top:0;">
@@ -178,7 +204,7 @@
               {% if p.estado == 'CONFIRMADO' %}
                 <span class="badge badge-green">Confirmado</span>
               {% elif p.estado == 'PENDIENTE' %}
-                <span class="badge badge-yellow">Pendiente</span>
+                <span class="badge badge-yellow">En revisión</span>
               {% else %}
                 <span class="badge badge-red">{{ p.get_estado_display }}</span>
               {% endif %}

@@ -42,6 +42,13 @@ urlpatterns = [
 
     # Suscripción
     path('mis-pagos/', views.mis_pagos, name='mis_pagos'),
+    path('mis-pagos/plan/', views.elegir_plan, name='elegir_plan'),
+    path('mis-pagos/contacto/', views.solicitar_contacto, name='solicitar_contacto'),
+    path('mis-pagos/transferencia/', views.pagar_transferencia, name='pagar_transferencia'),
+    path('mis-pagos/flow/', views.pagar_flow, name='pagar_flow'),
+    path('mis-pagos/flow/retorno/', views.flow_retorno, name='flow_retorno'),
+    # Webhook servidor-a-servidor de Flow: sin sesión y sin CSRF.
+    path('mis-pagos/flow/confirmacion/', views.flow_confirmacion, name='flow_confirmacion'),
 
     # Personalización web
     path('personalizacion/', views.personalizacion, name='personalizacion'),

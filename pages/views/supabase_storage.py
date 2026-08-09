@@ -17,7 +17,12 @@ EXT_POR_TIPO = {
 }
 
 
-def subir_imagen_articulo(empresa_id, archivo):
+def subir_comprobante(empresa_id, archivo):
+    """Comprobante de transferencia: misma subida, en su propia carpeta."""
+    return subir_imagen_articulo(empresa_id, archivo, carpeta='comprobantes')
+
+
+def subir_imagen_articulo(empresa_id, archivo, carpeta=None):
     """Sube `archivo` (UploadedFile) al bucket y devuelve (url, error).
 
     - (url, None)   → subida correcta, `url` es la pública.
@@ -40,7 +45,8 @@ def subir_imagen_articulo(empresa_id, archivo):
     if not ext:
         return None, 'Formato no soportado. Usa JPG, PNG o WEBP.'
 
-    ruta = f'{empresa_id}/{uuid.uuid4()}.{ext}'
+    prefijo = f'{carpeta}/' if carpeta else ''
+    ruta = f'{prefijo}{empresa_id}/{uuid.uuid4()}.{ext}'
     endpoint = f'{base}/storage/v1/object/{settings.SUPABASE_BUCKET}/{ruta}'
     try:
         resp = requests.post(
