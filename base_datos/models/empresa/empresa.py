@@ -78,6 +78,26 @@ class Empresa(models.Model):
             return False
         return self.fecha_vencimiento < timezone.now() <= self.fecha_vencimiento + timedelta(days=DIAS_GRACIA)
 
+    @property
+    def estado_actual(self):
+        """
+        Estado real de la suscripción, calculado desde `fecha_vencimiento`.
+
+        Es lo que hay que mostrar y lo que decide el acceso. El campo
+        `estado_suscripcion` es una etiqueta guardada para poder filtrar en
+        consultas (los avisos de n8n), pero se queda atrás sola cuando pasa el
+        tiempo: nadie la actualiza al vencer. La fecha nunca miente.
+
+        SIN_ACTIVAR = tiene un plan de pago asignado pero nunca pagó.
+        """
+        if not self.fecha_vencimiento:
+            return 'SIN_ACTIVAR' if self.id_plan_id else 'GRATUITO'
+        if self.en_gracia:
+            return 'GRACIA'
+        if self.esta_vigente:
+            return 'ACTIVA'
+        return 'VENCIDA'
+
     # ── Cobro ─────────────────────────────────────────────────────────────────
 
     def calcular_cobro(self, usuarios=None):

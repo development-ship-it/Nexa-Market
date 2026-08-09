@@ -14,22 +14,31 @@
     </h3>
 
     <div class="info-row">
-      <span class="info-label">Plan actual</span>
+      <span class="info-label">Plan contratado</span>
       <span class="info-value">{{ empresa.id_plan.nombre|default:'Gratuito' }}</span>
     </div>
 
     <div class="info-row">
       <span class="info-label">Estado</span>
-      {% if empresa.estado_suscripcion == 'ACTIVA' %}
+      {% if empresa.estado_actual == 'ACTIVA' %}
         <span class="status-badge active">Activa</span>
-      {% elif empresa.estado_suscripcion == 'GRACIA' %}
+      {% elif empresa.estado_actual == 'GRACIA' %}
         <span class="status-badge neutral">Periodo de gracia</span>
-      {% elif empresa.estado_suscripcion == 'VENCIDA' %}
+      {% elif empresa.estado_actual == 'VENCIDA' %}
         <span class="status-badge inactive">Vencida</span>
+      {% elif empresa.estado_actual == 'SIN_ACTIVAR' %}
+        <span class="status-badge inactive">Pendiente de pago</span>
       {% else %}
         <span class="status-badge neutral">Plan gratuito</span>
       {% endif %}
     </div>
+
+    {% if empresa.estado_actual == 'SIN_ACTIVAR' %}
+      <p style="font-size:.85rem;color:var(--gray);margin-top:10px;">
+        Tienes el plan {{ empresa.id_plan.nombre }} asignado pero todavía sin pago registrado.
+        Se activa cuando confirmemos el primer pago.
+      </p>
+    {% endif %}
 
     {% if empresa.fecha_vencimiento %}
       <div class="info-row">
@@ -57,7 +66,9 @@
   {# ── PRÓXIMO COBRO ────────────────────────────────────────────────────── #}
   {% if cobro %}
   <div class="form-card" style="margin-top:0;">
-    <h3 class="form-card-title">Tu próximo cobro</h3>
+    <h3 class="form-card-title">
+      {% if empresa.esta_vigente %}Tu próximo cobro{% else %}Lo que debes pagar para activar{% endif %}
+    </h3>
 
     <div class="info-row">
       <span class="info-label">
@@ -91,7 +102,9 @@
   {# ── SOLICITAR / CAMBIAR PLAN ─────────────────────────────────────────── #}
   <div class="form-card" style="margin-top:0;">
     <h3 class="form-card-title">
-      {% if empresa.id_plan %}Cambiar de plan{% else %}Pasar a un plan de pago{% endif %}
+      {% if not empresa.esta_vigente %}Activa tu plan
+      {% elif empresa.id_plan %}Cambiar de plan
+      {% else %}Pasar a un plan de pago{% endif %}
     </h3>
 
     {% if solicitud_abierta %}

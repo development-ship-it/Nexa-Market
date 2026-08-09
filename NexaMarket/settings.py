@@ -31,6 +31,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'pages.middleware.SuscripcionRequeridaMiddleware',
 ]
 
 ROOT_URLCONF = 'NexaMarket.urls'
@@ -108,6 +109,11 @@ LOGOUT_REDIRECT_URL = '/login/'
 # Login con Google (OAuth 2.0 directo) — Google Cloud Console > Credentials
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET', '')
+
+# Muro de pago: sin suscripción vigente, la web solo deja ver Mis Pagos.
+# Los super admin (Django o `usuario.es_super_admin`) nunca quedan bloqueados.
+# Ponlo en False si te dejas afuera durante el desarrollo.
+MURO_DE_PAGO = os.getenv('MURO_DE_PAGO', 'True') == 'True'
 
 # Versión del Service Worker: cambia en cada deploy para invalidar el caché
 # del navegador automáticamente (Render expone el commit desplegado).

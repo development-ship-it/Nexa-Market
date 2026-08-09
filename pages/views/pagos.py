@@ -36,7 +36,9 @@ def mis_pagos(request):
         return redirect('mis_pagos')
 
     planes = Plan.objects.filter(activo=True).order_by('precio_base')
-    if empresa.id_plan_id:
+    # "Cambiar de plan" solo tiene sentido si ya está pagando. Si no, lo que
+    # necesita es activar el que ya tiene asignado, así que ese también se lista.
+    if empresa.id_plan_id and empresa.esta_vigente:
         planes = planes.exclude(pk=empresa.id_plan_id)
 
     return render(request, 'pages/pagos/mis_pagos.html', {
