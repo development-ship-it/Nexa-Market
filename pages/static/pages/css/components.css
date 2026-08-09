@@ -82,6 +82,21 @@
 }
 .btn-secondary:hover { border-color: var(--teal); background: rgba(37,99,235,.06); }
 
+/* Botón de Flow: fondo claro fijo para que el logo conserve sus colores de
+   marca. No usa .svg-icon porque ese sistema aplica mask + currentColor, que
+   aplanaría el logo a un solo tono. Por eso el texto va en color literal. */
+.btn-flow {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%;
+  background: #fff; color: #0f2036;
+  font-weight: 700; font-size: .92rem;
+  padding: 9px 24px; border-radius: 50px;
+  border: 1.5px solid rgba(15,32,54,.12); cursor: pointer;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.btn-flow:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,.2); }
+.btn-flow img { width: 24px; height: 24px; display: block; }
+
 .btn-clear {
   background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.2);
   color: var(--red); font-size: .8rem; font-weight: 600;

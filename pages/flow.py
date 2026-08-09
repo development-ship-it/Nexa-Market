@@ -38,7 +38,7 @@ def configurado():
 
 
 def _base_url():
-    return 'https://sandbox.flow.cl/api' if settings.FLOW_SANDBOX else 'https://www.flow.cl/api'
+    return settings.FLOW_API_BASE.rstrip('/')
 
 
 def firmar(params):
@@ -60,13 +60,14 @@ def crear_orden(*, orden, monto, asunto, email, url_confirmacion, url_retorno):
         'apiKey': settings.FLOW_API_KEY,
         'commerceOrder': str(orden),
         'subject': asunto,
-        'currency': 'CLP',
+        'currency': settings.FLOW_CURRENCY,
         'amount': int(monto),
         'email': email,
+        'paymentMethod': settings.FLOW_PAYMENT_METHOD,
         'urlConfirmation': url_confirmacion,
         'urlReturn': url_retorno,
     }
-    params['s'] = firmar(params)
+    params['s'] = firmar(params)  # la firma cubre todos los parámetros de arriba
 
     try:
         resp = requests.post(f'{_base_url()}/payment/create', data=params, timeout=TIMEOUT)

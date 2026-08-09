@@ -134,8 +134,10 @@
       {% if flow_disponible %}
       <form method="post" action="{% url 'pagar_flow' %}" style="flex:1 1 220px;">
         {% csrf_token %}
-        <button type="submit" class="btn-primary" style="width:100%;">
-          Pagar con tarjeta (Flow)
+        <button type="submit" class="btn-flow">
+          <img src="{% static 'pages/images/svg/Pagos/flow.svg' %}" alt="Flow"
+               width="24" height="24" />
+          <span>Pagar con tarjeta</span>
         </button>
       </form>
       {% endif %}

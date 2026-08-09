@@ -119,7 +119,11 @@ MURO_DE_PAGO = os.getenv('MURO_DE_PAGO', 'True') == 'True'
 # peticiones: si se filtra, cualquiera puede crear cobros a tu nombre.
 FLOW_API_KEY = os.getenv('FLOW_API_KEY', '')
 FLOW_SECRET_KEY = os.getenv('FLOW_SECRET_KEY', '')
-FLOW_SANDBOX = os.getenv('FLOW_SANDBOX', 'True') == 'True'
+# Sandbox: https://sandbox.flow.cl/api — Producción: https://www.flow.cl/api
+FLOW_API_BASE = os.getenv('FLOW_API_BASE', 'https://sandbox.flow.cl/api').rstrip('/')
+FLOW_CURRENCY = os.getenv('FLOW_CURRENCY', 'CLP')
+# Medio de pago que se le ofrece al cliente. 9 = todos los que tengas habilitados.
+FLOW_PAYMENT_METHOD = os.getenv('FLOW_PAYMENT_METHOD', '9')
 
 # Datos bancarios que se le muestran al cliente para pagar por transferencia.
 TRANSFERENCIA = {
