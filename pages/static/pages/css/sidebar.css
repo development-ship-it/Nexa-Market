@@ -121,6 +121,20 @@
 .nav-aviso.por-vencer { background: var(--yellow); box-shadow: 0 0 0 3px rgba(245,194,17,.18); }
 .nav-aviso.vencido    { background: var(--red);    box-shadow: 0 0 0 3px rgba(220,38,38,.18); }
 
+/* Reemplaza al menú operativo cuando la suscripción no está vigente */
+.nav-aviso-suscripcion {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(248,113,113,.08);
+  border: 1px solid rgba(248,113,113,.2);
+  overflow: hidden;
+}
+.nav-aviso-suscripcion strong { font-size: .82rem; color: var(--red); white-space: nowrap; }
+.nav-aviso-suscripcion span   { font-size: .76rem; color: var(--gray); line-height: 1.35; }
+
 /* Iconos SVG minimalistas (via mask, se tiñen con currentColor) */
 .nav-icon,
 .svg-icon {

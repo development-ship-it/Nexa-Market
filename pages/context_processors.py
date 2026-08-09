@@ -15,7 +15,14 @@ def empresa_actual(request):
         # Nunca romper el render por un problema de BD
         return {}
 
-    ctx = {'empresa_actual': empresa}
+    # Misma función que usa el middleware: el menú nunca ofrece algo que después
+    # rebote por falta de pago.
+    from .middleware import acceso_bloqueado
+
+    ctx = {
+        'empresa_actual': empresa,
+        'suscripcion_bloqueada': acceso_bloqueado(request),
+    }
     try:
         from base_datos.cache import cachear
         from base_datos.models import ConfiguracionWeb

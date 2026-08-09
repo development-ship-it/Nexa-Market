@@ -29,6 +29,34 @@ VISTAS_LIBRES = {
 }
 
 
+def acceso_bloqueado(request):
+    """
+    ¿Hay que bloquear a este usuario por falta de pago?
+
+    Lo usan el middleware (para cortar el acceso) y el context processor (para
+    esconder el menú). Al salir los dos de la misma función, es imposible que el
+    menú ofrezca algo que el middleware después rebote.
+    """
+    if not getattr(settings, 'MURO_DE_PAGO', True):
+        return False
+    if not getattr(request, 'user', None) or not request.user.is_authenticated:
+        return False
+
+    try:
+        from .views import _get_empresa, _get_usuario
+
+        # El super admin de NexaMarket entra siempre: es quien gestiona los
+        # pagos y no puede quedar encerrado fuera de su propia herramienta.
+        if request.user.is_superuser or _get_usuario(request).es_super_admin:
+            return False
+
+        return not _get_empresa(request).esta_vigente  # incluye la gracia
+    except Exception:
+        # Ante un problema de BD se deja pasar. Un cliente que entra gratis un
+        # rato cuesta mucho menos que dejar afuera a los que sí pagaron.
+        return False
+
+
 class SuscripcionRequeridaMiddleware:
     """Redirige a Mis Pagos cuando la empresa no tiene suscripción vigente."""
 
@@ -39,31 +67,12 @@ class SuscripcionRequeridaMiddleware:
         return self.get_response(request)
 
     def process_view(self, request, view_func, view_args, view_kwargs):
-        if not getattr(settings, 'MURO_DE_PAGO', True):
-            return None
-        if not getattr(request, 'user', None) or not request.user.is_authenticated:
-            return None
-
         match = request.resolver_match
         if match is None or match.url_name in VISTAS_LIBRES:
             return None
         if request.path.startswith('/admin/'):
             return None
-
-        try:
-            from .views import _get_empresa, _get_usuario
-
-            # El super admin de NexaMarket entra siempre: es quien gestiona los
-            # pagos y no puede quedar encerrado fuera de su propia herramienta.
-            if request.user.is_superuser or _get_usuario(request).es_super_admin:
-                return None
-
-            empresa = _get_empresa(request)
-            if empresa.esta_vigente:  # incluye el periodo de gracia
-                return None
-        except Exception:
-            # Ante un problema de BD se deja pasar. Un cliente que entra gratis
-            # un rato cuesta mucho menos que dejar afuera a los que sí pagaron.
+        if not acceso_bloqueado(request):
             return None
 
         messages.warning(
