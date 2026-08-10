@@ -97,6 +97,69 @@
 .btn-flow:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,.2); }
 .btn-flow img { width: 24px; height: 24px; display: block; }
 
+/* TARJETAS DE PLAN — cada una es su propio form, así el botón envía su plan */
+.planes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+}
+.plan {
+  display: flex; flex-direction: column;
+  padding: 18px;
+  background: var(--navy);
+  border: 1.5px solid var(--gray2);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--transition), transform var(--transition);
+}
+.plan:hover { border-color: var(--teal); transform: translateY(-2px); }
+.plan.elegido { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+
+.plan-nombre { font-size: .95rem; font-weight: 700; color: var(--white); }
+.plan-precio {
+  display: flex; align-items: baseline; gap: 6px;
+  margin: 8px 0 14px;
+  font-size: 1.5rem; font-weight: 800; color: var(--white);
+}
+.plan-precio small { font-size: .74rem; font-weight: 600; color: var(--gray); }
+
+.plan-detalle { list-style: none; display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+.plan-detalle li {
+  position: relative; padding-left: 16px;
+  font-size: .82rem; color: var(--gray); line-height: 1.4;
+}
+.plan-detalle li::before {
+  content: '·'; position: absolute; left: 4px;
+  color: var(--teal); font-weight: 800;
+}
+
+.btn-plan {
+  margin-top: auto;                    /* pega el botón abajo aunque los textos difieran */
+  background: var(--teal); color: #fff;
+  font-weight: 700; font-size: .85rem;
+  padding: 9px 16px; border-radius: 50px;
+  border: none; cursor: pointer; transition: var(--transition);
+}
+.btn-plan:hover { filter: brightness(1.08); }
+.btn-plan:disabled {
+  background: transparent; color: var(--gray);
+  border: 1.5px solid var(--gray2); cursor: default; filter: none;
+}
+
+/* SELECTOR DE USUARIOS CONTRATADOS */
+.usuarios-selector {
+  margin-bottom: 16px; padding-bottom: 16px;
+  border-bottom: 1px solid var(--gray2);
+}
+.usuarios-fila { display: flex; gap: 10px; align-items: center; margin: 8px 0 6px; }
+.usuarios-fila input {
+  width: 110px; padding: 9px 12px;
+  background: var(--navy); color: var(--white);
+  border: 1px solid var(--gray2); border-radius: var(--radius-sm);
+  font-size: .9rem;
+}
+.usuarios-fila input:focus { border-color: rgba(37,99,235,.5); outline: none; }
+.usuarios-selector small { font-size: .78rem; color: var(--gray); }
+
 .btn-clear {
   background: rgba(248,113,113,.08); border: 1px solid rgba(248,113,113,.2);
   color: var(--red); font-size: .8rem; font-weight: 600;

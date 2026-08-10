@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.db import models
 from django.utils import timezone
 
-from base_datos.facturacion import DIAS_GRACIA, desglosar_iva
+from base_datos.facturacion import DIAS_GRACIA, USUARIOS_INCLUIDOS, agregar_iva
 
 
 class Empresa(models.Model):
@@ -103,23 +103,34 @@ class Empresa(models.Model):
     def calcular_cobro(self, usuarios=None):
         """
         Desglose del próximo cobro mensual con el descuento negociado aplicado.
-        Los precios del plan son IVA incluido, así que el neto se despeja hacia
-        atrás. Devuelve None si la empresa no tiene plan de pago asignado.
+
+        Los precios del plan son **netos**: el base cubre `USUARIOS_INCLUIDOS`
+        (el administrador) y recién del siguiente en adelante se cobra por
+        usuario. El IVA se suma al final.
+
+        Devuelve None si la empresa no tiene plan de pago asignado.
         """
         if not self.id_plan_id:
             return None
 
         plan = self.id_plan
-        usuarios = self.usuarios_activos if usuarios is None else usuarios
-        bruto = plan.precio_base + plan.precio_por_usuario * usuarios
+        usuarios = max(1, self.usuarios_activos if usuarios is None else usuarios)
+        adicionales = max(0, usuarios - USUARIOS_INCLUIDOS)
+
+        bruto = plan.precio_base + plan.precio_por_usuario * adicionales
         descuento = round(bruto * self.descuento_porcentaje / 100)
-        total = bruto - descuento
-        neto, iva = desglosar_iva(total)
+        neto = bruto - descuento
+        iva, total = agregar_iva(neto)
         return {
             'usuarios': usuarios,
+            'incluidos': USUARIOS_INCLUIDOS,
+            'adicionales': adicionales,
+            'monto_base': plan.precio_base,
+            'monto_adicionales': plan.precio_por_usuario * adicionales,
+            'precio_usuario': plan.precio_por_usuario,
             'bruto': bruto,
             'descuento': descuento,
-            'total': total,
             'neto': neto,
             'iva': iva,
+            'total': total,
         }

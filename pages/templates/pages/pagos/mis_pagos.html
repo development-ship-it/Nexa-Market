@@ -5,7 +5,7 @@
 {% block page_title %}Mis Pagos{% endblock %}
 
 {% block content %}
-<div class="form-page" style="max-width:720px;">
+<div class="form-page" style="max-width:760px;">
 
   {# ── ESTADO DE LA SUSCRIPCIÓN ─────────────────────────────────────────── #}
   <div class="form-card">
@@ -51,64 +51,114 @@
     {% endif %}
 
     <div class="info-row">
-      <span class="info-label">Usuarios activos</span>
-      <span class="info-value">{{ empresa.usuarios_activos }}</span>
+      <span class="info-label">Usuarios creados</span>
+      <span class="info-value">{{ usuarios_minimo }}</span>
+    </div>
+  </div>
+
+  {# ── PLAN ─────────────────────────────────────────────────────────────── #}
+  {% if empresa.esta_vigente %}
+    <div class="form-card" style="margin-top:0;">
+      <h3 class="form-card-title">¿Necesitas otro plan?</h3>
+      {% if solicitud_abierta %}
+        <div class="info-row">
+          <span class="info-label">
+            Solicitud enviada el {{ solicitud_abierta.fecha_solicitud|date:"d/m/Y" }}
+          </span>
+          <span class="status-badge neutral">{{ solicitud_abierta.get_estado_display }}</span>
+        </div>
+      {% else %}
+        <p style="font-size:.85rem;color:var(--gray);margin-bottom:14px;">
+          Tu plan está activo. Para cambiarlo lo coordinamos contigo, porque hay
+          que ajustar el ciclo ya cobrado.
+        </p>
+        <form method="post" action="{% url 'solicitar_contacto' %}">
+          {% csrf_token %}
+          <button type="submit" class="btn-secondary">Solicitar cambio de plan</button>
+        </form>
+      {% endif %}
     </div>
 
-    {% if not empresa.esta_vigente %}
-      <p style="font-size:.85rem;color:var(--gray);margin-top:10px;">
-        {% if empresa.id_plan %}
-          Tienes el plan {{ empresa.id_plan.nombre }} seleccionado pero todavía sin pago
-          registrado. Se activa apenas confirmemos el pago.
-        {% else %}
-          Elige un plan para activar NexaMarket en la web.
-        {% endif %}
-      </p>
-    {% endif %}
-  </div>
+  {% else %}
+    <div class="form-card" style="margin-top:0;">
+      <h3 class="form-card-title">Elige tu plan</h3>
+      <div class="planes">
+        {% for p in planes %}
+        <form method="post" action="{% url 'elegir_plan' %}"
+              class="plan {% if p.id_plan == empresa.id_plan_id %}elegido{% endif %}">
+          {% csrf_token %}
+          <input type="hidden" name="id_plan" value="{{ p.id_plan }}" />
 
-  {# ── ELEGIR PLAN ──────────────────────────────────────────────────────── #}
-  {% if planes %}
-  <div class="form-card" style="margin-top:0;">
-    <h3 class="form-card-title">
-      {% if empresa.id_plan and empresa.esta_vigente %}Cambiar de plan{% else %}Elige tu plan{% endif %}
-    </h3>
-    <form method="post" action="{% url 'elegir_plan' %}">
-      {% csrf_token %}
-      <div class="form-field">
-        <label class="field-label">Plan</label>
-        <select name="id_plan">
-          {% for p in planes %}
-            <option value="{{ p.id_plan }}">
-              {{ p.nombre }} — ${{ p.precio_base|floatformat:0 }}
-              {% if p.precio_por_usuario %}+ ${{ p.precio_por_usuario|floatformat:0 }} por usuario{% endif %}
-            </option>
-          {% endfor %}
-        </select>
+          <div class="plan-nombre">{{ p.nombre }}</div>
+
+          {% if p.precio_base or p.precio_por_usuario %}
+            <div class="plan-precio">
+              ${{ p.precio_base|floatformat:0 }}<small>+ IVA al mes</small>
+            </div>
+            <ul class="plan-detalle">
+              <li>Incluye 1 usuario administrador</li>
+              <li>${{ p.precio_por_usuario|floatformat:0 }} + IVA por usuario adicional</li>
+              <li>Acceso completo a la web y sincronización en la nube</li>
+            </ul>
+          {% else %}
+            <div class="plan-precio">$0<small>para siempre</small></div>
+            <ul class="plan-detalle">
+              <li>Sin acceso al dashboard web</li>
+              <li>Descarga la app en Google Play y úsala offline</li>
+              <li>Los datos quedan en el dispositivo</li>
+            </ul>
+          {% endif %}
+
+          <button type="submit" class="btn-plan"
+                  {% if p.id_plan == empresa.id_plan_id %}disabled{% endif %}>
+            {% if p.id_plan == empresa.id_plan_id %}Plan seleccionado{% else %}Elegir este plan{% endif %}
+          </button>
+        </form>
+        {% endfor %}
       </div>
-      <div class="form-submit-row">
-        <button type="submit" class="btn-secondary">Seleccionar plan</button>
-      </div>
-    </form>
-    <p style="font-size:.85rem;color:var(--gray);margin-top:4px;">
-      Precios con IVA incluido. Elegir el plan es gratis — se activa cuando pagas.
-    </p>
-  </div>
+      <p style="font-size:.85rem;color:var(--gray);margin-top:14px;">
+        Elegir el plan es gratis — se activa cuando pagas.
+      </p>
+    </div>
   {% endif %}
 
-  {# ── COBRO Y BOTONES DE PAGO ──────────────────────────────────────────── #}
-  {% if cobro %}
+  {# ── COBRO Y PAGO (solo si el plan tiene precio) ──────────────────────── #}
+  {% if cobro.total %}
   <div class="form-card" style="margin-top:0;">
     <h3 class="form-card-title">
       {% if empresa.esta_vigente %}Tu próximo cobro{% else %}Activa tu plan{% endif %}
     </h3>
 
+    <form method="post" action="{% url 'ajustar_usuarios' %}" class="usuarios-selector">
+      {% csrf_token %}
+      <label class="field-label" for="usuarios">¿Cuántos usuarios necesitas?</label>
+      <div class="usuarios-fila">
+        <input type="number" id="usuarios" name="usuarios" value="{{ cobro.usuarios }}"
+               min="{{ usuarios_minimo }}" max="100" step="1" />
+        <button type="submit" class="btn-secondary">Actualizar</button>
+      </div>
+      <small>
+        Tienes {{ usuarios_minimo }} usuario{{ usuarios_minimo|pluralize:"s" }} creado{{ usuarios_minimo|pluralize:"s" }}.
+        El primero va incluido en el plan.
+      </small>
+    </form>
+
     <div class="info-row">
       <span class="info-label">
-        Plan {{ empresa.id_plan.nombre }} + {{ cobro.usuarios }} usuario{{ cobro.usuarios|pluralize:"s" }}
+        Plan {{ empresa.id_plan.nombre }} — incluye {{ cobro.incluidos }} usuario
       </span>
-      <span class="info-value">${{ cobro.bruto|floatformat:0 }}</span>
+      <span class="info-value">${{ cobro.monto_base|floatformat:0 }}</span>
     </div>
+
+    {% if cobro.adicionales %}
+    <div class="info-row">
+      <span class="info-label">
+        {{ cobro.adicionales }} usuario{{ cobro.adicionales|pluralize:"s" }} adicional{{ cobro.adicionales|pluralize:"es" }}
+        × ${{ cobro.precio_usuario|floatformat:0 }}
+      </span>
+      <span class="info-value">${{ cobro.monto_adicionales|floatformat:0 }}</span>
+    </div>
+    {% endif %}
 
     {% if cobro.descuento %}
     <div class="info-row">
@@ -152,7 +202,7 @@
       después de revisar tu comprobante.
     </p>
 
-    {% if not solicitud_abierta %}
+    {% if not empresa.esta_vigente and not solicitud_abierta %}
       <form method="post" action="{% url 'solicitar_contacto' %}" style="margin-top:6px;">
         {% csrf_token %}
         <button type="submit"
@@ -161,15 +211,15 @@
         </button>
       </form>
     {% endif %}
+  </div>
 
-    {% if solicitud_abierta %}
-      <div class="info-row" style="margin-top:8px;">
-        <span class="info-label">
-          Pediste que te contactemos el {{ solicitud_abierta.fecha_solicitud|date:"d/m/Y" }}
-        </span>
-        <span class="status-badge neutral">{{ solicitud_abierta.get_estado_display }}</span>
-      </div>
-    {% endif %}
+  {% elif empresa.id_plan %}
+  <div class="form-card" style="margin-top:0;">
+    <h3 class="form-card-title">Estás en el plan Gratuito</h3>
+    <p style="font-size:.9rem;color:var(--gray);line-height:1.6;">
+      No tienes acceso al dashboard web. Descarga la aplicación en Google Play
+      y úsala sin conexión — tus datos quedan guardados en el dispositivo.
+    </p>
   </div>
   {% endif %}
 

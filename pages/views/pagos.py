@@ -35,6 +35,10 @@ log = logging.getLogger(__name__)
 # crean duplicados aunque el cliente insista con el botón.
 SOLICITUD_ABIERTA = ['PENDIENTE', 'CONTACTADO']
 
+# Tope del selector de usuarios. Más que esto ya no es autoservicio: es una
+# conversación de venta, y conviene que pase por ti.
+MAX_USUARIOS = 100
+
 
 # ── PÁGINA PRINCIPAL ─────────────────────────────────────────────────────────
 
@@ -42,18 +46,14 @@ SOLICITUD_ABIERTA = ['PENDIENTE', 'CONTACTADO']
 def mis_pagos(request):
     empresa = _get_empresa(request)
 
-    planes = Plan.objects.filter(activo=True).order_by('precio_base')
-    if empresa.id_plan_id and empresa.esta_vigente:
-        # "Cambiar de plan" solo tiene sentido si ya está pagando. Si no, lo que
-        # necesita es activar el que ya tiene, así que ese también se lista.
-        planes = planes.exclude(pk=empresa.id_plan_id)
-
     return render(request, 'pages/pagos/mis_pagos.html', {
         'page': 'mis_pagos',
         'empresa': empresa,
         'cobro': empresa.calcular_cobro(),
         'pagos': empresa.pagos.select_related('plan')[:24],
-        'planes': planes,
+        # Con suscripción vigente no se cambia de plan a mano: se solicita.
+        'planes': Plan.objects.filter(activo=True).order_by('precio_base'),
+        'usuarios_minimo': _usuarios_en_uso(empresa),
         'flow_disponible': flow.configurado(),
         'solicitud_abierta': (
             SolicitudPremium.objects
@@ -64,6 +64,11 @@ def mis_pagos(request):
     })
 
 
+def _usuarios_en_uso(empresa):
+    """Usuarios activos reales. Es el piso de lo que puede contratar."""
+    return max(1, empresa.usuario_set.filter(activo=True).count())
+
+
 @login_required
 def elegir_plan(request):
     """Asignar plan es gratis y no da acceso: lo que activa es el pago."""
@@ -71,6 +76,12 @@ def elegir_plan(request):
         return redirect('mis_pagos')
 
     empresa = _get_empresa(request)
+    if empresa.esta_vigente:
+        # Ya está pagando: cambiar de plan a mitad de ciclo se coordina, no se
+        # hace solo, porque hay que ver prorrateo y cobros ya emitidos.
+        messages.info(request, 'Tu plan está activo. Solicita el cambio y lo coordinamos.')
+        return redirect('mis_pagos')
+
     plan = Plan.objects.filter(pk=request.POST.get('id_plan'), activo=True).first()
     if not plan:
         messages.error(request, 'Ese plan no está disponible.')
@@ -78,7 +89,40 @@ def elegir_plan(request):
 
     empresa.id_plan = plan
     empresa.save(update_fields=['id_plan'])
-    messages.success(request, f'Plan {plan.nombre} seleccionado. Ahora elige cómo pagar.')
+    if plan.precio_base or plan.precio_por_usuario:
+        messages.success(request, f'Plan {plan.nombre} seleccionado. Ahora elige cómo pagar.')
+    else:
+        messages.success(request, 'Quedaste en el plan Gratuito.')
+    return redirect('mis_pagos')
+
+
+@login_required
+def ajustar_usuarios(request):
+    """Cuántos usuarios contrata. Nunca por debajo de los que ya tiene creados."""
+    if request.method != 'POST':
+        return redirect('mis_pagos')
+
+    empresa = _get_empresa(request)
+    try:
+        cantidad = int(request.POST.get('usuarios') or 0)
+    except ValueError:
+        cantidad = 0
+
+    minimo = _usuarios_en_uso(empresa)
+    if cantidad < minimo:
+        messages.error(
+            request,
+            f'Tienes {minimo} usuario(s) activo(s): no puedes contratar menos. '
+            'Desactiva usuarios primero si quieres bajar el plan.',
+        )
+        return redirect('mis_pagos')
+    if cantidad > MAX_USUARIOS:
+        messages.error(request, f'Para más de {MAX_USUARIOS} usuarios, hablemos directamente.')
+        return redirect('mis_pagos')
+
+    empresa.usuarios_activos = cantidad
+    empresa.save(update_fields=['usuarios_activos'])
+    messages.success(request, f'Plan ajustado a {cantidad} usuario(s).')
     return redirect('mis_pagos')
 
 

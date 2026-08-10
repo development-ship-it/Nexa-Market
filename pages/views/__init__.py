@@ -34,7 +34,7 @@ from .proveedores import proveedores, proveedor_crear, proveedor_editar, proveed
 from .usuarios import usuarios, usuario_crear, usuario_editar, usuario_eliminar
 from .empresa import empresa, personalizacion
 from .pagos import (
-    mis_pagos, elegir_plan, solicitar_contacto,
+    mis_pagos, elegir_plan, ajustar_usuarios, solicitar_contacto,
     pagar_transferencia, pagar_flow, flow_retorno, flow_confirmacion,
 )
 from .punto_compra import punto_compra
@@ -54,7 +54,7 @@ __all__ = [
     'proveedores', 'proveedor_crear', 'proveedor_editar', 'proveedor_eliminar',
     'usuarios', 'usuario_crear', 'usuario_editar', 'usuario_eliminar',
     'empresa', 'personalizacion',
-    'mis_pagos', 'elegir_plan', 'solicitar_contacto',
+    'mis_pagos', 'elegir_plan', 'ajustar_usuarios', 'solicitar_contacto',
     'pagar_transferencia', 'pagar_flow', 'flow_retorno', 'flow_confirmacion',
     'punto_compra', 'punto_venta', 'merma', 'inventario',
     'compras_ventas', 'movimientos',
