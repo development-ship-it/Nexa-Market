@@ -87,16 +87,23 @@ class Empresa(models.Model):
         `estado_suscripcion` es una etiqueta guardada para poder filtrar en
         consultas (los avisos de n8n), pero se queda atrás sola cuando pasa el
         tiempo: nadie la actualiza al vencer. La fecha nunca miente.
-
-        SIN_ACTIVAR = tiene un plan de pago asignado pero nunca pagó.
         """
         if not self.fecha_vencimiento:
-            return 'SIN_ACTIVAR' if self.id_plan_id else 'GRATUITO'
+            return 'GRATUITO'
         if self.en_gracia:
             return 'GRACIA'
         if self.esta_vigente:
             return 'ACTIVA'
         return 'VENCIDA'
+
+    @property
+    def plan_vigente(self):
+        """
+        El plan que realmente tiene hoy. Sin pago vigente es el Gratuito, y por
+        eso devuelve None: `id_plan` puede apuntar a un plan de pago que el
+        cliente eligió pero nunca pagó, y eso no le da nada.
+        """
+        return self.id_plan if self.esta_vigente else None
 
     # ── Cobro ─────────────────────────────────────────────────────────────────
 

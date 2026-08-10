@@ -18,7 +18,7 @@ VISTAS_LIBRES = {
     'index', 'login', 'logout',
     'google_login', 'google_callback',
     # Todo el circuito de pago
-    'mis_pagos', 'elegir_plan', 'ajustar_usuarios', 'solicitar_contacto',
+    'mis_pagos', 'elegir_plan', 'mejorar_plan', 'ajustar_usuarios', 'solicitar_contacto',
     'pagar_transferencia', 'pagar_flow', 'flow_retorno', 'flow_confirmacion',
     # Sin pagar igual debe poder ver su empresa y sus usuarios: son los datos
     # que necesita completar (razón social, giro) para que le emitan la boleta.

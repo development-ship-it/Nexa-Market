@@ -97,22 +97,36 @@
 .btn-flow:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,.2); }
 .btn-flow img { width: 24px; height: 24px; display: block; }
 
-/* TARJETAS DE PLAN — cada una es su propio form, así el botón envía su plan */
+/* TARJETAS DE PLAN */
 .planes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 14px;
 }
 .plan {
+  position: relative;
   display: flex; flex-direction: column;
-  padding: 18px;
+  padding: 20px;
   background: var(--navy);
   border: 1.5px solid var(--gray2);
   border-radius: var(--radius-sm);
   transition: border-color var(--transition), transform var(--transition);
 }
-.plan:hover { border-color: var(--teal); transform: translateY(-2px); }
-.plan.elegido { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+.plan:hover { transform: translateY(-2px); }
+.plan.destacado { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.plan.actual { opacity: .82; }
+.plan.actual:hover { transform: none; }
+
+/* Etiqueta "Recomendado" arriba a la derecha */
+.plan-tag {
+  position: absolute; top: 14px; right: 14px;
+  padding: 3px 9px; border-radius: 50px;
+  background: rgba(37,99,235,.14); color: var(--teal);
+  font-size: .62rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+}
+
+/* El botón (o su form) se pega abajo para que las tarjetas queden parejas */
+.plan form { margin-top: auto; }
 
 .plan-nombre { font-size: .95rem; font-weight: 700; color: var(--white); }
 .plan-precio {
@@ -134,6 +148,7 @@
 
 .btn-plan {
   margin-top: auto;                    /* pega el botón abajo aunque los textos difieran */
+  width: 100%;
   background: var(--teal); color: #fff;
   font-weight: 700; font-size: .85rem;
   padding: 9px 16px; border-radius: 50px;

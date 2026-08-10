@@ -15,6 +15,7 @@ from datetime import datetime, time
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.db import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -49,12 +50,9 @@ def mis_pagos(request):
     return render(request, 'pages/pagos/mis_pagos.html', {
         'page': 'mis_pagos',
         'empresa': empresa,
-        'cobro': empresa.calcular_cobro(),
+        'planes': _tarjetas_de_plan(empresa),
+        'pago_pendiente': empresa.pagos.filter(estado='PENDIENTE').first(),
         'pagos': empresa.pagos.select_related('plan')[:24],
-        # Con suscripción vigente no se cambia de plan a mano: se solicita.
-        'planes': Plan.objects.filter(activo=True).order_by('precio_base'),
-        'usuarios_minimo': _usuarios_en_uso(empresa),
-        'flow_disponible': flow.configurado(),
         'solicitud_abierta': (
             SolicitudPremium.objects
             .filter(empresa=empresa, estado__in=SOLICITUD_ABIERTA)
@@ -64,9 +62,62 @@ def mis_pagos(request):
     })
 
 
+def _olvidar_cache(request):
+    """
+    `_get_usuario` cachea el Usuario (y con él su empresa) 60 s, y el caché
+    guarda una **copia**: mutar el objeto no actualiza lo cacheado. Después de
+    tocar la empresa hay que botar esa entrada, o la página siguiente muestra el
+    plan viejo o el precio viejo durante un minuto.
+    """
+    cache.delete(f'usuario_web:{request.user.pk}')
+
+
 def _usuarios_en_uso(empresa):
     """Usuarios activos reales. Es el piso de lo que puede contratar."""
     return max(1, empresa.usuario_set.filter(activo=True).count())
+
+
+def _tarjetas_de_plan(empresa):
+    """
+    Las tarjetas listas para la plantilla, para no meterle lógica al HTML.
+
+    Sin pago vigente el plan actual es el Gratuito, aunque `id_plan` apunte a
+    uno de pago: elegirlo no da nada hasta que se paga.
+    """
+    tarjetas = []
+    for plan in Plan.objects.filter(activo=True).order_by('precio_base'):
+        de_pago = bool(plan.precio_base or plan.precio_por_usuario)
+        tarjetas.append({
+            'plan': plan,
+            'de_pago': de_pago,
+            'es_actual': (plan.pk == empresa.id_plan_id) if empresa.esta_vigente else not de_pago,
+        })
+    return tarjetas
+
+
+@login_required
+def mejorar_plan(request):
+    """
+    Paso de checkout: recién acá se elige cuántos usuarios y cómo pagar.
+    Se llega desde el botón de la tarjeta, que ya dejó el plan seleccionado.
+    """
+    empresa = _get_empresa(request)
+    if empresa.esta_vigente:
+        messages.info(request, 'Tu plan está activo. Solicita el cambio y lo coordinamos.')
+        return redirect('mis_pagos')
+
+    cobro = empresa.calcular_cobro()
+    if not cobro or not cobro['total']:
+        messages.error(request, 'Elige primero un plan de pago.')
+        return redirect('mis_pagos')
+
+    return render(request, 'pages/pagos/mejorar.html', {
+        'page': 'mis_pagos',
+        'empresa': empresa,
+        'cobro': cobro,
+        'usuarios_minimo': _usuarios_en_uso(empresa),
+        'flow_disponible': flow.configurado(),
+    })
 
 
 @login_required
@@ -89,10 +140,12 @@ def elegir_plan(request):
 
     empresa.id_plan = plan
     empresa.save(update_fields=['id_plan'])
+    _olvidar_cache(request)
+
     if plan.precio_base or plan.precio_por_usuario:
-        messages.success(request, f'Plan {plan.nombre} seleccionado. Ahora elige cómo pagar.')
-    else:
-        messages.success(request, 'Quedaste en el plan Gratuito.')
+        # Al checkout: ahí elige cuántos usuarios y cómo pagar.
+        return redirect('mejorar_plan')
+    messages.success(request, 'Quedaste en el plan Gratuito.')
     return redirect('mis_pagos')
 
 
@@ -115,15 +168,15 @@ def ajustar_usuarios(request):
             f'Tienes {minimo} usuario(s) activo(s): no puedes contratar menos. '
             'Desactiva usuarios primero si quieres bajar el plan.',
         )
-        return redirect('mis_pagos')
+        return redirect('mejorar_plan')
     if cantidad > MAX_USUARIOS:
         messages.error(request, f'Para más de {MAX_USUARIOS} usuarios, hablemos directamente.')
-        return redirect('mis_pagos')
+        return redirect('mejorar_plan')
 
     empresa.usuarios_activos = cantidad
     empresa.save(update_fields=['usuarios_activos'])
-    messages.success(request, f'Plan ajustado a {cantidad} usuario(s).')
-    return redirect('mis_pagos')
+    _olvidar_cache(request)
+    return redirect('mejorar_plan')
 
 
 @login_required
@@ -282,6 +335,9 @@ def flow_retorno(request):
     urlReturn: solo la vuelta del navegador. No confirma nada — la controla el
     cliente. La confirmación real llega por `flow_confirmacion`.
     """
+    # El webhook ya pudo haber activado la empresa, pero el caché de este usuario
+    # sigue con la versión vieja. Sin esto, vuelve de pagar y lo mandan al muro.
+    _olvidar_cache(request)
     messages.info(
         request,
         'Estamos confirmando tu pago con Flow. En unos segundos verás tu plan activo.',

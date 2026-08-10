@@ -43,6 +43,7 @@ urlpatterns = [
     # Suscripción
     path('mis-pagos/', views.mis_pagos, name='mis_pagos'),
     path('mis-pagos/plan/', views.elegir_plan, name='elegir_plan'),
+    path('mis-pagos/mejorar/', views.mejorar_plan, name='mejorar_plan'),
     path('mis-pagos/usuarios/', views.ajustar_usuarios, name='ajustar_usuarios'),
     path('mis-pagos/contacto/', views.solicitar_contacto, name='solicitar_contacto'),
     path('mis-pagos/transferencia/', views.pagar_transferencia, name='pagar_transferencia'),
