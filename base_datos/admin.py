@@ -7,6 +7,12 @@ from .models import (
 )
 
 
+def _usuario_admin(request):
+    """El Usuario de la app que corresponde al admin logueado, para dejar
+    registrado quién aprobó cada pago. None si no tiene ficha."""
+    return Usuario.objects.filter(correo__iexact=request.user.email or '').first()
+
+
 @admin.register(Empresa)
 class EmpresaAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'rut', 'id_plan', 'estado_calculado',
@@ -35,6 +41,16 @@ class PagoAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'fecha_confirmacion', 'periodo_inicio',
                        'periodo_fin', 'confirmado_por', 'ver_comprobante')
 
+    def save_model(self, request, obj, form, change):
+        """
+        Marcar CONFIRMADO en el formulario tiene que hacer lo mismo que la
+        acción. Cambiar solo el campo dejaba el pago confirmado pero sin periodo
+        y sin activar a la empresa — parecía funcionar y no hacía nada.
+        """
+        super().save_model(request, obj, form, change)
+        if obj.estado == 'CONFIRMADO' and not obj.periodo_fin:
+            obj.confirmar(_usuario_admin(request))
+
     @admin.display(description='Comprobante')
     def ver_comprobante(self, obj):
         if not obj.comprobante_url:
@@ -48,13 +64,10 @@ class PagoAdmin(admin.ModelAdmin):
         Confirma, calcula el periodo y deja la empresa vigente. Los que ya
         estaban confirmados se saltan: `confirmar()` es idempotente.
         """
-        # El Usuario de la app que corresponde al admin logueado, para dejar
-        # registrado quién aprobó cada pago.
-        quien = Usuario.objects.filter(correo__iexact=request.user.email or '').first()
-
+        quien = _usuario_admin(request)
         confirmados = omitidos = 0
         for pago in queryset:
-            if pago.estado == 'CONFIRMADO':
+            if pago.estado == 'CONFIRMADO' and pago.periodo_fin:
                 omitidos += 1
                 continue
             pago.confirmar(quien)

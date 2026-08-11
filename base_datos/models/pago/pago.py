@@ -107,8 +107,13 @@ class Pago(models.Model):
         vencimiento actual para que no pierda los días que ya tenía pagados.
 
         Idempotente: el webhook de Flow puede llegar repetido.
+
+        La condición mira `periodo_fin` y no solo el estado, porque un pago que
+        quedó en CONFIRMADO sin periodo (por ejemplo si alguien cambió el campo
+        a mano) está a medio camino y hay que poder terminarlo. Uno confirmado
+        de verdad siempre tiene periodo, así que el reintento real igual rebota.
         """
-        if self.estado == 'CONFIRMADO':
+        if self.estado == 'CONFIRMADO' and self.periodo_fin:
             return self
 
         empresa = self.empresa
