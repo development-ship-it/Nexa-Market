@@ -23,7 +23,7 @@
 </div>
 
 {% if vista == 'productos' %}
-  {% include 'pages/dashboard/_productos.html' %}
+  {% include 'pages/dashboard/_placeholder.html' with titulo='Análisis de productos' icono='articulos' %}
 {% elif vista == 'temporal' %}
   {% include 'pages/dashboard/_placeholder.html' with titulo='Análisis temporal' icono='reloj' %}
 {% elif vista == 'usuarios' %}

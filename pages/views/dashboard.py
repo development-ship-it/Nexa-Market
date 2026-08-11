@@ -7,7 +7,6 @@ from base_datos.cache import cachear
 from .comunes import _get_empresa
 from .dashboard_filtros import resolver_periodo
 from .dashboard_principal import _datos_dashboard
-from .dashboard_productos import _datos_productos
 
 
 DASHBOARD_VISTAS = ('principal', 'productos', 'temporal', 'usuarios')
@@ -26,7 +25,7 @@ def dashboard(request):
         ctx.update(cachear(empresa.pk, f'dashboard:{periodo["clave"]}',
                            lambda: _datos_dashboard(empresa, periodo)))
         ctx['periodo'] = periodo
-    elif vista == 'productos':
-        ctx.update(cachear(empresa.pk, 'dash_productos', lambda: _datos_productos(empresa)))
-    # 'temporal' y 'usuarios': sin datos por ahora (placeholders)
+    # 'productos', 'temporal' y 'usuarios' muestran el placeholder de "próximamente".
+    # `dashboard_productos.py` y `_productos.html` quedan tal cual para cuando
+    # se reactive esa pestaña: solo se dejó de calcular y de renderizar.
     return render(request, 'pages/dashboard/dashboard.html', ctx)

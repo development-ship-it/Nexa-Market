@@ -11,6 +11,15 @@
     <div class="form-card">
       <h3 class="form-card-title"><span class="svg-icon icon-empresa icono-primario"></span> Datos de la empresa</h3>
 
+      <div class="form-field">
+        <label class="field-label" for="idEmpresa">ID de la empresa</label>
+        <div class="campo-copiable">
+          {# Sin `name`: es solo lectura y no debe viajar en el POST #}
+          <input type="text" id="idEmpresa" value="{{ empresa.id_empresa }}" readonly />
+          <button type="button" class="btn-copiar" data-copiar="#idEmpresa">Copiar</button>
+        </div>
+      </div>
+
       <div class="form-field required">
         <label class="field-label">{{ form.nombre.label }}</label>
         {{ form.nombre }}
@@ -28,21 +37,40 @@
       </div>
     </div>
 
-    <div class="form-card" style="margin-top:0;">
-      <h3 class="form-card-title">ℹ️ Información del sistema</h3>
-      <div class="info-row">
-        <span class="info-label">ID empresa</span>
-        <span class="info-value">{{ empresa.id_empresa }}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Estado sync</span>
-        <span class="status-badge {% if empresa.sync_status == 'synced' %}active{% else %}neutral{% endif %}">{{ empresa.sync_status }}</span>
-      </div>
-    </div>
-
     <div class="form-submit-row">
       <button type="submit" class="btn-primary">✓ Guardar cambios</button>
     </div>
   </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('[data-copiar]').forEach(function (boton) {
+    var original = boton.textContent;
+    boton.addEventListener('click', function () {
+      var campo = document.querySelector(boton.dataset.copiar);
+      if (!campo) return;
+
+      function avisar() {
+        boton.textContent = 'Copiado';
+        boton.classList.add('copiado');
+        setTimeout(function () {
+          boton.textContent = original;
+          boton.classList.remove('copiado');
+        }, 1500);
+      }
+
+      // La API de portapapeles solo existe en contexto seguro (https o
+      // localhost); en http de red local se cae al método antiguo.
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(campo.value).then(avisar);
+      } else {
+        campo.select();
+        document.execCommand('copy');
+        avisar();
+      }
+    });
+  });
+</script>
 {% endblock %}

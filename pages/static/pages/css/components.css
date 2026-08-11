@@ -97,6 +97,24 @@
 .btn-flow:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,.2); }
 .btn-flow img { width: 24px; height: 24px; display: block; }
 
+/* CAMPO DE SOLO LECTURA CON BOTÓN COPIAR */
+.campo-copiable { display: flex; gap: 8px; align-items: stretch; }
+.campo-copiable input[readonly] {
+  flex: 1; min-width: 0;
+  font-family: monospace; font-size: .8rem;
+  color: var(--gray); cursor: default;
+}
+.btn-copiar {
+  flex-shrink: 0;
+  padding: 0 16px;
+  background: transparent; color: var(--white);
+  border: 1px solid var(--gray2); border-radius: var(--radius-sm);
+  font-size: .8rem; font-weight: 600; cursor: pointer;
+  transition: var(--transition);
+}
+.btn-copiar:hover { border-color: var(--teal); background: rgba(37,99,235,.06); }
+.btn-copiar.copiado { border-color: var(--green); color: var(--green); }
+
 /* TARJETAS DE PLAN */
 .planes {
   display: grid;
