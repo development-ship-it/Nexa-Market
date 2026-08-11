@@ -99,11 +99,26 @@ class Empresa(models.Model):
     @property
     def plan_vigente(self):
         """
-        El plan que realmente tiene hoy. Sin pago vigente es el Gratuito, y por
-        eso devuelve None: `id_plan` puede apuntar a un plan de pago que el
-        cliente eligió pero nunca pagó, y eso no le da nada.
+        El plan que realmente tiene hoy, o None si está en el Gratuito.
+
+        Sale del último pago confirmado, no de `id_plan`: ese campo es la
+        *selección* del cliente y cambia cada vez que toca una tarjeta, así que
+        puede apuntar a un plan que eligió y nunca pagó, o quedar en nulo. Lo
+        que pagó es un hecho registrado, y es lo que corresponde mostrar.
         """
-        return self.id_plan if self.esta_vigente else None
+        if not self.esta_vigente:
+            return None
+
+        pago = (
+            self.pagos
+            .filter(estado='CONFIRMADO', plan__isnull=False)
+            .select_related('plan')
+            .order_by('-periodo_fin')
+            .first()
+        )
+        # Si el pago no dejó plan (datos viejos o cargados a mano), se cae al
+        # seleccionado antes que mentir diciendo Gratuito estando al día.
+        return pago.plan if pago else self.id_plan
 
     # ── Cobro ─────────────────────────────────────────────────────────────────
 
