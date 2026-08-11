@@ -9,8 +9,9 @@ def empresa_actual(request):
         return {}
 
     try:
-        from .views import _get_empresa
+        from .views import _get_empresa, _get_usuario
         empresa = _get_empresa(request)
+        usuario = _get_usuario(request)   # ya viene del caché, no cuesta otra consulta
     except Exception:
         # Nunca romper el render por un problema de BD
         return {}
@@ -22,6 +23,9 @@ def empresa_actual(request):
     ctx = {
         'empresa_actual': empresa,
         'suscripcion_bloqueada': acceso_bloqueado(request),
+        # Secciones habilitadas para este usuario: el menú se dibuja con esto y
+        # el middleware corta con lo mismo, así no pueden discrepar.
+        'vistas_permitidas': usuario.vistas_web_permitidas,
     }
     try:
         from base_datos.cache import cachear

@@ -149,6 +149,14 @@ class UsuarioForm(forms.ModelForm):
         widget=forms.CheckboxSelectMultiple,
         label='Categorías asignadas',
     )
+    # Igual que `categorias`: campo del formulario que se guarda en el JSON
+    # `vistas_web`. Es la web; la columna `vistas` es la de la app móvil.
+    secciones_web = forms.MultipleChoiceField(
+        choices=Usuario.VISTAS_WEB,
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label='Secciones de la web',
+    )
 
     class Meta:
         model = Usuario
@@ -173,6 +181,8 @@ class UsuarioForm(forms.ModelForm):
         # Precargar las categorías guardadas en id_categorias (JSON con los PK)
         if self.instance and self.instance.pk and self.instance.id_categorias:
             self.fields['categorias'].initial = list(self.instance.id_categorias)
+        if self.instance and self.instance.pk and self.instance.vistas_web:
+            self.fields['secciones_web'].initial = list(self.instance.vistas_web)
 
 
 class EmpresaForm(forms.ModelForm):

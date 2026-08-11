@@ -29,6 +29,72 @@ VISTAS_LIBRES = {
 }
 
 
+# Qué sección de `Usuario.VISTAS_WEB` cubre cada vista. Se escribe explícito y
+# no por prefijo: una vista nueva que nadie mapee queda accesible, que es mejor
+# que quedar bloqueada por un nombre que no calzó.
+SECCION_POR_VISTA = {
+    'dashboard':         'dashboard',
+    'productos':         'productos',
+    'producto_crear':    'productos',
+    'producto_editar':   'productos',
+    'producto_eliminar': 'productos',
+    'api_precios_update': 'productos',
+    'inventario':        'inventario',
+    'punto_venta':       'punto_venta',
+    'punto_compra':      'punto_compra',
+    'merma':             'merma',
+    'compras_ventas':    'compras_ventas',
+    'movimientos':       'movimientos',
+    'categorias':         'categorias',
+    'categoria_crear':    'categorias',
+    'categoria_editar':   'categorias',
+    'categoria_eliminar': 'categorias',
+    'proveedores':        'proveedores',
+    'proveedor_crear':    'proveedores',
+    'proveedor_editar':   'proveedores',
+    'proveedor_eliminar': 'proveedores',
+    'usuarios':           'usuarios',
+    'usuario_crear':      'usuarios',
+    'usuario_editar':     'usuarios',
+    'usuario_eliminar':   'usuarios',
+    'personalizacion':    'personalizacion',
+}
+
+
+def seccion_bloqueada(request):
+    """
+    ¿La vista pedida está fuera de las secciones habilitadas para este usuario?
+
+    Sale de la misma fuente que el menú (`Usuario.puede_ver`), así que esconder
+    un enlace y cortar la ruta nunca pueden decir cosas distintas.
+    """
+    match = request.resolver_match
+    if match is None:
+        return False
+    seccion = SECCION_POR_VISTA.get(match.url_name)
+    if not seccion:
+        return False
+    if not getattr(request, 'user', None) or not request.user.is_authenticated:
+        return False
+
+    try:
+        from .views import _get_usuario
+        return not _get_usuario(request).puede_ver(seccion)
+    except Exception:
+        return False
+
+
+def _destino_permitido(request):
+    """Adónde mandarlo cuando se le corta una sección, sin caer en un bucle."""
+    try:
+        from .views import _get_usuario
+        if _get_usuario(request).puede_ver('dashboard'):
+            return 'dashboard'
+    except Exception:
+        pass
+    return 'mis_pagos'   # nunca se restringe, así que siempre es salida válida
+
+
 def acceso_bloqueado(request):
     """
     ¿Hay que bloquear a este usuario por falta de pago?
@@ -68,15 +134,21 @@ class SuscripcionRequeridaMiddleware:
 
     def process_view(self, request, view_func, view_args, view_kwargs):
         match = request.resolver_match
-        if match is None or match.url_name in VISTAS_LIBRES:
-            return None
-        if request.path.startswith('/admin/'):
-            return None
-        if not acceso_bloqueado(request):
+        if match is None or request.path.startswith('/admin/'):
             return None
 
-        messages.warning(
-            request,
-            'Tu suscripción no está activa. Actívala para volver a usar NexaMarket.',
-        )
-        return redirect('mis_pagos')
+        # `VISTAS_LIBRES` exime del muro de pago, no de los permisos por
+        # sección: "Usuarios" se puede ver sin pagar, pero solo si lo tiene
+        # habilitado.
+        if match.url_name not in VISTAS_LIBRES and acceso_bloqueado(request):
+            messages.warning(
+                request,
+                'Tu suscripción no está activa. Actívala para volver a usar NexaMarket.',
+            )
+            return redirect('mis_pagos')
+
+        if seccion_bloqueada(request):
+            messages.warning(request, 'No tienes acceso a esa sección.')
+            return redirect(_destino_permitido(request))
+
+        return None

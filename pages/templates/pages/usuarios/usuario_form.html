@@ -62,6 +62,22 @@
     </div>
 
     <div class="form-card">
+      <h3 class="form-card-title"><span class="svg-icon icon-cuadricula icono-primario"></span> Secciones de la web</h3>
+      <p class="field-hint" style="margin:-8px 0 14px;">
+        Sin marcar ninguna, el usuario ve todas. Un administrador ve todo siempre.
+        "Mi Empresa" y "Mis Pagos" quedan disponibles para todos.
+      </p>
+      <div class="cat-chip-group">
+        {% for checkbox in form.secciones_web %}
+        <label class="cat-chip-check">
+          {{ checkbox.tag }}
+          <span>{{ checkbox.choice_label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="form-card">
       <div class="form-field form-field-toggle" style="margin:0;">
         <label class="field-label">{{ form.activo.label }}</label>
         {{ form.activo }}

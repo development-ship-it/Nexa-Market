@@ -54,56 +54,78 @@
         <span>Activa tu plan para volver a operar.</span>
       </div>
       {% else %}
+      {% if 'dashboard' in vistas_permitidas %}
       <a href="{% url 'dashboard' %}" class="nav-item {% if page == 'dashboard' %}active{% endif %}">
         <span class="nav-icon icon-dashboard"></span>
         <span class="nav-label">Dashboard</span>
       </a>
+      {% endif %}
+      {% if 'productos' in vistas_permitidas %}
       <a href="{% url 'productos' %}" class="nav-item {% if page == 'productos' %}active{% endif %}">
         <span class="nav-icon icon-articulos"></span>
         <span class="nav-label">Productos</span>
       </a>
+      {% endif %}
+      {% if 'inventario' in vistas_permitidas %}
       <a href="{% url 'inventario' %}" class="nav-item {% if page == 'inventario' %}active{% endif %}">
         <span class="nav-icon icon-inventario"></span>
         <span class="nav-label">Inventario</span>
       </a>
+      {% endif %}
+      {% if 'punto_venta' in vistas_permitidas %}
       <a href="{% url 'punto_venta' %}" class="nav-item {% if page == 'punto_venta' %}active{% endif %}">
         <span class="nav-icon icon-punto-venta"></span>
         <span class="nav-label">Punto de Venta</span>
       </a>
+      {% endif %}
+      {% if 'punto_compra' in vistas_permitidas %}
       <a href="{% url 'punto_compra' %}" class="nav-item {% if page == 'punto_compra' %}active{% endif %}">
         <span class="nav-icon icon-punto-compra"></span>
         <span class="nav-label">Punto de Compra</span>
       </a>
+      {% endif %}
+      {% if 'merma' in vistas_permitidas %}
       <a href="{% url 'merma' %}" class="nav-item {% if page == 'merma' %}active{% endif %}">
         <span class="nav-icon icon-merma"></span>
         <span class="nav-label">Merma</span>
       </a>
+      {% endif %}
+      {% if 'compras_ventas' in vistas_permitidas %}
       <a href="{% url 'compras_ventas' %}" class="nav-item {% if page == 'compras_ventas' %}active{% endif %}">
         <span class="nav-icon icon-compras-ventas"></span>
         <span class="nav-label">Compras / Ventas</span>
       </a>
+      {% endif %}
+      {% if 'movimientos' in vistas_permitidas %}
       <a href="{% url 'movimientos' %}" class="nav-item {% if page == 'movimientos' %}active{% endif %}">
         <span class="nav-icon icon-movimientos"></span>
         <span class="nav-label">Movimientos</span>
       </a>
       {% endif %}
+      {% endif %}
 
       <div class="nav-divider">Configuración</div>
 
       {% if not suscripcion_bloqueada %}
+      {% if 'categorias' in vistas_permitidas %}
       <a href="{% url 'categorias' %}" class="nav-item {% if page == 'categorias' %}active{% endif %}">
         <span class="nav-icon icon-categorias"></span>
         <span class="nav-label">Categorías</span>
       </a>
+      {% endif %}
+      {% if 'proveedores' in vistas_permitidas %}
       <a href="{% url 'proveedores' %}" class="nav-item {% if page == 'proveedores' %}active{% endif %}">
         <span class="nav-icon icon-proveedores"></span>
         <span class="nav-label">Proveedores</span>
       </a>
       {% endif %}
+      {% endif %}
+      {% if 'usuarios' in vistas_permitidas %}
       <a href="{% url 'usuarios' %}" class="nav-item {% if page == 'usuarios' %}active{% endif %}">
         <span class="nav-icon icon-usuarios"></span>
         <span class="nav-label">Usuarios</span>
       </a>
+      {% endif %}
       <a href="{% url 'empresa' %}" class="nav-item {% if page == 'empresa' %}active{% endif %}">
         <span class="nav-icon icon-empresa"></span>
         <span class="nav-label">Mi Empresa</span>
@@ -116,7 +138,7 @@
           <span class="nav-aviso {% if empresa_actual.esta_vigente %}por-vencer{% else %}vencido{% endif %}"></span>
         {% endif %}
       </a>
-      {% if not suscripcion_bloqueada %}
+      {% if not suscripcion_bloqueada and 'personalizacion' in vistas_permitidas %}
       <a href="{% url 'personalizacion' %}" class="nav-item {% if page == 'personalizacion' %}active{% endif %}">
         <span class="nav-icon icon-personalizacion"></span>
         <span class="nav-label">Personalización</span>

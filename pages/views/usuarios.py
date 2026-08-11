@@ -29,10 +29,15 @@ def usuarios(request):
 
 
 def _guardar_usuario(usuario, empresa, form):
-    """Completa empresa + id_categorias (desde el multiselect) y guarda."""
+    """Completa empresa + id_categorias + vistas_web (los multiselect) y guarda."""
     usuario.empresa = empresa
     usuario.id_categorias = [str(c.id_categoria) for c in form.cleaned_data['categorias']]
+    usuario.vistas_web = list(form.cleaned_data['secciones_web'])
     usuario.save()
+    # Ojo: el afectado puede tardar hasta 60 s en ver el cambio de permisos.
+    # `_get_usuario` cachea con la pk del User de Django, que desde acá no se
+    # conoce, y con varios workers cada proceso tiene su propio caché igual.
+    # Se resuelve solo al expirar; si molesta, hay que mover ese caché a Redis.
 
 
 @login_required
